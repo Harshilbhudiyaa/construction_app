@@ -8,6 +8,7 @@ import '../../../inventory/presentation/screens/inventory_master_list_screen.dar
 import '../../../payments/presentation/screens/payments_dashboard_screen.dart';
 import '../../../reports/presentation/screens/reports_home_screen.dart';
 import 'audit_log_list_screen.dart';
+import '../../../../core/utils/navigation_utils.dart';
 
 class ContractorShell extends StatefulWidget {
   const ContractorShell({super.key});
@@ -34,46 +35,59 @@ class _ContractorShellState extends State<ContractorShell> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _pages[_index],
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _index,
-        onDestinationSelected: _goTo,
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.dashboard_rounded),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.groups_rounded),
-            label: 'Workers',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.engineering_rounded),
-            label: 'Engineers',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.precision_manufacturing_rounded),
-            label: 'Machines',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.inventory_2_rounded),
-            label: 'Inventory',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.payments_rounded),
-            label: 'Payments',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.analytics_rounded),
-            label: 'Reports',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.policy_rounded),
-            label: 'Audit',
-          ),
-        ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        
+        if (_index != 0) {
+          setState(() => _index = 0);
+        } else {
+          await NavigationUtils.showLogoutDialog(context);
+        }
+      },
+      child: Scaffold(
+        body: _pages[_index],
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: _index,
+          onDestinationSelected: _goTo,
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.dashboard_rounded),
+              label: 'Home',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.groups_rounded),
+              label: 'Workers',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.engineering_rounded),
+              label: 'Engineers',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.precision_manufacturing_rounded),
+              label: 'Machines',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.inventory_2_rounded),
+              label: 'Inventory',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.payments_rounded),
+              label: 'Payments',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.analytics_rounded),
+              label: 'Reports',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.policy_rounded),
+              label: 'Audit',
+            ),
+          ],
+        ),
       ),
     );
   }
 }
+

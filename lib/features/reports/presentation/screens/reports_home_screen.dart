@@ -19,30 +19,51 @@ class ReportsHomeScreen extends StatelessWidget {
             subtitle: 'Analytics (UI-only)',
           ),
           ...[
-            ('Worker Productivity', Icons.trending_up_rounded),
-            ('Material Usage', Icons.inventory_2_rounded),
-            ('Block Production', Icons.precision_manufacturing_rounded),
-            ('Truck Delays', Icons.local_shipping_rounded),
-            ('Payments Summary', Icons.payments_rounded),
+            (
+              'Worker Productivity',
+              'Output per shift analysis',
+              Icons.trending_up_rounded
+            ),
+            (
+              'Material Usage',
+              'Cement, sand, and aggregate tracking',
+              Icons.inventory_2_rounded
+            ),
+            (
+              'Block Production',
+              'Daily machine output vs targets',
+              Icons.precision_manufacturing_rounded
+            ),
+            (
+              'Truck Delays',
+              'Logistics and turnaround time',
+              Icons.local_shipping_rounded
+            ),
+            (
+              'Payments Summary',
+              'Total payouts vs budgets',
+              Icons.payments_rounded
+            ),
           ].map((r) {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
               child: Card(
                 child: ListTile(
-                  leading: Icon(r.$2, color: cs.primary),
+                  leading: Icon(r.$3, color: cs.primary),
                   title: Text(
                     r.$1,
                     style: const TextStyle(fontWeight: FontWeight.w900),
                   ),
-                  subtitle: const Text('Open report (next step)'),
+                  subtitle: Text(r.$2),
                   trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Open ${r.$1} report (next step)')),
+                    SnackBar(content: Text('Generating ${r.$1} report...')),
                   ),
                 ),
               ),
             );
           }),
+
           const SizedBox(height: 16),
         ],
       ),

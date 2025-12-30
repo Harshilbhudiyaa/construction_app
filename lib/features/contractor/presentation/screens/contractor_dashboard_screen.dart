@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_spacing.dart';
-import '../../../../app/ui/widgets/kpi_card.dart';
-import '../../../../app/ui/widgets/section_header.dart';
+import '../../../../app/theme/professional_theme.dart';
+import '../../../../app/ui/widgets/staggered_animation.dart';
 import '../../../../app/ui/widgets/status_chip.dart';
+import '../../../../core/utils/navigation_utils.dart';
 
 class ContractorDashboardScreen extends StatelessWidget {
   final void Function(int tabIndex) onNavigateTo;
@@ -12,8 +13,6 @@ class ContractorDashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
     // UI-only demo values
     const totalWorkers = 68;
     const totalEngineers = 4;
@@ -23,37 +22,44 @@ class ContractorDashboardScreen extends StatelessWidget {
     const backupAlerts = 1;
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Contractor Dashboard'),
+        title: const Text(
+          'Contractor Dashboard',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         actions: [
           IconButton(
+            onPressed: () => NavigationUtils.showLogoutDialog(context),
+            icon: const Icon(Icons.logout_rounded, color: Colors.white),
+          ),
+          IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.notifications_rounded),
+            icon: const Icon(Icons.notifications_rounded, color: Colors.white),
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
+      body: ProfessionalBackground(
+        child: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+            children: [
+              ProfessionalCard(
                 child: Row(
                   children: [
                     Container(
-                      width: 46,
-                      height: 46,
+                      width: 50,
+                      height: 50,
                       decoration: BoxDecoration(
-                        color: cs.primaryContainer,
-                        borderRadius: BorderRadius.circular(
-                          AppSpacing.radiusMd,
-                        ),
+                        color: AppColors.deepBlue1.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.admin_panel_settings_rounded,
-                        color: cs.onPrimaryContainer,
+                        color: AppColors.deepBlue1,
+                        size: 28,
                       ),
                     ),
                     const SizedBox(width: AppSpacing.md),
@@ -63,12 +69,16 @@ class ContractorDashboardScreen extends StatelessWidget {
                         children: [
                           const Text(
                             'Contractor (Admin)',
-                            style: TextStyle(fontWeight: FontWeight.w900),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 18,
+                              color: AppColors.deepBlue1,
+                            ),
                           ),
-                          const SizedBox(height: 2),
+                          const SizedBox(height: 4),
                           Text(
-                            'All Sites Overview (demo)',
-                            style: TextStyle(color: cs.onSurfaceVariant),
+                            'All Sites Overview',
+                            style: TextStyle(color: Colors.grey[600]),
                           ),
                         ],
                       ),
@@ -80,189 +90,263 @@ class ContractorDashboardScreen extends StatelessWidget {
                   ],
                 ),
               ),
-            ),
-          ),
 
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Row(
-              children: const [
-                Expanded(
-                  child: KpiCard(
-                    title: 'Workers',
-                    value: '$totalWorkers',
-                    icon: Icons.groups_rounded,
+              // KPIs
+              StaggeredAnimation(
+                index: 0,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Row(
+                    children: const [
+                      Expanded(
+                        child: _KpiTile(
+                          title: 'Workers',
+                          value: '$totalWorkers',
+                          icon: Icons.groups_rounded,
+                          color: Colors.blue,
+                        ),
+                      ),
+                      Expanded(
+                        child: _KpiTile(
+                          title: 'Engineers',
+                          value: '$totalEngineers',
+                          icon: Icons.engineering_rounded,
+                          color: Colors.orange,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                Expanded(
-                  child: KpiCard(
-                    title: 'Engineers',
-                    value: '$totalEngineers',
-                    icon: Icons.engineering_rounded,
+              ),
+              StaggeredAnimation(
+                index: 1,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Row(
+                    children: const [
+                      Expanded(
+                        child: _KpiTile(
+                          title: 'Machines',
+                          value: '$activeMachines',
+                          icon: Icons.precision_manufacturing_rounded,
+                          color: Colors.purple,
+                        ),
+                      ),
+                      Expanded(
+                        child: _KpiTile(
+                          title: 'Low Stock',
+                          value: '$lowStock',
+                          icon: Icons.warning_amber_rounded,
+                          color: Colors.red,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Row(
-              children: const [
-                Expanded(
-                  child: KpiCard(
-                    title: 'Machines Active',
-                    value: '$activeMachines',
-                    icon: Icons.precision_manufacturing_rounded,
+              ),
+              StaggeredAnimation(
+                index: 2,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Row(
+                    children: const [
+                      Expanded(
+                        child: _KpiTile(
+                          title: 'Pending Pay',
+                          value: '$pendingPayments',
+                          icon: Icons.payments_rounded,
+                          color: Colors.green,
+                        ),
+                      ),
+                      Expanded(
+                        child: _KpiTile(
+                          title: 'Backup Alerts',
+                          value: '$backupAlerts',
+                          icon: Icons.sms_failed_rounded,
+                          color: Colors.deepOrange,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                Expanded(
-                  child: KpiCard(
-                    title: 'Low Stock',
-                    value: '$lowStock',
-                    icon: Icons.warning_amber_rounded,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Row(
-              children: const [
-                Expanded(
-                  child: KpiCard(
-                    title: 'Pending Payments',
-                    value: '$pendingPayments',
-                    icon: Icons.payments_rounded,
-                  ),
-                ),
-                Expanded(
-                  child: KpiCard(
-                    title: 'Backup Alerts',
-                    value: '$backupAlerts',
-                    icon: Icons.sms_failed_rounded,
-                  ),
-                ),
-              ],
-            ),
-          ),
+              ),
 
-          const SectionHeader(
-            title: 'Quick Navigation',
-            subtitle: 'Open modules directly',
-          ),
+              const ProfessionalSectionHeader(
+                title: 'Quick Navigation',
+                subtitle: 'Open modules directly',
+              ),
 
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Card(
-              child: ListTile(
-                leading: Icon(Icons.groups_rounded, color: cs.primary),
-                title: const Text(
-                  'Workers',
-                  style: TextStyle(fontWeight: FontWeight.w900),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Column(
+                  children: [
+                    _ActionTile(
+                      icon: Icons.groups_rounded,
+                      title: 'Workers',
+                      subtitle: 'Create/assign skills, rates, shifts',
+                      onTap: () => onNavigateTo(1),
+                    ),
+                    _ActionTile(
+                      icon: Icons.engineering_rounded,
+                      title: 'Engineers',
+                      subtitle: 'Sites, permissions, approvals',
+                      onTap: () => onNavigateTo(2),
+                    ),
+                    _ActionTile(
+                      icon: Icons.precision_manufacturing_rounded,
+                      title: 'Machines',
+                      subtitle: 'Block machines + utilization',
+                      onTap: () => onNavigateTo(3),
+                    ),
+                    _ActionTile(
+                      icon: Icons.inventory_2_rounded,
+                      title: 'Inventory Master',
+                      subtitle: 'Thresholds, backup levels',
+                      onTap: () => onNavigateTo(4),
+                    ),
+                    _ActionTile(
+                      icon: Icons.payments_rounded,
+                      title: 'Payments',
+                      subtitle: 'Worker payouts + billing status',
+                      onTap: () => onNavigateTo(5),
+                    ),
+                    _ActionTile(
+                      icon: Icons.analytics_rounded,
+                      title: 'Reports',
+                      subtitle: 'Productivity, materials, trucks',
+                      onTap: () => onNavigateTo(6),
+                    ),
+                    _ActionTile(
+                      icon: Icons.policy_rounded,
+                      title: 'Audit Log',
+                      subtitle: 'All critical actions timeline',
+                      onTap: () => onNavigateTo(7),
+                    ),
+                  ],
                 ),
-                subtitle: const Text('Create/assign skills, rates, shifts'),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => onNavigateTo(1),
               ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Card(
-              child: ListTile(
-                leading: Icon(Icons.engineering_rounded, color: cs.primary),
-                title: const Text(
-                  'Engineers',
-                  style: TextStyle(fontWeight: FontWeight.w900),
-                ),
-                subtitle: const Text('Sites, permissions, approvals'),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => onNavigateTo(2),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Card(
-              child: ListTile(
-                leading: Icon(
-                  Icons.precision_manufacturing_rounded,
-                  color: cs.primary,
-                ),
-                title: const Text(
-                  'Machines',
-                  style: TextStyle(fontWeight: FontWeight.w900),
-                ),
-                subtitle: const Text('Block machines + utilization'),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => onNavigateTo(3),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Card(
-              child: ListTile(
-                leading: Icon(Icons.inventory_2_rounded, color: cs.primary),
-                title: const Text(
-                  'Inventory Master',
-                  style: TextStyle(fontWeight: FontWeight.w900),
-                ),
-                subtitle: const Text('Thresholds, backup levels'),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => onNavigateTo(4),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Card(
-              child: ListTile(
-                leading: Icon(Icons.payments_rounded, color: cs.primary),
-                title: const Text(
-                  'Payments',
-                  style: TextStyle(fontWeight: FontWeight.w900),
-                ),
-                subtitle: const Text('Worker payouts + billing status'),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => onNavigateTo(5),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Card(
-              child: ListTile(
-                leading: Icon(Icons.analytics_rounded, color: cs.primary),
-                title: const Text(
-                  'Reports',
-                  style: TextStyle(fontWeight: FontWeight.w900),
-                ),
-                subtitle: const Text('Productivity, materials, trucks'),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => onNavigateTo(6),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Card(
-              child: ListTile(
-                leading: Icon(Icons.policy_rounded, color: cs.primary),
-                title: const Text(
-                  'Audit Log',
-                  style: TextStyle(fontWeight: FontWeight.w900),
-                ),
-                subtitle: const Text('All critical actions timeline'),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => onNavigateTo(7),
-              ),
-            ),
-          ),
 
-          const SizedBox(height: 16),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _KpiTile extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  const _KpiTile({
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Icon(icon, color: color, size: 24),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.deepBlue1,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActionTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _ActionTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: AppColors.deepBlue1.withOpacity(0.05),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: AppColors.deepBlue1, size: 24),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: AppColors.deepBlue1,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(color: Colors.grey[600], fontSize: 13),
+        ),
+        trailing: const Icon(Icons.chevron_right_rounded, color: Colors.grey),
+        onTap: onTap,
       ),
     );
   }

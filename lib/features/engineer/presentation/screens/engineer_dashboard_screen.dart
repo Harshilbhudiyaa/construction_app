@@ -1,59 +1,71 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_spacing.dart';
-import '../../../../app/ui/widgets/kpi_card.dart';
-import '../../../../app/ui/widgets/section_header.dart';
+import '../../../../app/theme/professional_theme.dart';
+import '../../../../app/ui/widgets/staggered_animation.dart';
 import '../../../../app/ui/widgets/status_chip.dart';
+import '../../../../core/utils/navigation_utils.dart';
 
-class EngineerDashboardScreen extends StatelessWidget {
+class EngineerDashboardScreen extends StatefulWidget {
   final void Function(int tabIndex) onNavigateToTab;
 
   const EngineerDashboardScreen({super.key, required this.onNavigateToTab});
 
   @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+  State<EngineerDashboardScreen> createState() => _EngineerDashboardScreenState();
+}
 
+class _EngineerDashboardScreenState extends State<EngineerDashboardScreen> {
+  @override
+  Widget build(BuildContext context) {
     // UI-only demo values
     const activeWorkers = 12;
     const pendingApprovals = 5;
     const blocksToday = 3200;
     const lowStockItems = 3;
     const trucksInTransit = 2;
+    const backupAlerts = 1;
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Engineer Dashboard'),
+        title: const Text(
+          'Engineer Dashboard',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         actions: [
           IconButton(
+            onPressed: () => NavigationUtils.showLogoutDialog(context),
+            icon: const Icon(Icons.logout_rounded, color: Colors.white),
+          ),
+          IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.notifications_rounded),
+            icon: const Icon(Icons.notifications_rounded, color: Colors.white),
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-        children: [
-          // Header card
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
+      body: ProfessionalBackground(
+        child: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+            children: [
+              // Header card
+              ProfessionalCard(
                 child: Row(
                   children: [
                     Container(
-                      width: 46,
-                      height: 46,
+                      width: 50,
+                      height: 50,
                       decoration: BoxDecoration(
-                        color: cs.primaryContainer,
-                        borderRadius: BorderRadius.circular(
-                          AppSpacing.radiusMd,
-                        ),
+                        color: AppColors.deepBlue1.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.engineering_rounded,
-                        color: cs.onPrimaryContainer,
+                        color: AppColors.deepBlue1,
+                        size: 28,
                       ),
                     ),
                     const SizedBox(width: AppSpacing.md),
@@ -63,12 +75,16 @@ class EngineerDashboardScreen extends StatelessWidget {
                         children: [
                           const Text(
                             'Engineer A',
-                            style: TextStyle(fontWeight: FontWeight.w900),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 18,
+                              color: AppColors.deepBlue1,
+                            ),
                           ),
-                          const SizedBox(height: 2),
+                          const SizedBox(height: 4),
                           Text(
-                            'Site A • Shift: Day (demo)',
-                            style: TextStyle(color: cs.onSurfaceVariant),
+                            'Site A • Shift: Day',
+                            style: TextStyle(color: Colors.grey[600]),
                           ),
                         ],
                       ),
@@ -80,160 +96,257 @@ class EngineerDashboardScreen extends StatelessWidget {
                   ],
                 ),
               ),
-            ),
-          ),
 
-          // KPI grid
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Row(
-              children: const [
-                Expanded(
-                  child: KpiCard(
-                    title: 'Active Workers',
-                    value: '$activeWorkers',
-                    icon: Icons.groups_rounded,
+              // KPI grid
+              StaggeredAnimation(
+                index: 0,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Row(
+                    children: const [
+                      Expanded(
+                        child: _KpiTile(
+                          title: 'Active Workers',
+                          value: '$activeWorkers',
+                          icon: Icons.groups_rounded,
+                          color: Colors.blue,
+                        ),
+                      ),
+                      Expanded(
+                        child: _KpiTile(
+                          title: 'Pending',
+                          value: '$pendingApprovals',
+                          icon: Icons.fact_check_rounded,
+                          color: Colors.orange,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                Expanded(
-                  child: KpiCard(
-                    title: 'Pending Approvals',
-                    value: '$pendingApprovals',
-                    icon: Icons.fact_check_rounded,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Row(
-              children: const [
-                Expanded(
-                  child: KpiCard(
-                    title: 'Blocks Today',
-                    value: '$blocksToday',
-                    icon: Icons.view_in_ar_rounded,
-                  ),
-                ),
-                Expanded(
-                  child: KpiCard(
-                    title: 'Low Stock Items',
-                    value: '$lowStockItems',
-                    icon: Icons.warning_amber_rounded,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Row(
-              children: const [
-                Expanded(
-                  child: KpiCard(
-                    title: 'Trucks In Transit',
-                    value: '$trucksInTransit',
-                    icon: Icons.local_shipping_rounded,
-                  ),
-                ),
-                Expanded(
-                  child: KpiCard(
-                    title: 'Backup Alerts',
-                    value: '1',
-                    icon: Icons.sms_failed_rounded,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SectionHeader(
-            title: 'Action Center',
-            subtitle: 'Open modules directly',
-          ),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Card(
-              child: ListTile(
-                leading: Icon(Icons.fact_check_rounded, color: cs.primary),
-                title: const Text(
-                  'Approvals Queue',
-                  style: TextStyle(fontWeight: FontWeight.w900),
-                ),
-                subtitle: const Text('Verify worker sessions'),
-                trailing: const StatusChip(
-                  status: UiStatus.pending,
-                  labelOverride: '5 Pending',
-                ),
-                onTap: () => onNavigateToTab(1), // ✅ Approvals
               ),
-            ),
-          ),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Card(
-              child: ListTile(
-                leading: Icon(
-                  Icons.precision_manufacturing_rounded,
-                  color: cs.primary,
+              StaggeredAnimation(
+                index: 1,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Row(
+                    children: const [
+                      Expanded(
+                        child: _KpiTile(
+                          title: 'Blocks Today',
+                          value: '$blocksToday',
+                          icon: Icons.view_in_ar_rounded,
+                          color: Colors.teal,
+                        ),
+                      ),
+                      Expanded(
+                        child: _KpiTile(
+                          title: 'Low Stock',
+                          value: '$lowStockItems',
+                          icon: Icons.warning_amber_rounded,
+                          color: Colors.red,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                title: const Text(
-                  'Block Production',
-                  style: TextStyle(fontWeight: FontWeight.w900),
-                ),
-                subtitle: const Text('Production entry + backup logs'),
-                trailing: const StatusChip(
-                  status: UiStatus.low,
-                  labelOverride: 'Backup Used',
-                ),
-                onTap: () => onNavigateToTab(2), // ✅ Blocks
               ),
-            ),
-          ),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Card(
-              child: ListTile(
-                leading: Icon(Icons.inventory_2_rounded, color: cs.primary),
-                title: const Text(
-                  'Inventory',
-                  style: TextStyle(fontWeight: FontWeight.w900),
+              StaggeredAnimation(
+                index: 2,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Row(
+                    children: const [
+                      Expanded(
+                        child: _KpiTile(
+                          title: 'Trucks Transit',
+                          value: '$trucksInTransit',
+                          icon: Icons.local_shipping_rounded,
+                          color: Colors.indigo,
+                        ),
+                      ),
+                      Expanded(
+                        child: _KpiTile(
+                          title: 'Backup Alerts',
+                          value: '$backupAlerts',
+                          icon: Icons.sms_failed_rounded,
+                          color: Colors.deepOrange,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                subtitle: const Text('Low stock and ledger'),
-                trailing: const StatusChip(
-                  status: UiStatus.low,
-                  labelOverride: '3 Low',
-                ),
-                onTap: () => onNavigateToTab(3), // ✅ Inventory
               ),
-            ),
-          ),
 
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Card(
-              child: ListTile(
-                leading: Icon(Icons.local_shipping_rounded, color: cs.primary),
-                title: const Text(
-                  'Truck Trips',
-                  style: TextStyle(fontWeight: FontWeight.w900),
-                ),
-                subtitle: const Text('Trips list + decision engine'),
-                trailing: const StatusChip(
-                  status: UiStatus.ok,
-                  labelOverride: '2 Active',
-                ),
-                onTap: () => onNavigateToTab(4), // ✅ Trucks
+              const ProfessionalSectionHeader(
+                title: 'Action Center',
+                subtitle: 'Manage site operations',
               ),
-            ),
-          ),
 
-          const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Column(
+                  children: [
+                    _ActionTile(
+                      icon: Icons.fact_check_rounded,
+                      title: 'Approvals Queue',
+                      subtitle: 'Verify worker sessions',
+                      status: UiStatus.pending,
+                      statusLabel: '5 Pending',
+                      onTap: () => widget.onNavigateToTab(1),
+                    ),
+                    _ActionTile(
+                      icon: Icons.precision_manufacturing_rounded,
+                      title: 'Block Production',
+                      subtitle: 'Production entry + logs',
+                      status: UiStatus.low,
+                      statusLabel: 'Backup Used',
+                      onTap: () => widget.onNavigateToTab(2),
+                    ),
+                    _ActionTile(
+                      icon: Icons.inventory_2_rounded,
+                      title: 'Inventory',
+                      subtitle: 'Low stock and ledger',
+                      status: UiStatus.low,
+                      statusLabel: '3 Low',
+                      onTap: () => widget.onNavigateToTab(3),
+                    ),
+                    _ActionTile(
+                      icon: Icons.local_shipping_rounded,
+                      title: 'Truck Trips',
+                      subtitle: 'Trips list & tracking',
+                      status: UiStatus.ok,
+                      statusLabel: '2 Active',
+                      onTap: () => widget.onNavigateToTab(4),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _KpiTile extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  const _KpiTile({
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Icon(icon, color: color, size: 24),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.deepBlue1,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActionTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final UiStatus status;
+  final String statusLabel;
+  final VoidCallback onTap;
+
+  const _ActionTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.status,
+    required this.statusLabel,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: AppColors.deepBlue1.withOpacity(0.05),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: AppColors.deepBlue1, size: 24),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: AppColors.deepBlue1,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(color: Colors.grey[600], fontSize: 13),
+        ),
+        trailing: StatusChip(status: status, labelOverride: statusLabel),
+        onTap: onTap,
       ),
     );
   }

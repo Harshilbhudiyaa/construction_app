@@ -1,0 +1,32 @@
+﻿Analyzing construction_app...                                   
+
+  error - Target of URI doesn't exist: 'approvals_queue_screen.dart' - lib\features\engineer\presentation\screens\engineer_shell.dart:4:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: '../../block_management/presentation/screens/block_overview_screen.dart' - lib\features\engineer\presentation\screens\engineer_shell.dart:5:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: '../../inventory/presentation/screens/inventory_dashboard_screen.dart' - lib\features\engineer\presentation\screens\engineer_shell.dart:6:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: '../../trucks/presentation/screens/truck_trips_list_screen.dart' - lib\features\engineer\presentation\screens\engineer_shell.dart:7:8 - uri_does_not_exist
+  error - The name 'ApprovalsQueueScreen' isn't a class - lib\features\engineer\presentation\screens\engineer_shell.dart:26:11 - creation_with_non_type
+  error - The name 'BlockOverviewScreen' isn't a class - lib\features\engineer\presentation\screens\engineer_shell.dart:27:11 - creation_with_non_type
+  error - The name 'InventoryDashboardScreen' isn't a class - lib\features\engineer\presentation\screens\engineer_shell.dart:28:11 - creation_with_non_type
+  error - The name 'TruckTripsListScreen' isn't a class - lib\features\engineer\presentation\screens\engineer_shell.dart:29:11 - creation_with_non_type
+  error - Target of URI doesn't exist: 'work_type_select_screen.dart' - lib\features\worker\presentation\screens\worker_shell.dart:4:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: '../../work_sessions/presentation/screens/work_history_list_screen.dart' - lib\features\worker\presentation\screens\worker_shell.dart:5:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: '../../payments/presentation/screens/earnings_dashboard_screen.dart' - lib\features\worker\presentation\screens\worker_shell.dart:6:8 - uri_does_not_exist
+  error - The name 'WorkTypeSelectScreen' isn't a class - lib\features\worker\presentation\screens\worker_shell.dart:23:11 - creation_with_non_type
+  error - The name 'WorkHistoryListScreen' isn't a class - lib\features\worker\presentation\screens\worker_shell.dart:24:11 - creation_with_non_type
+  error - The name 'EarningsDashboardScreen' isn't a class - lib\features\worker\presentation\screens\worker_shell.dart:25:11 - creation_with_non_type
+
+flutter : 14 issues found. 
+(ran in 1.0s)
+At line:1 char:1
++ flutter analyze > 
+analysis_refactor.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          
+    : NotSpecified: (14 is  
+  sues found. (ran in 1.0   
+ s):String) [], RemoteEx    
+ception
+    + FullyQualifiedErrorId 
+    : NativeCommandError
+ 

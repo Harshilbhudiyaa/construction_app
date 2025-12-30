@@ -1,0 +1,19 @@
+﻿Analyzing construction_app...                                   
+
+warning - The value of the local variable 'size' isn't used - lib\features\auth\presentation\screens\login_screen.dart:97:11 - unused_local_variable
+
+flutter : 1 issue found. 
+(ran in 1.0s)
+At line:1 char:1
++ flutter analyze > 
+analysis_errors.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
+    + CategoryInfo          
+    : NotSpecified: (1 iss  
+  ue found. (ran in 1.0s)   
+ :String) [], RemoteExce    
+ption
+    + FullyQualifiedErrorId 
+    : NativeCommandError
+ 

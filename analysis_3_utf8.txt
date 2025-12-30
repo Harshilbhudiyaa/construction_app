@@ -1,0 +1,30 @@
+﻿Analyzing construction_app...                                   
+
+  error - Target of URI doesn't exist: '../theme/app_spacing.dart' - lib\app\ui\widgets\kpi_card.dart:2:8 - uri_does_not_exist
+  error - Undefined name 'AppSpacing' - lib\app\ui\widgets\kpi_card.dart:76:55 - undefined_identifier
+  error - Invalid constant value - lib\app\ui\widgets\kpi_card.dart:79:49 - invalid_constant
+  error - Undefined name 'AppSpacing' - lib\app\ui\widgets\kpi_card.dart:79:49 - undefined_identifier
+  error - Invalid constant value - lib\app\ui\widgets\kpi_card.dart:111:46 - invalid_constant
+  error - Undefined name 'AppSpacing' - lib\app\ui\widgets\kpi_card.dart:111:46 - undefined_identifier
+   info - The imported package 'cloud_firestore' isn't a dependency of the importing package - lib\core\services\firebase_service.dart:2:8 - depend_on_referenced_packages
+  error - Target of URI doesn't exist: 'package:cloud_firestore/cloud_firestore.dart' - lib\core\services\firebase_service.dart:2:8 - uri_does_not_exist
+  error - Undefined class 'FirebaseFirestore' - lib\core\services\firebase_service.dart:9:9 - undefined_class
+warning - The value of the field '_firestore' isn't used - lib\core\services\firebase_service.dart:9:27 - unused_field
+  error - Undefined name 'FirebaseFirestore' - lib\core\services\firebase_service.dart:9:40 - undefined_identifier
+warning - The value of the local variable 'theme' isn't used - lib\core\widgets\app_button.dart:22:11 - unused_local_variable
+
+flutter : 12 issues found. 
+(ran in 1.0s)
+At line:1 char:1
++ flutter analyze > 
+analysis_3.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~
+    + CategoryInfo          
+    : NotSpecified: (12 is  
+  sues found. (ran in 1.0   
+ s):String) [], RemoteEx    
+ception
+    + FullyQualifiedErrorId 
+    : NativeCommandError
+ 
