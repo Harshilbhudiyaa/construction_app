@@ -1,18 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-<<<<<<< Updated upstream
-=======
 import 'package:firebase_auth/firebase_auth.dart';
->>>>>>> Stashed changes
 import 'package:firebase_database/firebase_database.dart';
 
 import 'firebase_options.dart';
 
-<<<<<<< Updated upstream
-void main() async {
-=======
 Future<void> main() async {
->>>>>>> Stashed changes
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(
@@ -27,52 +20,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-<<<<<<< Updated upstream
-    return const MaterialApp(
-      home: FirebaseStatusPage(),
-=======
     return MaterialApp(
       title: 'Construction App - Login',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(useMaterial3: true),
       home: const AuthGate(),
->>>>>>> Stashed changes
     );
   }
 }
 
-<<<<<<< Updated upstream
-class FirebaseStatusPage extends StatelessWidget {
-  const FirebaseStatusPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    // Firebase RTDB connection indicator
-    final ref = FirebaseDatabase.instance.ref('.info/connected');
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Firebase Connection')),
-      body: Center(
-        child: StreamBuilder(
-          stream: ref.onValue,
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return const Text('Checking...');
-            }
-
-            final connected = snapshot.data!.snapshot.value == true;
-
-            return Text(
-              connected ? 'Connected' : 'Not Connected',
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            );
-          },
-        ),
-      ),
-=======
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
 
@@ -224,7 +180,7 @@ class _LoginPageState extends State<LoginPage> {
                 margin: const EdgeInsets.only(bottom: 12),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
-                  color: const Color.fromARGB(255, 209, 86, 77).withOpacity(0.12),
+                  color: const Color.fromARGB(255, 209, 86, 77).withValues(alpha: 0.12),
                 ),
                 child: Text(_err!),
               ),
@@ -306,7 +262,7 @@ class HomePage extends StatelessWidget {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    color: Colors.black.withOpacity(0.06),
+                    color: Colors.black.withValues(alpha: 0.06),
                   ),
                   child: Text(v.toString()),
                 );
@@ -315,7 +271,6 @@ class HomePage extends StatelessWidget {
           ],
         ),
       ),
->>>>>>> Stashed changes
     );
   }
 }

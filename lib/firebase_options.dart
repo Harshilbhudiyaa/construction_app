@@ -41,34 +41,6 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-<<<<<<< Updated upstream
-    apiKey: 'AIzaSyBWdS4pJb0UdgxRCBENkVPxfAFZ7xwvQcg',
-    appId: '1:228677570502:web:3d49c16a293d18aef56cc7',
-    messagingSenderId: '228677570502',
-    projectId: 'interview-41f79',
-    authDomain: 'interview-41f79.firebaseapp.com',
-    databaseURL: 'https://interview-41f79-default-rtdb.firebaseio.com',
-    storageBucket: 'interview-41f79.firebasestorage.app',
-    measurementId: 'G-KD54727BE7',
-  );
-
-  static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyB0PH5CNEMwKPsY6mCZ62VET6zECRWOjP0',
-    appId: '1:228677570502:android:7d2b4c9351ebd8d7f56cc7',
-    messagingSenderId: '228677570502',
-    projectId: 'interview-41f79',
-    databaseURL: 'https://interview-41f79-default-rtdb.firebaseio.com',
-    storageBucket: 'interview-41f79.firebasestorage.app',
-  );
-
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCpCpJY6qf-_43Cpdw5HbTm_fOawA70o54',
-    appId: '1:228677570502:ios:2cf359526e2f48f7f56cc7',
-    messagingSenderId: '228677570502',
-    projectId: 'interview-41f79',
-    databaseURL: 'https://interview-41f79-default-rtdb.firebaseio.com',
-    storageBucket: 'interview-41f79.firebasestorage.app',
-=======
     apiKey: 'AIzaSyCIUrzgupizSmYI8ITLYxYeOJf1oEXrKZI',
     appId: '1:363864331050:web:6776752af49a077858c453',
     messagingSenderId: '363864331050',
@@ -95,40 +67,20 @@ class DefaultFirebaseOptions {
     projectId: 'construction-app-10060',
     databaseURL: 'https://construction-app-10060-default-rtdb.firebaseio.com',
     storageBucket: 'construction-app-10060.firebasestorage.app',
->>>>>>> Stashed changes
     iosBundleId: 'com.example.constructionApp',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-<<<<<<< Updated upstream
-    apiKey: 'AIzaSyCpCpJY6qf-_43Cpdw5HbTm_fOawA70o54',
-    appId: '1:228677570502:ios:2cf359526e2f48f7f56cc7',
-    messagingSenderId: '228677570502',
-    projectId: 'interview-41f79',
-    databaseURL: 'https://interview-41f79-default-rtdb.firebaseio.com',
-    storageBucket: 'interview-41f79.firebasestorage.app',
-=======
     apiKey: 'AIzaSyB-pPcAntSufuk9G6MgJ4nO0M4QMR7gR-k',
     appId: '1:363864331050:ios:b80caca73eb7a14f58c453',
     messagingSenderId: '363864331050',
     projectId: 'construction-app-10060',
     databaseURL: 'https://construction-app-10060-default-rtdb.firebaseio.com',
     storageBucket: 'construction-app-10060.firebasestorage.app',
->>>>>>> Stashed changes
     iosBundleId: 'com.example.constructionApp',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-<<<<<<< Updated upstream
-    apiKey: 'AIzaSyBWdS4pJb0UdgxRCBENkVPxfAFZ7xwvQcg',
-    appId: '1:228677570502:web:ba146fef009e922af56cc7',
-    messagingSenderId: '228677570502',
-    projectId: 'interview-41f79',
-    authDomain: 'interview-41f79.firebaseapp.com',
-    databaseURL: 'https://interview-41f79-default-rtdb.firebaseio.com',
-    storageBucket: 'interview-41f79.firebasestorage.app',
-    measurementId: 'G-DFQ5WBT1J1',
-=======
     apiKey: 'AIzaSyCIUrzgupizSmYI8ITLYxYeOJf1oEXrKZI',
     appId: '1:363864331050:web:18ce76fbbde6d7ab58c453',
     messagingSenderId: '363864331050',
@@ -137,6 +89,5 @@ class DefaultFirebaseOptions {
     databaseURL: 'https://construction-app-10060-default-rtdb.firebaseio.com',
     storageBucket: 'construction-app-10060.firebasestorage.app',
     measurementId: 'G-3JE76FS231',
->>>>>>> Stashed changes
   );
 }
