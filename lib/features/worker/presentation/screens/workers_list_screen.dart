@@ -65,13 +65,15 @@ class _WorkersListScreenState extends State<WorkersListScreen> {
       if (_status != null && w.status != _status) return false;
       if (_skill != null && w.skill != _skill) return false;
       if (q.isEmpty) return true;
-      final hay = '${w.id} ${w.name} ${w.phone} ${w.skill} ${shiftLabel(w.shift)} ${statusLabel(w.status)} ${w.assignedWorkTypes.join(' ')}'
-          .toLowerCase();
+      final hay =
+          '${w.id} ${w.name} ${w.phone} ${w.skill} ${shiftLabel(w.shift)} ${statusLabel(w.status)} ${w.assignedWorkTypes.join(' ')}'
+              .toLowerCase();
       return hay.contains(q);
     }).toList();
   }
 
-  UiStatus _toUi(WorkerStatus s) => s == WorkerStatus.active ? UiStatus.ok : UiStatus.pending;
+  UiStatus _toUi(WorkerStatus s) =>
+      s == WorkerStatus.active ? UiStatus.ok : UiStatus.pending;
 
   Future<void> _add() async {
     final created = await Navigator.push<Worker?>(
@@ -97,13 +99,19 @@ class _WorkersListScreenState extends State<WorkersListScreen> {
   }
 
   void _toggleActive(Worker w) {
-    final next = w.status == WorkerStatus.active ? WorkerStatus.inactive : WorkerStatus.active;
+    final next = w.status == WorkerStatus.active
+        ? WorkerStatus.inactive
+        : WorkerStatus.active;
     setState(() {
       final idx = _items.indexWhere((x) => x.id == w.id);
       if (idx != -1) _items[idx] = _items[idx].copyWith(status: next);
     });
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Status updated: ${w.name} → ${statusLabel(next)} (UI-only)')),
+      SnackBar(
+        content: Text(
+          'Status updated: ${w.name} → ${statusLabel(next)} (UI-only)',
+        ),
+      ),
     );
   }
 
@@ -121,9 +129,15 @@ class _WorkersListScreenState extends State<WorkersListScreen> {
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
         children: [
-          AppSearchField(hint: 'Search name, skill, phone, id...', onChanged: (v) => setState(() => _q = v)),
+          AppSearchField(
+            hint: 'Search name, skill, phone, id...',
+            onChanged: (v) => setState(() => _q = v),
+          ),
 
-          const SectionHeader(title: 'Filters', subtitle: 'Shift, status, skill'),
+          const SectionHeader(
+            title: 'Filters',
+            subtitle: 'Shift, status, skill',
+          ),
 
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -145,12 +159,14 @@ class _WorkersListScreenState extends State<WorkersListScreen> {
                         FilterChip(
                           label: const Text('Day'),
                           selected: _shift == WorkerShift.day,
-                          onSelected: (_) => setState(() => _shift = WorkerShift.day),
+                          onSelected: (_) =>
+                              setState(() => _shift = WorkerShift.day),
                         ),
                         FilterChip(
                           label: const Text('Night'),
                           selected: _shift == WorkerShift.night,
-                          onSelected: (_) => setState(() => _shift = WorkerShift.night),
+                          onSelected: (_) =>
+                              setState(() => _shift = WorkerShift.night),
                         ),
                       ],
                     ),
@@ -167,22 +183,31 @@ class _WorkersListScreenState extends State<WorkersListScreen> {
                         FilterChip(
                           label: const Text('Active'),
                           selected: _status == WorkerStatus.active,
-                          onSelected: (_) => setState(() => _status = WorkerStatus.active),
+                          onSelected: (_) =>
+                              setState(() => _status = WorkerStatus.active),
                         ),
                         FilterChip(
                           label: const Text('Inactive'),
                           selected: _status == WorkerStatus.inactive,
-                          onSelected: (_) => setState(() => _status = WorkerStatus.inactive),
+                          onSelected: (_) =>
+                              setState(() => _status = WorkerStatus.inactive),
                         ),
                       ],
                     ),
                     const SizedBox(height: 10),
                     DropdownButtonFormField<String?>(
                       value: _skill,
-                      decoration: const InputDecoration(labelText: 'Skill (Optional)'),
+                      decoration: const InputDecoration(
+                        labelText: 'Skill (Optional)',
+                      ),
                       items: [
-                        const DropdownMenuItem(value: null, child: Text('All Skills')),
-                        ...kSkills.map((s) => DropdownMenuItem(value: s, child: Text(s))),
+                        const DropdownMenuItem(
+                          value: null,
+                          child: Text('All Skills'),
+                        ),
+                        ...kSkills.map(
+                          (s) => DropdownMenuItem(value: s, child: Text(s)),
+                        ),
                       ],
                       onChanged: (v) => setState(() => _skill = v),
                     ),
@@ -206,7 +231,10 @@ class _WorkersListScreenState extends State<WorkersListScreen> {
             ),
           ),
 
-          const SectionHeader(title: 'Workers', subtitle: 'Tap to open details'),
+          const SectionHeader(
+            title: 'Workers',
+            subtitle: 'Tap to open details',
+          ),
 
           if (_filtered.isEmpty)
             const Padding(
@@ -228,12 +256,22 @@ class _WorkersListScreenState extends State<WorkersListScreen> {
                       height: 46,
                       decoration: BoxDecoration(
                         color: cs.primaryContainer,
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusMd,
+                        ),
                       ),
-                      child: Icon(Icons.person_rounded, color: cs.onPrimaryContainer),
+                      child: Icon(
+                        Icons.person_rounded,
+                        color: cs.onPrimaryContainer,
+                      ),
                     ),
-                    title: Text(w.name, style: const TextStyle(fontWeight: FontWeight.w900)),
-                    subtitle: Text('${w.skill} • ${shiftLabel(w.shift)}\nRate: ₹${w.rateAmount} (${rateTypeLabel(w.rateType)})'),
+                    title: Text(
+                      w.name,
+                      style: const TextStyle(fontWeight: FontWeight.w900),
+                    ),
+                    subtitle: Text(
+                      '${w.skill} • ${shiftLabel(w.shift)}\nRate: ₹${w.rateAmount} (${rateTypeLabel(w.rateType)})',
+                    ),
                     isThreeLine: true,
                     trailing: PopupMenuButton<String>(
                       onSelected: (v) {
@@ -244,15 +282,24 @@ class _WorkersListScreenState extends State<WorkersListScreen> {
                         const PopupMenuItem(value: 'edit', child: Text('Edit')),
                         PopupMenuItem(
                           value: 'toggle',
-                          child: Text(w.status == WorkerStatus.active ? 'Deactivate' : 'Activate'),
+                          child: Text(
+                            w.status == WorkerStatus.active
+                                ? 'Deactivate'
+                                : 'Activate',
+                          ),
                         ),
                       ],
-                      child: StatusChip(status: _toUi(w.status), labelOverride: statusLabel(w.status)),
+                      child: StatusChip(
+                        status: _toUi(w.status),
+                        labelOverride: statusLabel(w.status),
+                      ),
                     ),
                     onTap: () async {
                       await Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => WorkerDetailScreen(worker: w)),
+                        MaterialPageRoute(
+                          builder: (_) => WorkerDetailScreen(worker: w),
+                        ),
                       );
                     },
                   ),

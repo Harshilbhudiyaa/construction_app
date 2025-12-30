@@ -23,7 +23,10 @@ class WorkerHomeDashboardScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Worker Dashboard'),
         actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.notifications_rounded)),
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.notifications_rounded),
+          ),
         ],
       ),
       body: ListView(
@@ -42,18 +45,29 @@ class WorkerHomeDashboardScreen extends StatelessWidget {
                       height: 46,
                       decoration: BoxDecoration(
                         color: cs.primaryContainer,
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusMd,
+                        ),
                       ),
-                      child: Icon(Icons.badge_rounded, color: cs.onPrimaryContainer),
+                      child: Icon(
+                        Icons.badge_rounded,
+                        color: cs.onPrimaryContainer,
+                      ),
                     ),
                     const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Ramesh Kumar', style: TextStyle(fontWeight: FontWeight.w900)),
+                          const Text(
+                            'Ramesh Kumar',
+                            style: TextStyle(fontWeight: FontWeight.w900),
+                          ),
                           const SizedBox(height: 2),
-                          Text('Mason • Site A (demo)', style: TextStyle(color: cs.onSurfaceVariant)),
+                          Text(
+                            'Mason • Site A (demo)',
+                            style: TextStyle(color: cs.onSurfaceVariant),
+                          ),
                         ],
                       ),
                     ),
@@ -69,8 +83,20 @@ class WorkerHomeDashboardScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Row(
               children: const [
-                Expanded(child: KpiCard(title: 'Today Work', value: '${todayMinutes} min', icon: Icons.timer_rounded)),
-                Expanded(child: KpiCard(title: 'Earned Today', value: '₹$earnedToday', icon: Icons.paid_rounded)),
+                Expanded(
+                  child: KpiCard(
+                    title: 'Today Work',
+                    value: '${todayMinutes} min',
+                    icon: Icons.timer_rounded,
+                  ),
+                ),
+                Expanded(
+                  child: KpiCard(
+                    title: 'Earned Today',
+                    value: '₹$earnedToday',
+                    icon: Icons.paid_rounded,
+                  ),
+                ),
               ],
             ),
           ),
@@ -78,8 +104,20 @@ class WorkerHomeDashboardScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Row(
               children: const [
-                Expanded(child: KpiCard(title: 'Pending Approvals', value: '$pending', icon: Icons.fact_check_rounded)),
-                Expanded(child: KpiCard(title: 'This Week', value: '₹2,450', icon: Icons.trending_up_rounded)),
+                Expanded(
+                  child: KpiCard(
+                    title: 'Pending Approvals',
+                    value: '$pending',
+                    icon: Icons.fact_check_rounded,
+                  ),
+                ),
+                Expanded(
+                  child: KpiCard(
+                    title: 'This Week',
+                    value: '₹2,450',
+                    icon: Icons.trending_up_rounded,
+                  ),
+                ),
               ],
             ),
           ),
@@ -100,7 +138,11 @@ class WorkerHomeDashboardScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                       onTap: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Open Work tab to Start/Stop (UI-only)')),
+                          const SnackBar(
+                            content: Text(
+                              'Open Work tab to Start/Stop (UI-only)',
+                            ),
+                          ),
                         );
                       },
                       child: const Padding(
@@ -110,7 +152,10 @@ class WorkerHomeDashboardScreen extends StatelessWidget {
                           children: [
                             Icon(Icons.play_circle_rounded),
                             SizedBox(height: AppSpacing.sm),
-                            Text('Start Work', style: TextStyle(fontWeight: FontWeight.w900)),
+                            Text(
+                              'Start Work',
+                              style: TextStyle(fontWeight: FontWeight.w900),
+                            ),
                             SizedBox(height: 4),
                             Text('Begin a session'),
                           ],
@@ -126,7 +171,9 @@ class WorkerHomeDashboardScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                       onTap: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Open History tab (UI-only)')),
+                          const SnackBar(
+                            content: Text('Open History tab (UI-only)'),
+                          ),
                         );
                       },
                       child: const Padding(
@@ -136,7 +183,10 @@ class WorkerHomeDashboardScreen extends StatelessWidget {
                           children: [
                             Icon(Icons.history_rounded),
                             SizedBox(height: AppSpacing.sm),
-                            Text('History', style: TextStyle(fontWeight: FontWeight.w900)),
+                            Text(
+                              'History',
+                              style: TextStyle(fontWeight: FontWeight.w900),
+                            ),
                             SizedBox(height: 4),
                             Text('Sessions & status'),
                           ],
@@ -159,7 +209,9 @@ class WorkerHomeDashboardScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                       onTap: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Open Earnings tab (UI-only)')),
+                          const SnackBar(
+                            content: Text('Open Earnings tab (UI-only)'),
+                          ),
                         );
                       },
                       child: const Padding(
@@ -169,7 +221,10 @@ class WorkerHomeDashboardScreen extends StatelessWidget {
                           children: [
                             Icon(Icons.account_balance_wallet_rounded),
                             SizedBox(height: AppSpacing.sm),
-                            Text('Earnings', style: TextStyle(fontWeight: FontWeight.w900)),
+                            Text(
+                              'Earnings',
+                              style: TextStyle(fontWeight: FontWeight.w900),
+                            ),
                             SizedBox(height: 4),
                             Text('Earned / Paid / Pending'),
                           ],
@@ -185,7 +240,9 @@ class WorkerHomeDashboardScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                       onTap: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Open Profile tab (UI-only)')),
+                          const SnackBar(
+                            content: Text('Open Profile tab (UI-only)'),
+                          ),
                         );
                       },
                       child: const Padding(
@@ -195,7 +252,10 @@ class WorkerHomeDashboardScreen extends StatelessWidget {
                           children: [
                             Icon(Icons.person_rounded),
                             SizedBox(height: AppSpacing.sm),
-                            Text('Profile', style: TextStyle(fontWeight: FontWeight.w900)),
+                            Text(
+                              'Profile',
+                              style: TextStyle(fontWeight: FontWeight.w900),
+                            ),
                             SizedBox(height: 4),
                             Text('Account settings'),
                           ],
@@ -208,14 +268,20 @@ class WorkerHomeDashboardScreen extends StatelessWidget {
             ),
           ),
 
-          const SectionHeader(title: 'Last Session', subtitle: 'Most recent work entry (demo)'),
+          const SectionHeader(
+            title: 'Last Session',
+            subtitle: 'Most recent work entry (demo)',
+          ),
 
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Card(
               child: ListTile(
                 leading: Icon(Icons.work_history_rounded, color: cs.primary),
-                title: const Text('Last session summary', style: TextStyle(fontWeight: FontWeight.w900)),
+                title: const Text(
+                  'Last session summary',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
                 subtitle: const Text(lastSession),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () {},

@@ -14,7 +14,10 @@ class ReportsHomeScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
         children: [
-          const SectionHeader(title: 'Reports', subtitle: 'Analytics (UI-only)'),
+          const SectionHeader(
+            title: 'Reports',
+            subtitle: 'Analytics (UI-only)',
+          ),
           ...[
             ('Worker Productivity', Icons.trending_up_rounded),
             ('Material Usage', Icons.inventory_2_rounded),
@@ -27,7 +30,10 @@ class ReportsHomeScreen extends StatelessWidget {
               child: Card(
                 child: ListTile(
                   leading: Icon(r.$2, color: cs.primary),
-                  title: Text(r.$1, style: const TextStyle(fontWeight: FontWeight.w900)),
+                  title: Text(
+                    r.$1,
+                    style: const TextStyle(fontWeight: FontWeight.w900),
+                  ),
                   subtitle: const Text('Open report (next step)'),
                   trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: () => ScaffoldMessenger.of(context).showSnackBar(

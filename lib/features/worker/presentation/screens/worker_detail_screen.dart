@@ -18,7 +18,8 @@ class WorkerDetailScreen extends StatefulWidget {
 class _WorkerDetailScreenState extends State<WorkerDetailScreen> {
   late Worker _w = widget.worker;
 
-  UiStatus _statusToUi(WorkerStatus s) => s == WorkerStatus.active ? UiStatus.ok : UiStatus.pending;
+  UiStatus _statusToUi(WorkerStatus s) =>
+      s == WorkerStatus.active ? UiStatus.ok : UiStatus.pending;
 
   Future<void> _edit() async {
     final updated = await Navigator.push<Worker?>(
@@ -27,7 +28,9 @@ class _WorkerDetailScreenState extends State<WorkerDetailScreen> {
     );
     if (updated != null) {
       setState(() => _w = updated);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Worker updated (UI-only)')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Worker updated (UI-only)')));
     }
   }
 
@@ -58,7 +61,9 @@ class _WorkerDetailScreenState extends State<WorkerDetailScreen> {
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                  ),
                   child: Card(
                     child: Padding(
                       padding: const EdgeInsets.all(AppSpacing.md),
@@ -69,30 +74,51 @@ class _WorkerDetailScreenState extends State<WorkerDetailScreen> {
                             height: 46,
                             decoration: BoxDecoration(
                               color: cs.primaryContainer,
-                              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                              borderRadius: BorderRadius.circular(
+                                AppSpacing.radiusMd,
+                              ),
                             ),
-                            child: Icon(Icons.person_rounded, color: cs.onPrimaryContainer),
+                            child: Icon(
+                              Icons.person_rounded,
+                              color: cs.onPrimaryContainer,
+                            ),
                           ),
                           const SizedBox(width: AppSpacing.md),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(_w.name, style: const TextStyle(fontWeight: FontWeight.w900)),
+                                Text(
+                                  _w.name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
                                 const SizedBox(height: 2),
-                                Text('${_w.skill} • ${shiftLabel(_w.shift)} shift', style: TextStyle(color: cs.onSurfaceVariant)),
+                                Text(
+                                  '${_w.skill} • ${shiftLabel(_w.shift)} shift',
+                                  style: TextStyle(color: cs.onSurfaceVariant),
+                                ),
                               ],
                             ),
                           ),
-                          StatusChip(status: _statusToUi(_w.status), labelOverride: statusLabel(_w.status)),
+                          StatusChip(
+                            status: _statusToUi(_w.status),
+                            labelOverride: statusLabel(_w.status),
+                          ),
                         ],
                       ),
                     ),
                   ),
                 ),
-                const SectionHeader(title: 'Details', subtitle: 'Contact and rate'),
+                const SectionHeader(
+                  title: 'Details',
+                  subtitle: 'Contact and rate',
+                ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                  ),
                   child: Card(
                     child: Padding(
                       padding: const EdgeInsets.all(AppSpacing.md),
@@ -117,27 +143,41 @@ class _WorkerDetailScreenState extends State<WorkerDetailScreen> {
             ListView(
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
               children: [
-                const SectionHeader(title: 'Assigned Work Types', subtitle: 'Worker can only do these'),
+                const SectionHeader(
+                  title: 'Assigned Work Types',
+                  subtitle: 'Worker can only do these',
+                ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                  ),
                   child: Card(
                     child: Padding(
                       padding: const EdgeInsets.all(AppSpacing.md),
                       child: Wrap(
                         spacing: 10,
                         runSpacing: 10,
-                        children: _w.assignedWorkTypes.map((wt) => Chip(label: Text(wt))).toList(),
+                        children: _w.assignedWorkTypes
+                            .map((wt) => Chip(label: Text(wt)))
+                            .toList(),
                       ),
                     ),
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                  ),
                   child: Card(
                     child: ListTile(
                       leading: Icon(Icons.security_rounded, color: cs.primary),
-                      title: const Text('Rule', style: TextStyle(fontWeight: FontWeight.w900)),
-                      subtitle: const Text('Worker cannot start unassigned work types.'),
+                      title: const Text(
+                        'Rule',
+                        style: TextStyle(fontWeight: FontWeight.w900),
+                      ),
+                      subtitle: const Text(
+                        'Worker cannot start unassigned work types.',
+                      ),
                     ),
                   ),
                 ),
@@ -149,9 +189,14 @@ class _WorkerDetailScreenState extends State<WorkerDetailScreen> {
             ListView(
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
               children: [
-                const SectionHeader(title: 'Payments Summary', subtitle: 'UI-only demo'),
+                const SectionHeader(
+                  title: 'Payments Summary',
+                  subtitle: 'UI-only demo',
+                ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                  ),
                   child: Card(
                     child: Padding(
                       padding: const EdgeInsets.all(AppSpacing.md),
@@ -164,9 +209,14 @@ class _WorkerDetailScreenState extends State<WorkerDetailScreen> {
                           Align(
                             alignment: Alignment.centerRight,
                             child: TextButton.icon(
-                              onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Open payment history (next step)')),
-                              ),
+                              onPressed: () =>
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Open payment history (next step)',
+                                      ),
+                                    ),
+                                  ),
                               icon: const Icon(Icons.receipt_long_rounded),
                               label: const Text('View History'),
                             ),
@@ -190,7 +240,9 @@ class _WorkerDetailScreenState extends State<WorkerDetailScreen> {
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         children: [
-          Expanded(child: Text(k, style: const TextStyle(fontWeight: FontWeight.w800))),
+          Expanded(
+            child: Text(k, style: const TextStyle(fontWeight: FontWeight.w800)),
+          ),
           Flexible(child: Text(v, textAlign: TextAlign.right)),
         ],
       ),

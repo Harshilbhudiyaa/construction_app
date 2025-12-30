@@ -42,7 +42,9 @@ class _BackupUsageLogScreenState extends State<BackupUsageLogScreen> {
     final q = _query.trim().toLowerCase();
     if (q.isEmpty) return _items;
     return _items.where((x) {
-      final hay = '${x.id} ${x.date} ${x.workType} ${x.worker} ${x.engineer} ${x.qty}'.toLowerCase();
+      final hay =
+          '${x.id} ${x.date} ${x.workType} ${x.worker} ${x.engineer} ${x.qty}'
+              .toLowerCase();
       return hay.contains(q);
     }).toList();
   }
@@ -62,7 +64,12 @@ class _BackupUsageLogScreenState extends State<BackupUsageLogScreen> {
           ),
 
           Padding(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.sm),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              0,
+              AppSpacing.md,
+              AppSpacing.sm,
+            ),
             child: Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -93,7 +100,9 @@ class _BackupUsageLogScreenState extends State<BackupUsageLogScreen> {
             )
           else
             ..._filtered.map((x) {
-              final status = x.acknowledged ? UiStatus.approved : UiStatus.pending;
+              final status = x.acknowledged
+                  ? UiStatus.approved
+                  : UiStatus.pending;
               final label = x.acknowledged ? 'Acknowledged' : 'Pending Ack';
 
               return Padding(
@@ -104,18 +113,33 @@ class _BackupUsageLogScreenState extends State<BackupUsageLogScreen> {
                       width: 46,
                       height: 46,
                       decoration: BoxDecoration(
-                        color: (x.acknowledged ? Colors.green : cs.tertiary).withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                        color: (x.acknowledged ? Colors.green : cs.tertiary)
+                            .withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusMd,
+                        ),
                       ),
-                      child: Icon(Icons.safety_check_rounded, color: x.acknowledged ? Colors.green : cs.tertiary),
+                      child: Icon(
+                        Icons.safety_check_rounded,
+                        color: x.acknowledged ? Colors.green : cs.tertiary,
+                      ),
                     ),
-                    title: Text('Qty: ${x.qty} • ${x.workType}', style: const TextStyle(fontWeight: FontWeight.w900)),
-                    subtitle: Text('${x.date}\nWorker: ${x.worker} • Engineer: ${x.engineer} • ${x.id}'),
+                    title: Text(
+                      'Qty: ${x.qty} • ${x.workType}',
+                      style: const TextStyle(fontWeight: FontWeight.w900),
+                    ),
+                    subtitle: Text(
+                      '${x.date}\nWorker: ${x.worker} • Engineer: ${x.engineer} • ${x.id}',
+                    ),
                     isThreeLine: true,
                     trailing: StatusChip(status: status, labelOverride: label),
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Open backup usage detail (${x.id}) — next UI step')),
+                        SnackBar(
+                          content: Text(
+                            'Open backup usage detail (${x.id}) — next UI step',
+                          ),
+                        ),
                       );
                     },
                   ),

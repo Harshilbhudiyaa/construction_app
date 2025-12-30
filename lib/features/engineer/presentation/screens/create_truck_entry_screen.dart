@@ -44,7 +44,10 @@ class _CreateTruckEntryScreenState extends State<CreateTruckEntryScreen> {
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
         children: [
-          const SectionHeader(title: 'Trip Info', subtitle: 'Supplier, material, driver, qty'),
+          const SectionHeader(
+            title: 'Trip Info',
+            subtitle: 'Supplier, material, driver, qty',
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Card(
@@ -56,39 +59,69 @@ class _CreateTruckEntryScreenState extends State<CreateTruckEntryScreen> {
                     children: [
                       DropdownButtonFormField<String>(
                         value: _supplier,
-                        decoration: const InputDecoration(labelText: 'Supplier'),
+                        decoration: const InputDecoration(
+                          labelText: 'Supplier',
+                        ),
                         items: const [
-                          DropdownMenuItem(value: 'ABC Sand Supplier', child: Text('ABC Sand Supplier')),
-                          DropdownMenuItem(value: 'Cement Depot', child: Text('Cement Depot')),
-                          DropdownMenuItem(value: 'Steel Yard', child: Text('Steel Yard')),
+                          DropdownMenuItem(
+                            value: 'ABC Sand Supplier',
+                            child: Text('ABC Sand Supplier'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Cement Depot',
+                            child: Text('Cement Depot'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Steel Yard',
+                            child: Text('Steel Yard'),
+                          ),
                         ],
-                        onChanged: (v) => setState(() => _supplier = v ?? _supplier),
+                        onChanged: (v) =>
+                            setState(() => _supplier = v ?? _supplier),
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       DropdownButtonFormField<String>(
                         value: _material,
-                        decoration: const InputDecoration(labelText: 'Material'),
+                        decoration: const InputDecoration(
+                          labelText: 'Material',
+                        ),
                         items: const [
                           DropdownMenuItem(value: 'Sand', child: Text('Sand')),
-                          DropdownMenuItem(value: 'Cement (Bags)', child: Text('Cement (Bags)')),
-                          DropdownMenuItem(value: 'Steel Rod', child: Text('Steel Rod')),
+                          DropdownMenuItem(
+                            value: 'Cement (Bags)',
+                            child: Text('Cement (Bags)'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Steel Rod',
+                            child: Text('Steel Rod'),
+                          ),
                         ],
                         onChanged: (v) => setState(() {
                           _material = v ?? _material;
-                          _unit = _material == 'Sand' ? 'tons' : _material == 'Steel Rod' ? 'kg' : 'bags';
+                          _unit = _material == 'Sand'
+                              ? 'tons'
+                              : _material == 'Steel Rod'
+                              ? 'kg'
+                              : 'bags';
                         }),
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       TextFormField(
                         controller: _vehicleCtrl,
-                        decoration: const InputDecoration(labelText: 'Vehicle Number'),
-                        validator: (v) => (v ?? '').trim().isEmpty ? 'Required' : null,
+                        decoration: const InputDecoration(
+                          labelText: 'Vehicle Number',
+                        ),
+                        validator: (v) =>
+                            (v ?? '').trim().isEmpty ? 'Required' : null,
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       TextFormField(
                         controller: _driverCtrl,
-                        decoration: const InputDecoration(labelText: 'Driver Name'),
-                        validator: (v) => (v ?? '').trim().isEmpty ? 'Required' : null,
+                        decoration: const InputDecoration(
+                          labelText: 'Driver Name',
+                        ),
+                        validator: (v) =>
+                            (v ?? '').trim().isEmpty ? 'Required' : null,
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       Row(
@@ -97,7 +130,9 @@ class _CreateTruckEntryScreenState extends State<CreateTruckEntryScreen> {
                             child: TextFormField(
                               controller: _qtyCtrl,
                               keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(labelText: 'Quantity'),
+                              decoration: const InputDecoration(
+                                labelText: 'Quantity',
+                              ),
                               validator: (v) {
                                 final t = (v ?? '').trim();
                                 if (t.isEmpty) return 'Required';
@@ -112,7 +147,9 @@ class _CreateTruckEntryScreenState extends State<CreateTruckEntryScreen> {
                             child: TextFormField(
                               readOnly: true,
                               controller: TextEditingController(text: _unit),
-                              decoration: const InputDecoration(labelText: 'Unit'),
+                              decoration: const InputDecoration(
+                                labelText: 'Unit',
+                              ),
                             ),
                           ),
                         ],

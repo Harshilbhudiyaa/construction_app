@@ -21,9 +21,27 @@ class _PayoutHistoryScreenState extends State<PayoutHistoryScreen> {
   PayoutStatus? _filter; // null = all
 
   final _items = <_PayoutRow>[
-    const _PayoutRow(id: 'PY-2201', date: 'Today', amount: 1200, mode: 'UPI', status: PayoutStatus.pending),
-    const _PayoutRow(id: 'PY-2199', date: 'Yesterday', amount: 800, mode: 'Bank', status: PayoutStatus.paid),
-    const _PayoutRow(id: 'PY-2196', date: 'Earlier', amount: 500, mode: 'Cash', status: PayoutStatus.failed),
+    const _PayoutRow(
+      id: 'PY-2201',
+      date: 'Today',
+      amount: 1200,
+      mode: 'UPI',
+      status: PayoutStatus.pending,
+    ),
+    const _PayoutRow(
+      id: 'PY-2199',
+      date: 'Yesterday',
+      amount: 800,
+      mode: 'Bank',
+      status: PayoutStatus.paid,
+    ),
+    const _PayoutRow(
+      id: 'PY-2196',
+      date: 'Earlier',
+      amount: 500,
+      mode: 'Cash',
+      status: PayoutStatus.failed,
+    ),
   ];
 
   UiStatus _toUi(PayoutStatus s) {
@@ -53,7 +71,9 @@ class _PayoutHistoryScreenState extends State<PayoutHistoryScreen> {
     return _items.where((p) {
       if (_filter != null && p.status != _filter) return false;
       if (q.isEmpty) return true;
-      return ('${p.id} ${p.date} ${p.mode} ${p.amount}').toLowerCase().contains(q);
+      return ('${p.id} ${p.date} ${p.mode} ${p.amount}').toLowerCase().contains(
+        q,
+      );
     }).toList();
   }
 
@@ -93,17 +113,20 @@ class _PayoutHistoryScreenState extends State<PayoutHistoryScreen> {
                     FilterChip(
                       label: const Text('Paid'),
                       selected: _filter == PayoutStatus.paid,
-                      onSelected: (_) => setState(() => _filter = PayoutStatus.paid),
+                      onSelected: (_) =>
+                          setState(() => _filter = PayoutStatus.paid),
                     ),
                     FilterChip(
                       label: const Text('Pending'),
                       selected: _filter == PayoutStatus.pending,
-                      onSelected: (_) => setState(() => _filter = PayoutStatus.pending),
+                      onSelected: (_) =>
+                          setState(() => _filter = PayoutStatus.pending),
                     ),
                     FilterChip(
                       label: const Text('Failed'),
                       selected: _filter == PayoutStatus.failed,
-                      onSelected: (_) => setState(() => _filter = PayoutStatus.failed),
+                      onSelected: (_) =>
+                          setState(() => _filter = PayoutStatus.failed),
                     ),
                   ],
                 ),
@@ -149,13 +172,21 @@ class _PayoutHistoryScreenState extends State<PayoutHistoryScreen> {
                       height: 46,
                       decoration: BoxDecoration(
                         color: iconColor().withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusMd,
+                        ),
                       ),
                       child: Icon(Icons.payments_rounded, color: iconColor()),
                     ),
-                    title: Text('₹${p.amount} • ${p.mode}', style: const TextStyle(fontWeight: FontWeight.w900)),
+                    title: Text(
+                      '₹${p.amount} • ${p.mode}',
+                      style: const TextStyle(fontWeight: FontWeight.w900),
+                    ),
                     subtitle: Text('${p.date} • ${p.id}'),
-                    trailing: StatusChip(status: chip, labelOverride: _label(p.status)),
+                    trailing: StatusChip(
+                      status: chip,
+                      labelOverride: _label(p.status),
+                    ),
                     onTap: () {
                       Navigator.push(
                         context,

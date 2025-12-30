@@ -49,18 +49,29 @@ class PayoutDetailScreen extends StatelessWidget {
                       height: 46,
                       decoration: BoxDecoration(
                         color: cs.secondaryContainer,
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusMd,
+                        ),
                       ),
-                      child: Icon(Icons.payments_rounded, color: cs.onSecondaryContainer),
+                      child: Icon(
+                        Icons.payments_rounded,
+                        color: cs.onSecondaryContainer,
+                      ),
                     ),
                     const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('₹$amount • $mode', style: const TextStyle(fontWeight: FontWeight.w900)),
+                          Text(
+                            '₹$amount • $mode',
+                            style: const TextStyle(fontWeight: FontWeight.w900),
+                          ),
                           const SizedBox(height: 2),
-                          Text('$date • $payoutId', style: TextStyle(color: cs.onSurfaceVariant)),
+                          Text(
+                            '$date • $payoutId',
+                            style: TextStyle(color: cs.onSurfaceVariant),
+                          ),
                         ],
                       ),
                     ),
@@ -71,7 +82,10 @@ class PayoutDetailScreen extends StatelessWidget {
             ),
           ),
 
-          const SectionHeader(title: 'Payment Info', subtitle: 'Mode & reference'),
+          const SectionHeader(
+            title: 'Payment Info',
+            subtitle: 'Mode & reference',
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Card(
@@ -89,14 +103,22 @@ class PayoutDetailScreen extends StatelessWidget {
             ),
           ),
 
-          const SectionHeader(title: 'Receipt / Proof', subtitle: 'UI placeholder'),
+          const SectionHeader(
+            title: 'Receipt / Proof',
+            subtitle: 'UI placeholder',
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Card(
               child: ListTile(
                 leading: Icon(Icons.receipt_long_rounded, color: cs.primary),
-                title: const Text('Open proof (placeholder)', style: TextStyle(fontWeight: FontWeight.w900)),
-                subtitle: const Text('In final app: open payment proof image/PDF'),
+                title: const Text(
+                  'Open proof (placeholder)',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
+                subtitle: const Text(
+                  'In final app: open payment proof image/PDF',
+                ),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -116,7 +138,9 @@ class PayoutDetailScreen extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         children: [
-          Expanded(child: Text(k, style: const TextStyle(fontWeight: FontWeight.w800))),
+          Expanded(
+            child: Text(k, style: const TextStyle(fontWeight: FontWeight.w800)),
+          ),
           Text(v),
         ],
       ),

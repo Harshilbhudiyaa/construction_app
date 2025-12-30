@@ -20,12 +20,12 @@ class AppRoutes {
   static const contractorHome = '/contractor/home';
 
   static Map<String, WidgetBuilder> get routes => {
-        splash: (_) => const SplashScreen(),
-        role: (_) => const RoleSelectScreen(),
-        login: (_) => const LoginScreen(),
+    splash: (_) => const SplashScreen(),
+    role: (_) => const RoleSelectScreen(),
+    login: (_) => const LoginScreen(),
 
-        workerHome: (_) => const WorkerShell(),
-        engineerHome: (_) => const EngineerShell(),
-        contractorHome: (_) => const ContractorShell(),
-      };
+    workerHome: (_) => const WorkerShell(),
+    engineerHome: (_) => const EngineerShell(),
+    contractorHome: (_) => const ContractorShell(),
+  };
 }

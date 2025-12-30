@@ -41,17 +41,25 @@ class WorkSessionStopScreen extends StatelessWidget {
                       color: cs.primaryContainer,
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: Icon(Icons.flag_rounded, color: cs.onPrimaryContainer),
+                    child: Icon(
+                      Icons.flag_rounded,
+                      color: cs.onPrimaryContainer,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(workType, style: const TextStyle(fontWeight: FontWeight.w800)),
+                        Text(
+                          workType,
+                          style: const TextStyle(fontWeight: FontWeight.w800),
+                        ),
                         const SizedBox(height: 4),
-                        Text('Total time: ${_format(totalSeconds)}',
-                            style: TextStyle(color: cs.onSurfaceVariant)),
+                        Text(
+                          'Total time: ${_format(totalSeconds)}',
+                          style: TextStyle(color: cs.onSurfaceVariant),
+                        ),
                       ],
                     ),
                   ),

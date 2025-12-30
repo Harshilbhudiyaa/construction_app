@@ -23,8 +23,20 @@ class PaymentsDashboardScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Row(
               children: const [
-                Expanded(child: KpiCard(title: 'Pending', value: '$pending', icon: Icons.pending_actions_rounded)),
-                Expanded(child: KpiCard(title: 'Paid', value: '$paid', icon: Icons.check_circle_rounded)),
+                Expanded(
+                  child: KpiCard(
+                    title: 'Pending',
+                    value: '$pending',
+                    icon: Icons.pending_actions_rounded,
+                  ),
+                ),
+                Expanded(
+                  child: KpiCard(
+                    title: 'Paid',
+                    value: '$paid',
+                    icon: Icons.check_circle_rounded,
+                  ),
+                ),
               ],
             ),
           ),
@@ -32,22 +44,43 @@ class PaymentsDashboardScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Row(
               children: const [
-                Expanded(child: KpiCard(title: 'Failed', value: '$failed', icon: Icons.error_rounded)),
-                Expanded(child: KpiCard(title: 'This Month', value: totalThisMonth, icon: Icons.payments_rounded)),
+                Expanded(
+                  child: KpiCard(
+                    title: 'Failed',
+                    value: '$failed',
+                    icon: Icons.error_rounded,
+                  ),
+                ),
+                Expanded(
+                  child: KpiCard(
+                    title: 'This Month',
+                    value: totalThisMonth,
+                    icon: Icons.payments_rounded,
+                  ),
+                ),
               ],
             ),
           ),
-          const SectionHeader(title: 'Next', subtitle: 'We will build payout list + payout detail + approve flow'),
+          const SectionHeader(
+            title: 'Next',
+            subtitle:
+                'We will build payout list + payout detail + approve flow',
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Card(
               child: ListTile(
                 leading: const Icon(Icons.receipt_long_rounded),
-                title: const Text('Payout Queue (next step)', style: TextStyle(fontWeight: FontWeight.w900)),
+                title: const Text(
+                  'Payout Queue (next step)',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
                 subtitle: const Text('Filter by pending/paid/failed'),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('We will implement payout queue next.')),
+                  const SnackBar(
+                    content: Text('We will implement payout queue next.'),
+                  ),
                 ),
               ),
             ),

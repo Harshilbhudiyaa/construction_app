@@ -28,7 +28,9 @@ class WorkTypeSelectScreen extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(4, 4, 4, 10),
             child: Text(
               'Choose the work you are starting now.',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
             ),
           ),
           ..._workTypes.map((w) {
@@ -43,14 +45,18 @@ class WorkTypeSelectScreen extends StatelessWidget {
                   ),
                   child: Icon(w.icon, color: cs.onPrimaryContainer),
                 ),
-                title: Text(w.title, style: const TextStyle(fontWeight: FontWeight.w700)),
+                title: Text(
+                  w.title,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
                 subtitle: const Text('Tap to start (demo)'),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => WorkSessionRunningScreen(workType: w.title),
+                      builder: (_) =>
+                          WorkSessionRunningScreen(workType: w.title),
                     ),
                   );
                 },

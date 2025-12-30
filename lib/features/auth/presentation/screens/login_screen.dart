@@ -45,7 +45,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final role = (ModalRoute.of(context)?.settings.arguments as AppRole?) ?? AppRole.worker;
+    final role =
+        (ModalRoute.of(context)?.settings.arguments as AppRole?) ??
+        AppRole.worker;
 
     return Scaffold(
       appBar: AppBar(title: Text('Login (${_roleLabel(role)})')),
@@ -66,7 +68,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           labelText: 'ID',
                           hintText: 'Enter your ID',
                         ),
-                        validator: (v) => (v == null || v.trim().isEmpty) ? 'ID is required' : null,
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? 'ID is required'
+                            : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
@@ -76,11 +80,18 @@ class _LoginScreenState extends State<LoginScreen> {
                           labelText: 'Password',
                           hintText: 'Enter password',
                           suffixIcon: IconButton(
-                            onPressed: () => setState(() => _obscure = !_obscure),
-                            icon: Icon(_obscure ? Icons.visibility_rounded : Icons.visibility_off_rounded),
+                            onPressed: () =>
+                                setState(() => _obscure = !_obscure),
+                            icon: Icon(
+                              _obscure
+                                  ? Icons.visibility_rounded
+                                  : Icons.visibility_off_rounded,
+                            ),
                           ),
                         ),
-                        validator: (v) => (v == null || v.isEmpty) ? 'Password is required' : null,
+                        validator: (v) => (v == null || v.isEmpty)
+                            ? 'Password is required'
+                            : null,
                       ),
                       const SizedBox(height: 16),
                       SizedBox(
@@ -88,14 +99,19 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: FilledButton(
                           onPressed: () {
                             if (!_formKey.currentState!.validate()) return;
-                            _goHome(role); // Demo redirect. Firebase auth later.
+                            _goHome(
+                              role,
+                            ); // Demo redirect. Firebase auth later.
                           },
                           child: const Text('Continue'),
                         ),
                       ),
                       const SizedBox(height: 10),
                       TextButton(
-                        onPressed: () => Navigator.pushReplacementNamed(context, AppRoutes.role),
+                        onPressed: () => Navigator.pushReplacementNamed(
+                          context,
+                          AppRoutes.role,
+                        ),
                         child: const Text('Change role'),
                       ),
                     ],

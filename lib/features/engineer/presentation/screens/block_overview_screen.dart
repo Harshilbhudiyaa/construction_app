@@ -30,7 +30,9 @@ class BlockOverviewScreen extends StatelessWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const BlockProductionEntryScreen()),
+                MaterialPageRoute(
+                  builder: (_) => const BlockProductionEntryScreen(),
+                ),
               );
             },
             icon: const Icon(Icons.add_circle_rounded),
@@ -45,8 +47,20 @@ class BlockOverviewScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Row(
               children: const [
-                Expanded(child: KpiCard(title: 'Blocks Today', value: '$blocksToday', icon: Icons.view_in_ar_rounded)),
-                Expanded(child: KpiCard(title: 'Machines Active', value: '2', icon: Icons.precision_manufacturing_rounded)),
+                Expanded(
+                  child: KpiCard(
+                    title: 'Blocks Today',
+                    value: '$blocksToday',
+                    icon: Icons.view_in_ar_rounded,
+                  ),
+                ),
+                Expanded(
+                  child: KpiCard(
+                    title: 'Machines Active',
+                    value: '2',
+                    icon: Icons.precision_manufacturing_rounded,
+                  ),
+                ),
               ],
             ),
           ),
@@ -54,8 +68,20 @@ class BlockOverviewScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Row(
               children: const [
-                Expanded(child: KpiCard(title: 'Main Stock', value: '$mainStock', icon: Icons.inventory_2_rounded)),
-                Expanded(child: KpiCard(title: 'Backup Stock', value: '$backupStock', icon: Icons.safety_check_rounded)),
+                Expanded(
+                  child: KpiCard(
+                    title: 'Main Stock',
+                    value: '$mainStock',
+                    icon: Icons.inventory_2_rounded,
+                  ),
+                ),
+                Expanded(
+                  child: KpiCard(
+                    title: 'Backup Stock',
+                    value: '$backupStock',
+                    icon: Icons.safety_check_rounded,
+                  ),
+                ),
               ],
             ),
           ),
@@ -76,7 +102,10 @@ class BlockOverviewScreen extends StatelessWidget {
                     Row(
                       children: [
                         const Expanded(
-                          child: Text('Backup Threshold', style: TextStyle(fontWeight: FontWeight.w900)),
+                          child: Text(
+                            'Backup Threshold',
+                            style: TextStyle(fontWeight: FontWeight.w900),
+                          ),
                         ),
                         StatusChip(
                           status: isBackupLow ? UiStatus.low : UiStatus.ok,
@@ -116,13 +145,18 @@ class BlockOverviewScreen extends StatelessWidget {
             child: Card(
               child: ListTile(
                 leading: Icon(Icons.add_task_rounded, color: cs.primary),
-                title: const Text('Add Production Entry', style: TextStyle(fontWeight: FontWeight.w900)),
+                title: const Text(
+                  'Add Production Entry',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
                 subtitle: const Text('Machine + worker + blocks produced'),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const BlockProductionEntryScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => const BlockProductionEntryScreen(),
+                    ),
                   );
                 },
               ),
@@ -134,13 +168,18 @@ class BlockOverviewScreen extends StatelessWidget {
             child: Card(
               child: ListTile(
                 leading: Icon(Icons.receipt_long_rounded, color: cs.primary),
-                title: const Text('Backup Usage Log', style: TextStyle(fontWeight: FontWeight.w900)),
+                title: const Text(
+                  'Backup Usage Log',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
                 subtitle: const Text('Every backup usage entry (audit trail)'),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const BackupUsageLogScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => const BackupUsageLogScreen(),
+                    ),
                   );
                 },
               ),
@@ -193,7 +232,9 @@ class BlockOverviewScreen extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         children: [
-          Expanded(child: Text(k, style: const TextStyle(fontWeight: FontWeight.w800))),
+          Expanded(
+            child: Text(k, style: const TextStyle(fontWeight: FontWeight.w800)),
+          ),
           Text(v, style: TextStyle(color: cs.onSurfaceVariant)),
         ],
       ),
@@ -232,15 +273,28 @@ class _MachineTile extends StatelessWidget {
           color: cs.primaryContainer,
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
         ),
-        child: Icon(Icons.precision_manufacturing_rounded, color: cs.onPrimaryContainer),
+        child: Icon(
+          Icons.precision_manufacturing_rounded,
+          color: cs.onPrimaryContainer,
+        ),
       ),
-      title: Text('$machineId • $machineType', style: const TextStyle(fontWeight: FontWeight.w900)),
-      subtitle: Text('$blockType • $blocksPerCycle/cycle • $outputPerHour/hr\nToday: $todayOutput blocks'),
+      title: Text(
+        '$machineId • $machineType',
+        style: const TextStyle(fontWeight: FontWeight.w900),
+      ),
+      subtitle: Text(
+        '$blockType • $blocksPerCycle/cycle • $outputPerHour/hr\nToday: $todayOutput blocks',
+      ),
       isThreeLine: true,
-      trailing: StatusChip(status: status, labelOverride: status == UiStatus.ok ? 'Running' : 'Idle'),
+      trailing: StatusChip(
+        status: status,
+        labelOverride: status == UiStatus.ok ? 'Running' : 'Idle',
+      ),
       onTap: () {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Open machine detail ($machineId) — next UI step')),
+          SnackBar(
+            content: Text('Open machine detail ($machineId) — next UI step'),
+          ),
         );
       },
     );

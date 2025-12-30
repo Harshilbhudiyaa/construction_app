@@ -21,9 +21,33 @@ class _InventoryLedgerScreenState extends State<InventoryLedgerScreen> {
   String _range = 'This Week';
 
   final _items = <LedgerEntry>[
-    const LedgerEntry(id: 'LD-0105', date: 'Today 03:10 PM', item: 'Cement (Bags)', qty: 10, unit: 'bags', type: LedgerEntryType.outward, ref: 'Work: Concrete'),
-    const LedgerEntry(id: 'LD-0104', date: 'Today 11:20 AM', item: 'Sand', qty: 3, unit: 'tons', type: LedgerEntryType.inward, ref: 'Supplier: ABC'),
-    const LedgerEntry(id: 'LD-0101', date: 'Yesterday 06:30 PM', item: 'Steel Rod', qty: 50, unit: 'kg', type: LedgerEntryType.outward, ref: 'Work: Block'),
+    const LedgerEntry(
+      id: 'LD-0105',
+      date: 'Today 03:10 PM',
+      item: 'Cement (Bags)',
+      qty: 10,
+      unit: 'bags',
+      type: LedgerEntryType.outward,
+      ref: 'Work: Concrete',
+    ),
+    const LedgerEntry(
+      id: 'LD-0104',
+      date: 'Today 11:20 AM',
+      item: 'Sand',
+      qty: 3,
+      unit: 'tons',
+      type: LedgerEntryType.inward,
+      ref: 'Supplier: ABC',
+    ),
+    const LedgerEntry(
+      id: 'LD-0101',
+      date: 'Yesterday 06:30 PM',
+      item: 'Steel Rod',
+      qty: 50,
+      unit: 'kg',
+      type: LedgerEntryType.outward,
+      ref: 'Work: Block',
+    ),
   ];
 
   List<LedgerEntry> get _filteredItems {
@@ -31,13 +55,17 @@ class _InventoryLedgerScreenState extends State<InventoryLedgerScreen> {
     return _items.where((x) {
       if (_filter != null && x.type != _filter) return false;
       if (q.isEmpty) return true;
-      return ('${x.id} ${x.item} ${x.ref} ${x.date} ${x.qty}').toLowerCase().contains(q);
+      return ('${x.id} ${x.item} ${x.ref} ${x.date} ${x.qty}')
+          .toLowerCase()
+          .contains(q);
     }).toList();
   }
 
-  UiStatus _toUi(LedgerEntryType t) => t == LedgerEntryType.inward ? UiStatus.approved : UiStatus.pending;
+  UiStatus _toUi(LedgerEntryType t) =>
+      t == LedgerEntryType.inward ? UiStatus.approved : UiStatus.pending;
 
-  String _label(LedgerEntryType t) => t == LedgerEntryType.inward ? 'In' : 'Out';
+  String _label(LedgerEntryType t) =>
+      t == LedgerEntryType.inward ? 'In' : 'Out';
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +80,12 @@ class _InventoryLedgerScreenState extends State<InventoryLedgerScreen> {
           ),
 
           Padding(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.sm),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              0,
+              AppSpacing.md,
+              AppSpacing.sm,
+            ),
             child: Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -85,12 +118,14 @@ class _InventoryLedgerScreenState extends State<InventoryLedgerScreen> {
                     FilterChip(
                       label: const Text('Inward'),
                       selected: _filter == LedgerEntryType.inward,
-                      onSelected: (_) => setState(() => _filter = LedgerEntryType.inward),
+                      onSelected: (_) =>
+                          setState(() => _filter = LedgerEntryType.inward),
                     ),
                     FilterChip(
                       label: const Text('Outward'),
                       selected: _filter == LedgerEntryType.outward,
-                      onSelected: (_) => setState(() => _filter = LedgerEntryType.outward),
+                      onSelected: (_) =>
+                          setState(() => _filter = LedgerEntryType.outward),
                     ),
                   ],
                 ),
@@ -98,7 +133,10 @@ class _InventoryLedgerScreenState extends State<InventoryLedgerScreen> {
             ),
           ),
 
-          const SectionHeader(title: 'Entries', subtitle: 'Stock movement log (UI-only)'),
+          const SectionHeader(
+            title: 'Entries',
+            subtitle: 'Stock movement log (UI-only)',
+          ),
 
           if (_filteredItems.isEmpty)
             Padding(
@@ -115,14 +153,28 @@ class _InventoryLedgerScreenState extends State<InventoryLedgerScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                 child: Card(
                   child: ListTile(
-                    leading: Icon(x.type == LedgerEntryType.inward ? Icons.input_rounded : Icons.output_rounded),
-                    title: Text('${x.item} • ${x.qty} ${x.unit}', style: const TextStyle(fontWeight: FontWeight.w900)),
+                    leading: Icon(
+                      x.type == LedgerEntryType.inward
+                          ? Icons.input_rounded
+                          : Icons.output_rounded,
+                    ),
+                    title: Text(
+                      '${x.item} • ${x.qty} ${x.unit}',
+                      style: const TextStyle(fontWeight: FontWeight.w900),
+                    ),
                     subtitle: Text('${x.date}\n${x.ref} • ${x.id}'),
                     isThreeLine: true,
-                    trailing: StatusChip(status: _toUi(x.type), labelOverride: _label(x.type)),
+                    trailing: StatusChip(
+                      status: _toUi(x.type),
+                      labelOverride: _label(x.type),
+                    ),
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Open ledger detail (${x.id}) — next UI step')),
+                        SnackBar(
+                          content: Text(
+                            'Open ledger detail (${x.id}) — next UI step',
+                          ),
+                        ),
                       );
                     },
                   ),

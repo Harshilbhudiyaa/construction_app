@@ -25,8 +25,20 @@ class EarningsDashboardScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Row(
               children: const [
-                Expanded(child: KpiCard(title: 'Earned', value: '₹$earned', icon: Icons.paid_rounded)),
-                Expanded(child: KpiCard(title: 'Paid', value: '₹$paid', icon: Icons.verified_rounded)),
+                Expanded(
+                  child: KpiCard(
+                    title: 'Earned',
+                    value: '₹$earned',
+                    icon: Icons.paid_rounded,
+                  ),
+                ),
+                Expanded(
+                  child: KpiCard(
+                    title: 'Paid',
+                    value: '₹$paid',
+                    icon: Icons.verified_rounded,
+                  ),
+                ),
               ],
             ),
           ),
@@ -34,13 +46,28 @@ class EarningsDashboardScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Row(
               children: const [
-                Expanded(child: KpiCard(title: 'Pending', value: '₹$pending', icon: Icons.hourglass_bottom_rounded)),
-                Expanded(child: KpiCard(title: 'This Month', value: '₹9,200', icon: Icons.calendar_month_rounded)),
+                Expanded(
+                  child: KpiCard(
+                    title: 'Pending',
+                    value: '₹$pending',
+                    icon: Icons.hourglass_bottom_rounded,
+                  ),
+                ),
+                Expanded(
+                  child: KpiCard(
+                    title: 'This Month',
+                    value: '₹9,200',
+                    icon: Icons.calendar_month_rounded,
+                  ),
+                ),
               ],
             ),
           ),
 
-          const SectionHeader(title: 'Latest', subtitle: 'Most recent approval (UI-only)'),
+          const SectionHeader(
+            title: 'Latest',
+            subtitle: 'Most recent approval (UI-only)',
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Card(
@@ -52,31 +79,45 @@ class EarningsDashboardScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Brick / Block Work', style: TextStyle(fontWeight: FontWeight.w900)),
+                          Text(
+                            'Brick / Block Work',
+                            style: TextStyle(fontWeight: FontWeight.w900),
+                          ),
                           SizedBox(height: 4),
                           Text('₹420 • Yesterday 6:10 PM'),
                         ],
                       ),
                     ),
-                    StatusChip(status: UiStatus.approved, labelOverride: 'Approved'),
+                    StatusChip(
+                      status: UiStatus.approved,
+                      labelOverride: 'Approved',
+                    ),
                   ],
                 ),
               ),
             ),
           ),
 
-          const SectionHeader(title: 'Actions', subtitle: 'Breakdown and payouts'),
+          const SectionHeader(
+            title: 'Actions',
+            subtitle: 'Breakdown and payouts',
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Card(
               child: ListTile(
                 leading: const Icon(Icons.view_list_rounded),
-                title: const Text('Earnings Breakdown', style: TextStyle(fontWeight: FontWeight.w900)),
+                title: const Text(
+                  'Earnings Breakdown',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
                 subtitle: const Text('Session-wise earnings'),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const EarningsBreakdownScreen()),
+                  MaterialPageRoute(
+                    builder: (_) => const EarningsBreakdownScreen(),
+                  ),
                 ),
               ),
             ),
@@ -86,12 +127,17 @@ class EarningsDashboardScreen extends StatelessWidget {
             child: Card(
               child: ListTile(
                 leading: const Icon(Icons.receipt_long_rounded),
-                title: const Text('Payout History', style: TextStyle(fontWeight: FontWeight.w900)),
+                title: const Text(
+                  'Payout History',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
                 subtitle: const Text('Paid / Pending / Failed'),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const PayoutHistoryScreen()),
+                  MaterialPageRoute(
+                    builder: (_) => const PayoutHistoryScreen(),
+                  ),
                 ),
               ),
             ),

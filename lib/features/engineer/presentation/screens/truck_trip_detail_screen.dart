@@ -76,29 +76,46 @@ class _TruckTripDetailScreenState extends State<TruckTripDetailScreen> {
                       height: 46,
                       decoration: BoxDecoration(
                         color: cs.primaryContainer,
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusMd,
+                        ),
                       ),
-                      child: Icon(Icons.local_shipping_rounded, color: cs.onPrimaryContainer),
+                      child: Icon(
+                        Icons.local_shipping_rounded,
+                        color: cs.onPrimaryContainer,
+                      ),
                     ),
                     const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('${_item.material} • ${_item.vehicleNo}', style: const TextStyle(fontWeight: FontWeight.w900)),
+                          Text(
+                            '${_item.material} • ${_item.vehicleNo}',
+                            style: const TextStyle(fontWeight: FontWeight.w900),
+                          ),
                           const SizedBox(height: 2),
-                          Text(_item.supplier, style: TextStyle(color: cs.onSurfaceVariant)),
+                          Text(
+                            _item.supplier,
+                            style: TextStyle(color: cs.onSurfaceVariant),
+                          ),
                         ],
                       ),
                     ),
-                    StatusChip(status: _toUi(_item.status), labelOverride: _label(_item.status)),
+                    StatusChip(
+                      status: _toUi(_item.status),
+                      labelOverride: _label(_item.status),
+                    ),
                   ],
                 ),
               ),
             ),
           ),
 
-          const SectionHeader(title: 'Trip Info', subtitle: 'Driver, timing, location'),
+          const SectionHeader(
+            title: 'Trip Info',
+            subtitle: 'Driver, timing, location',
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Card(
@@ -117,29 +134,48 @@ class _TruckTripDetailScreenState extends State<TruckTripDetailScreen> {
             ),
           ),
 
-          const SectionHeader(title: 'Proof', subtitle: 'Photo placeholders (UI-only)'),
+          const SectionHeader(
+            title: 'Proof',
+            subtitle: 'Photo placeholders (UI-only)',
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Card(
               child: Column(
                 children: [
                   ListTile(
-                    leading: Icon(Icons.photo_camera_rounded, color: cs.primary),
-                    title: const Text('Departure Photo', style: TextStyle(fontWeight: FontWeight.w900)),
+                    leading: Icon(
+                      Icons.photo_camera_rounded,
+                      color: cs.primary,
+                    ),
+                    title: const Text(
+                      'Departure Photo',
+                      style: TextStyle(fontWeight: FontWeight.w900),
+                    ),
                     subtitle: const Text('Tap to open (placeholder)'),
                     trailing: const Icon(Icons.chevron_right_rounded),
                     onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Open departure photo (next step)')),
+                      const SnackBar(
+                        content: Text('Open departure photo (next step)'),
+                      ),
                     ),
                   ),
                   const Divider(height: 1),
                   ListTile(
-                    leading: Icon(Icons.photo_camera_rounded, color: cs.primary),
-                    title: const Text('Arrival Photo', style: TextStyle(fontWeight: FontWeight.w900)),
+                    leading: Icon(
+                      Icons.photo_camera_rounded,
+                      color: cs.primary,
+                    ),
+                    title: const Text(
+                      'Arrival Photo',
+                      style: TextStyle(fontWeight: FontWeight.w900),
+                    ),
                     subtitle: const Text('Tap after arrival (placeholder)'),
                     trailing: const Icon(Icons.chevron_right_rounded),
                     onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Open arrival photo (next step)')),
+                      const SnackBar(
+                        content: Text('Open arrival photo (next step)'),
+                      ),
                     ),
                   ),
                 ],
@@ -147,7 +183,10 @@ class _TruckTripDetailScreenState extends State<TruckTripDetailScreen> {
             ),
           ),
 
-          const SectionHeader(title: 'Decision Engine', subtitle: 'Allow / Hold / Stop (UI-only)'),
+          const SectionHeader(
+            title: 'Decision Engine',
+            subtitle: 'Allow / Hold / Stop (UI-only)',
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Card(
@@ -173,7 +212,8 @@ class _TruckTripDetailScreenState extends State<TruckTripDetailScreen> {
                         const SizedBox(width: AppSpacing.sm),
                         Expanded(
                           child: OutlinedButton.icon(
-                            onPressed: () => _setStatus(TruckTripStatus.stopped),
+                            onPressed: () =>
+                                _setStatus(TruckTripStatus.stopped),
                             icon: const Icon(Icons.stop_circle_rounded),
                             label: const Text('Stop'),
                           ),
@@ -195,19 +235,28 @@ class _TruckTripDetailScreenState extends State<TruckTripDetailScreen> {
             ),
           ),
 
-          const SectionHeader(title: 'Arrival', subtitle: 'Confirm arrival and unload'),
+          const SectionHeader(
+            title: 'Arrival',
+            subtitle: 'Confirm arrival and unload',
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Card(
               child: ListTile(
                 leading: Icon(Icons.fact_check_rounded, color: cs.primary),
-                title: const Text('Confirm Arrival', style: TextStyle(fontWeight: FontWeight.w900)),
+                title: const Text(
+                  'Confirm Arrival',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
                 subtitle: const Text('Capture arrival photo + time (UI-only)'),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () async {
                   await Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => TruckArrivalConfirmScreen(tripId: _item.id)),
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          TruckArrivalConfirmScreen(tripId: _item.id),
+                    ),
                   );
                 },
               ),
@@ -225,7 +274,9 @@ class _TruckTripDetailScreenState extends State<TruckTripDetailScreen> {
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         children: [
-          Expanded(child: Text(k, style: const TextStyle(fontWeight: FontWeight.w800))),
+          Expanded(
+            child: Text(k, style: const TextStyle(fontWeight: FontWeight.w800)),
+          ),
           Text(v),
         ],
       ),

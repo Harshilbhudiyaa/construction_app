@@ -26,7 +26,12 @@ Future<bool> showConfirmSheet({
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: Theme.of(ctx).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900)),
+            Text(
+              title,
+              style: Theme.of(
+                ctx,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+            ),
             const SizedBox(height: 8),
             Text(message, style: TextStyle(color: cs.onSurfaceVariant)),
             const SizedBox(height: AppSpacing.md),

@@ -47,18 +47,29 @@ class EarningSessionDetailScreen extends StatelessWidget {
                       height: 46,
                       decoration: BoxDecoration(
                         color: cs.primaryContainer,
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusMd,
+                        ),
                       ),
-                      child: Icon(Icons.work_history_rounded, color: cs.onPrimaryContainer),
+                      child: Icon(
+                        Icons.work_history_rounded,
+                        color: cs.onPrimaryContainer,
+                      ),
                     ),
                     const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(workType, style: const TextStyle(fontWeight: FontWeight.w900)),
+                          Text(
+                            workType,
+                            style: const TextStyle(fontWeight: FontWeight.w900),
+                          ),
                           const SizedBox(height: 2),
-                          Text('$dateLabel • $sessionId', style: TextStyle(color: cs.onSurfaceVariant)),
+                          Text(
+                            '$dateLabel • $sessionId',
+                            style: TextStyle(color: cs.onSurfaceVariant),
+                          ),
                         ],
                       ),
                     ),
@@ -87,7 +98,10 @@ class EarningSessionDetailScreen extends StatelessWidget {
             ),
           ),
 
-          const SectionHeader(title: 'Calculation', subtitle: 'UI-only explanation'),
+          const SectionHeader(
+            title: 'Calculation',
+            subtitle: 'UI-only explanation',
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Card(
@@ -101,14 +115,24 @@ class EarningSessionDetailScreen extends StatelessWidget {
                     const Divider(height: 22),
                     Row(
                       children: [
-                        const Expanded(child: Text('Total', style: TextStyle(fontWeight: FontWeight.w900))),
-                        Text('₹$amount', style: const TextStyle(fontWeight: FontWeight.w900)),
+                        const Expanded(
+                          child: Text(
+                            'Total',
+                            style: TextStyle(fontWeight: FontWeight.w900),
+                          ),
+                        ),
+                        Text(
+                          '₹$amount',
+                          style: const TextStyle(fontWeight: FontWeight.w900),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Later: This will support per-hour/per-day/per-block based on skill.',
-                      style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -125,7 +149,9 @@ class EarningSessionDetailScreen extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         children: [
-          Expanded(child: Text(k, style: const TextStyle(fontWeight: FontWeight.w800))),
+          Expanded(
+            child: Text(k, style: const TextStyle(fontWeight: FontWeight.w800)),
+          ),
           Text(v),
         ],
       ),

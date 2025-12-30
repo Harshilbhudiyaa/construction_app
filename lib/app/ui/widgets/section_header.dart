@@ -20,7 +20,12 @@ class SectionHeader extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.lg, AppSpacing.md, AppSpacing.sm),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.lg,
+        AppSpacing.md,
+        AppSpacing.sm,
+      ),
       child: Row(
         children: [
           Expanded(
@@ -29,7 +34,9 @@ class SectionHeader extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
                 if (subtitle != null) ...[
                   const SizedBox(height: 2),
@@ -39,10 +46,7 @@ class SectionHeader extends StatelessWidget {
             ),
           ),
           if (onAction != null)
-            TextButton(
-              onPressed: onAction,
-              child: Text(actionText ?? 'View'),
-            ),
+            TextButton(onPressed: onAction, child: Text(actionText ?? 'View')),
         ],
       ),
     );

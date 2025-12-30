@@ -28,7 +28,9 @@ class KpiCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
           Text(
             value,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: 2),
           Text(title, style: TextStyle(color: cs.onSurfaceVariant)),

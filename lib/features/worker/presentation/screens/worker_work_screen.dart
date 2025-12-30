@@ -16,7 +16,13 @@ class WorkerWorkScreen extends StatefulWidget {
 class _WorkerWorkScreenState extends State<WorkerWorkScreen> {
   bool _active = false;
   String _workType = 'Brick / Block Work';
-  final _workTypes = const ['Brick / Block Work', 'Concrete Work', 'Electrical', 'Plumbing', 'Carpentry'];
+  final _workTypes = const [
+    'Brick / Block Work',
+    'Concrete Work',
+    'Electrical',
+    'Plumbing',
+    'Carpentry',
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +32,10 @@ class _WorkerWorkScreenState extends State<WorkerWorkScreen> {
       appBar: AppBar(
         title: const Text('Work'),
         actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.help_outline_rounded)),
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.help_outline_rounded),
+          ),
         ],
       ),
       body: ListView(
@@ -40,20 +49,37 @@ class _WorkerWorkScreenState extends State<WorkerWorkScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Work Type', style: TextStyle(fontWeight: FontWeight.w900)),
+                    const Text(
+                      'Work Type',
+                      style: TextStyle(fontWeight: FontWeight.w900),
+                    ),
                     const SizedBox(height: 10),
                     DropdownButtonFormField<String>(
                       initialValue: _workType,
-                      decoration: const InputDecoration(labelText: 'Select work type'),
-                      items: _workTypes.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-                      onChanged: _active ? null : (v) => setState(() => _workType = v ?? _workType),
+                      decoration: const InputDecoration(
+                        labelText: 'Select work type',
+                      ),
+                      items: _workTypes
+                          .map(
+                            (e) => DropdownMenuItem(value: e, child: Text(e)),
+                          )
+                          .toList(),
+                      onChanged: _active
+                          ? null
+                          : (v) => setState(() => _workType = v ?? _workType),
                     ),
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        const Text('Session Status', style: TextStyle(fontWeight: FontWeight.w800)),
+                        const Text(
+                          'Session Status',
+                          style: TextStyle(fontWeight: FontWeight.w800),
+                        ),
                         const SizedBox(width: 10),
-                        StatusChip(status: _active ? UiStatus.inTransit : UiStatus.ok, labelOverride: _active ? 'Running' : 'Idle'),
+                        StatusChip(
+                          status: _active ? UiStatus.inTransit : UiStatus.ok,
+                          labelOverride: _active ? 'Running' : 'Idle',
+                        ),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -69,7 +95,10 @@ class _WorkerWorkScreenState extends State<WorkerWorkScreen> {
             ),
           ),
 
-          const SectionHeader(title: 'Session Controls', subtitle: 'Start/Stop work with proof (UI only for now)'),
+          const SectionHeader(
+            title: 'Session Controls',
+            subtitle: 'Start/Stop work with proof (UI only for now)',
+          ),
 
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -79,7 +108,9 @@ class _WorkerWorkScreenState extends State<WorkerWorkScreen> {
                   child: OutlinedButton.icon(
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Start selfie capture (placeholder)')),
+                        const SnackBar(
+                          content: Text('Start selfie capture (placeholder)'),
+                        ),
                       );
                     },
                     icon: const Icon(Icons.photo_camera_front_rounded),
@@ -91,7 +122,9 @@ class _WorkerWorkScreenState extends State<WorkerWorkScreen> {
                   child: OutlinedButton.icon(
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Stop selfie capture (placeholder)')),
+                        const SnackBar(
+                          content: Text('Stop selfie capture (placeholder)'),
+                        ),
                       );
                     },
                     icon: const Icon(Icons.photo_camera_front_rounded),
@@ -116,13 +149,18 @@ class _WorkerWorkScreenState extends State<WorkerWorkScreen> {
                   final ok = await showConfirmSheet(
                     context: context,
                     title: 'Stop Work Session?',
-                    message: 'This will end the current session and send it to engineer for approval (UI-only).',
+                    message:
+                        'This will end the current session and send it to engineer for approval (UI-only).',
                     confirmText: 'Stop',
                   );
 
                   if (ok) setState(() => _active = false);
                 },
-                icon: Icon(_active ? Icons.stop_circle_rounded : Icons.play_circle_rounded),
+                icon: Icon(
+                  _active
+                      ? Icons.stop_circle_rounded
+                      : Icons.play_circle_rounded,
+                ),
                 label: Text(_active ? 'Stop Work' : 'Start Work'),
               ),
             ),
@@ -134,7 +172,8 @@ class _WorkerWorkScreenState extends State<WorkerWorkScreen> {
               child: const EmptyState(
                 icon: Icons.timer_off_rounded,
                 title: 'No active session',
-                message: 'Start a work session to begin tracking time and proof.',
+                message:
+                    'Start a work session to begin tracking time and proof.',
               ),
             ),
 

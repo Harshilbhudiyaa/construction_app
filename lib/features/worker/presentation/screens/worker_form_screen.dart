@@ -16,12 +16,15 @@ class WorkerFormScreen extends StatefulWidget {
 class _WorkerFormScreenState extends State<WorkerFormScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  late final TextEditingController _nameCtrl =
-      TextEditingController(text: widget.initial?.name ?? '');
-  late final TextEditingController _phoneCtrl =
-      TextEditingController(text: widget.initial?.phone ?? '');
-  late final TextEditingController _rateCtrl =
-      TextEditingController(text: (widget.initial?.rateAmount ?? 800).toString());
+  late final TextEditingController _nameCtrl = TextEditingController(
+    text: widget.initial?.name ?? '',
+  );
+  late final TextEditingController _phoneCtrl = TextEditingController(
+    text: widget.initial?.phone ?? '',
+  );
+  late final TextEditingController _rateCtrl = TextEditingController(
+    text: (widget.initial?.rateAmount ?? 800).toString(),
+  );
 
   String _skill = (kSkills.contains('Mason') ? 'Mason' : kSkills.first);
   WorkerShift _shift = WorkerShift.day;
@@ -40,7 +43,10 @@ class _WorkerFormScreenState extends State<WorkerFormScreen> {
       _status = w.status;
       _workTypes = List<String>.from(w.assignedWorkTypes);
     } else {
-      _workTypes = ['Concrete Work', 'Brick / Block Work'].where(kWorkTypes.contains).toList();
+      _workTypes = [
+        'Concrete Work',
+        'Brick / Block Work',
+      ].where(kWorkTypes.contains).toList();
     }
   }
 
@@ -73,14 +79,16 @@ class _WorkerFormScreenState extends State<WorkerFormScreen> {
 
     final rate = num.tryParse(_rateCtrl.text.trim());
     if (rate == null || rate <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter valid rate amount')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Enter valid rate amount')));
       return;
     }
 
     final isEdit = widget.initial != null;
-    final id = widget.initial?.id ?? 'WK-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
+    final id =
+        widget.initial?.id ??
+        'WK-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
 
     final worker = Worker(
       id: id,
@@ -95,7 +103,11 @@ class _WorkerFormScreenState extends State<WorkerFormScreen> {
     );
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(isEdit ? 'Worker updated (UI-only)' : 'Worker added (UI-only)')),
+      SnackBar(
+        content: Text(
+          isEdit ? 'Worker updated (UI-only)' : 'Worker added (UI-only)',
+        ),
+      ),
     );
     Navigator.pop(context, worker);
   }
@@ -109,7 +121,10 @@ class _WorkerFormScreenState extends State<WorkerFormScreen> {
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
         children: [
-          const SectionHeader(title: 'Basic Info', subtitle: 'Name, phone, skill, shift'),
+          const SectionHeader(
+            title: 'Basic Info',
+            subtitle: 'Name, phone, skill, shift',
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Card(
@@ -121,14 +136,19 @@ class _WorkerFormScreenState extends State<WorkerFormScreen> {
                     children: [
                       TextFormField(
                         controller: _nameCtrl,
-                        decoration: const InputDecoration(labelText: 'Full Name'),
-                        validator: (v) => (v ?? '').trim().isEmpty ? 'Required' : null,
+                        decoration: const InputDecoration(
+                          labelText: 'Full Name',
+                        ),
+                        validator: (v) =>
+                            (v ?? '').trim().isEmpty ? 'Required' : null,
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       TextFormField(
                         controller: _phoneCtrl,
                         keyboardType: TextInputType.phone,
-                        decoration: const InputDecoration(labelText: 'Phone (10 digits)'),
+                        decoration: const InputDecoration(
+                          labelText: 'Phone (10 digits)',
+                        ),
                         validator: (v) {
                           final t = (v ?? '').trim();
                           if (t.isEmpty) return 'Required';
@@ -141,7 +161,11 @@ class _WorkerFormScreenState extends State<WorkerFormScreen> {
                       DropdownButtonFormField<String>(
                         value: _skill,
                         decoration: const InputDecoration(labelText: 'Skill'),
-                        items: kSkills.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                        items: kSkills
+                            .map(
+                              (s) => DropdownMenuItem(value: s, child: Text(s)),
+                            )
+                            .toList(),
                         onChanged: (v) => setState(() => _skill = v ?? _skill),
                       ),
                       const SizedBox(height: AppSpacing.sm),
@@ -149,7 +173,12 @@ class _WorkerFormScreenState extends State<WorkerFormScreen> {
                         value: _shift,
                         decoration: const InputDecoration(labelText: 'Shift'),
                         items: WorkerShift.values
-                            .map((s) => DropdownMenuItem(value: s, child: Text(shiftLabel(s))))
+                            .map(
+                              (s) => DropdownMenuItem(
+                                value: s,
+                                child: Text(shiftLabel(s)),
+                              ),
+                            )
                             .toList(),
                         onChanged: (v) => setState(() => _shift = v ?? _shift),
                       ),
@@ -158,9 +187,15 @@ class _WorkerFormScreenState extends State<WorkerFormScreen> {
                         value: _status,
                         decoration: const InputDecoration(labelText: 'Status'),
                         items: WorkerStatus.values
-                            .map((s) => DropdownMenuItem(value: s, child: Text(statusLabel(s))))
+                            .map(
+                              (s) => DropdownMenuItem(
+                                value: s,
+                                child: Text(statusLabel(s)),
+                              ),
+                            )
                             .toList(),
-                        onChanged: (v) => setState(() => _status = v ?? _status),
+                        onChanged: (v) =>
+                            setState(() => _status = v ?? _status),
                       ),
                     ],
                   ),
@@ -169,7 +204,10 @@ class _WorkerFormScreenState extends State<WorkerFormScreen> {
             ),
           ),
 
-          const SectionHeader(title: 'Rate', subtitle: 'Payment type and amount'),
+          const SectionHeader(
+            title: 'Rate',
+            subtitle: 'Payment type and amount',
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Card(
@@ -181,15 +219,25 @@ class _WorkerFormScreenState extends State<WorkerFormScreen> {
                       value: _rateType,
                       decoration: const InputDecoration(labelText: 'Rate Type'),
                       items: PayRateType.values
-                          .map((t) => DropdownMenuItem(value: t, child: Text(rateTypeLabel(t))))
+                          .map(
+                            (t) => DropdownMenuItem(
+                              value: t,
+                              child: Text(rateTypeLabel(t)),
+                            ),
+                          )
                           .toList(),
-                      onChanged: (v) => setState(() => _rateType = v ?? _rateType),
+                      onChanged: (v) =>
+                          setState(() => _rateType = v ?? _rateType),
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     TextFormField(
                       controller: _rateCtrl,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: const InputDecoration(labelText: 'Rate Amount'),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: const InputDecoration(
+                        labelText: 'Rate Amount',
+                      ),
                     ),
                   ],
                 ),
@@ -197,7 +245,10 @@ class _WorkerFormScreenState extends State<WorkerFormScreen> {
             ),
           ),
 
-          const SectionHeader(title: 'Work Types', subtitle: 'Assign allowed work types'),
+          const SectionHeader(
+            title: 'Work Types',
+            subtitle: 'Assign allowed work types',
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Card(

@@ -2,7 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:construction_app/app/app.dart';
 
 void main() {
-  testWidgets('App boots and shows role selection screen', (WidgetTester tester) async {
+  testWidgets('App boots and shows role selection screen', (
+    WidgetTester tester,
+  ) async {
     // Build app
     await tester.pumpWidget(const MyApp());
 

@@ -9,7 +9,8 @@ class TruckArrivalConfirmScreen extends StatefulWidget {
   const TruckArrivalConfirmScreen({super.key, required this.tripId});
 
   @override
-  State<TruckArrivalConfirmScreen> createState() => _TruckArrivalConfirmScreenState();
+  State<TruckArrivalConfirmScreen> createState() =>
+      _TruckArrivalConfirmScreenState();
 }
 
 class _TruckArrivalConfirmScreenState extends State<TruckArrivalConfirmScreen> {
@@ -40,7 +41,10 @@ class _TruckArrivalConfirmScreenState extends State<TruckArrivalConfirmScreen> {
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
         children: [
-          const SectionHeader(title: 'Confirm Arrival', subtitle: 'Trip arrival proof (UI-only)'),
+          const SectionHeader(
+            title: 'Confirm Arrival',
+            subtitle: 'Trip arrival proof (UI-only)',
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Card(
@@ -58,8 +62,11 @@ class _TruckArrivalConfirmScreenState extends State<TruckArrivalConfirmScreen> {
                       const SizedBox(height: AppSpacing.sm),
                       TextFormField(
                         controller: _timeCtrl,
-                        decoration: const InputDecoration(labelText: 'Arrival Time'),
-                        validator: (v) => (v ?? '').trim().isEmpty ? 'Required' : null,
+                        decoration: const InputDecoration(
+                          labelText: 'Arrival Time',
+                        ),
+                        validator: (v) =>
+                            (v ?? '').trim().isEmpty ? 'Required' : null,
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       TextFormField(
@@ -76,7 +83,11 @@ class _TruckArrivalConfirmScreenState extends State<TruckArrivalConfirmScreen> {
                         child: OutlinedButton.icon(
                           onPressed: () {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Capture arrival photo (next step)')),
+                              const SnackBar(
+                                content: Text(
+                                  'Capture arrival photo (next step)',
+                                ),
+                              ),
                             );
                           },
                           icon: const Icon(Icons.photo_camera_rounded),

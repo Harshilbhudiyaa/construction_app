@@ -34,17 +34,25 @@ class _SplashScreenState extends State<SplashScreen> {
                 color: cs.primaryContainer,
                 borderRadius: BorderRadius.circular(22),
               ),
-              child: Icon(Icons.construction_rounded, color: cs.onPrimaryContainer, size: 40),
+              child: Icon(
+                Icons.construction_rounded,
+                color: cs.onPrimaryContainer,
+                size: 40,
+              ),
             ),
             const SizedBox(height: 16),
             Text(
               'Smart Construction',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
             Text(
               'Site Management System',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
             ),
           ],
         ),

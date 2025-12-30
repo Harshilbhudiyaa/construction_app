@@ -8,7 +8,8 @@ class WorkSessionRunningScreen extends StatefulWidget {
   const WorkSessionRunningScreen({super.key, required this.workType});
 
   @override
-  State<WorkSessionRunningScreen> createState() => _WorkSessionRunningScreenState();
+  State<WorkSessionRunningScreen> createState() =>
+      _WorkSessionRunningScreenState();
 }
 
 class _WorkSessionRunningScreenState extends State<WorkSessionRunningScreen> {
@@ -61,16 +62,25 @@ class _WorkSessionRunningScreenState extends State<WorkSessionRunningScreen> {
                       color: cs.secondaryContainer,
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: Icon(Icons.work_rounded, color: cs.onSecondaryContainer),
+                    child: Icon(
+                      Icons.work_rounded,
+                      color: cs.onSecondaryContainer,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(widget.workType, style: const TextStyle(fontWeight: FontWeight.w800)),
+                        Text(
+                          widget.workType,
+                          style: const TextStyle(fontWeight: FontWeight.w800),
+                        ),
                         const SizedBox(height: 4),
-                        Text('Session is running', style: TextStyle(color: cs.onSurfaceVariant)),
+                        Text(
+                          'Session is running',
+                          style: TextStyle(color: cs.onSurfaceVariant),
+                        ),
                       ],
                     ),
                   ),
@@ -90,12 +100,16 @@ class _WorkSessionRunningScreenState extends State<WorkSessionRunningScreen> {
                 children: [
                   Text(
                     _format(_seconds),
-                    style: Theme.of(context).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.w800),
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Timer (demo). In real app: start selfie captured before timer.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: cs.onSurfaceVariant,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ],

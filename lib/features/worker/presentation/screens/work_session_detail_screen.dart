@@ -54,18 +54,29 @@ class WorkSessionDetailScreen extends StatelessWidget {
                       height: 46,
                       decoration: BoxDecoration(
                         color: cs.secondaryContainer,
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusMd,
+                        ),
                       ),
-                      child: Icon(Icons.assignment_rounded, color: cs.onSecondaryContainer),
+                      child: Icon(
+                        Icons.assignment_rounded,
+                        color: cs.onSecondaryContainer,
+                      ),
                     ),
                     const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(session.workType, style: const TextStyle(fontWeight: FontWeight.w900)),
+                          Text(
+                            session.workType,
+                            style: const TextStyle(fontWeight: FontWeight.w900),
+                          ),
                           const SizedBox(height: 4),
-                          Text('${session.site} • ${session.id}', style: TextStyle(color: cs.onSurfaceVariant)),
+                          Text(
+                            '${session.site} • ${session.id}',
+                            style: TextStyle(color: cs.onSurfaceVariant),
+                          ),
                         ],
                       ),
                     ),
@@ -84,22 +95,36 @@ class WorkSessionDetailScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Status', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w900)),
+                    Text(
+                      'Status',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
                     const SizedBox(height: 6),
-                    Text(_statusText(session.status), style: TextStyle(color: cs.onSurfaceVariant)),
-                    if (session.status == WorkSessionStatus.rejected && (session.rejectionReason ?? '').trim().isNotEmpty) ...[
+                    Text(
+                      _statusText(session.status),
+                      style: TextStyle(color: cs.onSurfaceVariant),
+                    ),
+                    if (session.status == WorkSessionStatus.rejected &&
+                        (session.rejectionReason ?? '').trim().isNotEmpty) ...[
                       const SizedBox(height: 10),
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(AppSpacing.md),
                         decoration: BoxDecoration(
                           color: cs.error.withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.radiusMd,
+                          ),
                           border: Border.all(color: cs.error.withOpacity(0.25)),
                         ),
                         child: Text(
                           'Rejection reason:\n${session.rejectionReason}',
-                          style: TextStyle(color: cs.onSurfaceVariant, height: 1.3),
+                          style: TextStyle(
+                            color: cs.onSurfaceVariant,
+                            height: 1.3,
+                          ),
                         ),
                       ),
                     ],
@@ -109,7 +134,10 @@ class WorkSessionDetailScreen extends StatelessWidget {
             ),
           ),
 
-          const SectionHeader(title: 'Timeline', subtitle: 'Selfie proof placeholders'),
+          const SectionHeader(
+            title: 'Timeline',
+            subtitle: 'Selfie proof placeholders',
+          ),
 
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -128,7 +156,8 @@ class WorkSessionDetailScreen extends StatelessWidget {
                     context,
                     icon: Icons.timer_rounded,
                     title: 'Work Duration',
-                    subtitle: '${session.startTime} → ${session.endTime} • ${session.duration} hrs',
+                    subtitle:
+                        '${session.startTime} → ${session.endTime} • ${session.duration} hrs',
                     done: true,
                   ),
                   const Divider(height: 1),
@@ -144,14 +173,20 @@ class WorkSessionDetailScreen extends StatelessWidget {
             ),
           ),
 
-          const SectionHeader(title: 'Verification', subtitle: 'Engineer decision (UI-only)'),
+          const SectionHeader(
+            title: 'Verification',
+            subtitle: 'Engineer decision (UI-only)',
+          ),
 
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Card(
               child: ListTile(
                 leading: Icon(Icons.verified_user_rounded, color: cs.primary),
-                title: Text(session.engineer, style: const TextStyle(fontWeight: FontWeight.w900)),
+                title: Text(
+                  session.engineer,
+                  style: const TextStyle(fontWeight: FontWeight.w900),
+                ),
                 subtitle: Text('Decision: ${_statusText(session.status)}'),
               ),
             ),
@@ -165,17 +200,26 @@ class WorkSessionDetailScreen extends StatelessWidget {
                 ? const EmptyState(
                     icon: Icons.info_outline_rounded,
                     title: 'Awaiting approval',
-                    message: 'Your session is waiting for engineer verification.',
+                    message:
+                        'Your session is waiting for engineer verification.',
                   )
                 : Card(
                     child: ListTile(
-                      leading: Icon(Icons.report_problem_rounded, color: cs.tertiary),
-                      title: const Text('Report an issue', style: TextStyle(fontWeight: FontWeight.w900)),
+                      leading: Icon(
+                        Icons.report_problem_rounded,
+                        color: cs.tertiary,
+                      ),
+                      title: const Text(
+                        'Report an issue',
+                        style: TextStyle(fontWeight: FontWeight.w900),
+                      ),
                       subtitle: const Text('Raise a dispute (UI placeholder)'),
                       trailing: const Icon(Icons.chevron_right_rounded),
                       onTap: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Report issue (next UI step)')),
+                          const SnackBar(
+                            content: Text('Report issue (next UI step)'),
+                          ),
                         );
                       },
                     ),
@@ -210,7 +254,12 @@ class WorkSessionDetailScreen extends StatelessWidget {
       ),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w900)),
       subtitle: Text(subtitle),
-      trailing: Icon(done ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded, color: c),
+      trailing: Icon(
+        done
+            ? Icons.check_circle_rounded
+            : Icons.radio_button_unchecked_rounded,
+        color: c,
+      ),
       onTap: () {},
     );
   }

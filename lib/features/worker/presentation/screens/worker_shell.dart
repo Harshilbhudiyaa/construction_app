@@ -33,11 +33,26 @@ class _WorkerShellState extends State<WorkerShell> {
         selectedIndex: _index,
         onDestinationSelected: (i) => setState(() => _index = i),
         destinations: const [
-          NavigationDestination(icon: Icon(Icons.dashboard_rounded), label: 'Home'),
-          NavigationDestination(icon: Icon(Icons.play_circle_rounded), label: 'Work'),
-          NavigationDestination(icon: Icon(Icons.history_rounded), label: 'History'),
-          NavigationDestination(icon: Icon(Icons.account_balance_wallet_rounded), label: 'Earnings'),
-          NavigationDestination(icon: Icon(Icons.person_rounded), label: 'Profile'),
+          NavigationDestination(
+            icon: Icon(Icons.dashboard_rounded),
+            label: 'Home',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.play_circle_rounded),
+            label: 'Work',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.history_rounded),
+            label: 'History',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.account_balance_wallet_rounded),
+            label: 'Earnings',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_rounded),
+            label: 'Profile',
+          ),
         ],
       ),
     );

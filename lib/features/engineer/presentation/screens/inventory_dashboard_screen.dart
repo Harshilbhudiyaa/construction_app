@@ -30,7 +30,9 @@ class InventoryDashboardScreen extends StatelessWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const MaterialIssueEntryScreen()),
+                MaterialPageRoute(
+                  builder: (_) => const MaterialIssueEntryScreen(),
+                ),
               );
             },
             icon: const Icon(Icons.add_circle_rounded),
@@ -44,8 +46,20 @@ class InventoryDashboardScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Row(
               children: const [
-                Expanded(child: KpiCard(title: 'Total Items', value: '$totalItems', icon: Icons.inventory_2_rounded)),
-                Expanded(child: KpiCard(title: 'Low Stock', value: '$lowStock', icon: Icons.warning_amber_rounded)),
+                Expanded(
+                  child: KpiCard(
+                    title: 'Total Items',
+                    value: '$totalItems',
+                    icon: Icons.inventory_2_rounded,
+                  ),
+                ),
+                Expanded(
+                  child: KpiCard(
+                    title: 'Low Stock',
+                    value: '$lowStock',
+                    icon: Icons.warning_amber_rounded,
+                  ),
+                ),
               ],
             ),
           ),
@@ -53,41 +67,74 @@ class InventoryDashboardScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Row(
               children: const [
-                Expanded(child: KpiCard(title: 'Issued Today', value: '$issuedToday', icon: Icons.output_rounded)),
-                Expanded(child: KpiCard(title: 'Received Today', value: '$receivedToday', icon: Icons.input_rounded)),
+                Expanded(
+                  child: KpiCard(
+                    title: 'Issued Today',
+                    value: '$issuedToday',
+                    icon: Icons.output_rounded,
+                  ),
+                ),
+                Expanded(
+                  child: KpiCard(
+                    title: 'Received Today',
+                    value: '$receivedToday',
+                    icon: Icons.input_rounded,
+                  ),
+                ),
               ],
             ),
           ),
 
-          const SectionHeader(title: 'Alerts', subtitle: 'Threshold monitoring (UI-only)'),
+          const SectionHeader(
+            title: 'Alerts',
+            subtitle: 'Threshold monitoring (UI-only)',
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Card(
               child: ListTile(
                 leading: Icon(Icons.warning_amber_rounded, color: cs.error),
-                title: const Text('Low stock items', style: TextStyle(fontWeight: FontWeight.w900)),
-                subtitle: const Text('Some materials are below backup threshold'),
-                trailing: const StatusChip(status: UiStatus.low, labelOverride: '3 Items'),
+                title: const Text(
+                  'Low stock items',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
+                subtitle: const Text(
+                  'Some materials are below backup threshold',
+                ),
+                trailing: const StatusChip(
+                  status: UiStatus.low,
+                  labelOverride: '3 Items',
+                ),
                 onTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const InventoryLowStockScreen()),
+                  MaterialPageRoute(
+                    builder: (_) => const InventoryLowStockScreen(),
+                  ),
                 ),
               ),
             ),
           ),
 
-          const SectionHeader(title: 'Actions', subtitle: 'Issue material, view ledger, check low stock'),
+          const SectionHeader(
+            title: 'Actions',
+            subtitle: 'Issue material, view ledger, check low stock',
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Card(
               child: ListTile(
                 leading: Icon(Icons.output_rounded, color: cs.primary),
-                title: const Text('Issue Material', style: TextStyle(fontWeight: FontWeight.w900)),
+                title: const Text(
+                  'Issue Material',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
                 subtitle: const Text('Record material issued to work'),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const MaterialIssueEntryScreen()),
+                  MaterialPageRoute(
+                    builder: (_) => const MaterialIssueEntryScreen(),
+                  ),
                 ),
               ),
             ),
@@ -97,12 +144,17 @@ class InventoryDashboardScreen extends StatelessWidget {
             child: Card(
               child: ListTile(
                 leading: Icon(Icons.receipt_long_rounded, color: cs.primary),
-                title: const Text('Inventory Ledger', style: TextStyle(fontWeight: FontWeight.w900)),
+                title: const Text(
+                  'Inventory Ledger',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
                 subtitle: const Text('All stock movement (in/out)'),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const InventoryLedgerScreen()),
+                  MaterialPageRoute(
+                    builder: (_) => const InventoryLedgerScreen(),
+                  ),
                 ),
               ),
             ),
@@ -112,12 +164,17 @@ class InventoryDashboardScreen extends StatelessWidget {
             child: Card(
               child: ListTile(
                 leading: Icon(Icons.warning_amber_rounded, color: cs.primary),
-                title: const Text('Low Stock List', style: TextStyle(fontWeight: FontWeight.w900)),
+                title: const Text(
+                  'Low Stock List',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
                 subtitle: const Text('Items below threshold'),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const InventoryLowStockScreen()),
+                  MaterialPageRoute(
+                    builder: (_) => const InventoryLowStockScreen(),
+                  ),
                 ),
               ),
             ),

@@ -38,7 +38,12 @@ class _ApprovalDetailScreenState extends State<ApprovalDetailScreen> {
     );
     if (!ok) return;
 
-    setState(() => _item = _item.copyWith(status: ApprovalStatus.approved, remark: 'Approved'));
+    setState(
+      () => _item = _item.copyWith(
+        status: ApprovalStatus.approved,
+        remark: 'Approved',
+      ),
+    );
     if (mounted) Navigator.pop(context, _item);
   }
 
@@ -46,7 +51,12 @@ class _ApprovalDetailScreenState extends State<ApprovalDetailScreen> {
     final remark = await _rejectSheet(context);
     if (remark == null) return;
 
-    setState(() => _item = _item.copyWith(status: ApprovalStatus.rejected, remark: remark));
+    setState(
+      () => _item = _item.copyWith(
+        status: ApprovalStatus.rejected,
+        remark: remark,
+      ),
+    );
     if (mounted) Navigator.pop(context, _item);
   }
 
@@ -71,18 +81,29 @@ class _ApprovalDetailScreenState extends State<ApprovalDetailScreen> {
                       height: 46,
                       decoration: BoxDecoration(
                         color: cs.primaryContainer,
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusMd,
+                        ),
                       ),
-                      child: Icon(Icons.badge_rounded, color: cs.onPrimaryContainer),
+                      child: Icon(
+                        Icons.badge_rounded,
+                        color: cs.onPrimaryContainer,
+                      ),
                     ),
                     const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(_item.workerName, style: const TextStyle(fontWeight: FontWeight.w900)),
+                          Text(
+                            _item.workerName,
+                            style: const TextStyle(fontWeight: FontWeight.w900),
+                          ),
                           const SizedBox(height: 2),
-                          Text('${_item.workerRole} • ${_item.site}', style: TextStyle(color: cs.onSurfaceVariant)),
+                          Text(
+                            '${_item.workerRole} • ${_item.site}',
+                            style: TextStyle(color: cs.onSurfaceVariant),
+                          ),
                         ],
                       ),
                     ),
@@ -120,7 +141,9 @@ class _ApprovalDetailScreenState extends State<ApprovalDetailScreen> {
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: _item.status == ApprovalStatus.approved ? null : _reject,
+                    onPressed: _item.status == ApprovalStatus.approved
+                        ? null
+                        : _reject,
                     icon: const Icon(Icons.close_rounded),
                     label: const Text('Reject'),
                   ),
@@ -128,7 +151,9 @@ class _ApprovalDetailScreenState extends State<ApprovalDetailScreen> {
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: FilledButton.icon(
-                    onPressed: _item.status == ApprovalStatus.approved ? null : _approve,
+                    onPressed: _item.status == ApprovalStatus.approved
+                        ? null
+                        : _approve,
                     icon: const Icon(Icons.check_rounded),
                     label: const Text('Approve'),
                   ),
@@ -147,7 +172,9 @@ class _ApprovalDetailScreenState extends State<ApprovalDetailScreen> {
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         children: [
-          Expanded(child: Text(k, style: const TextStyle(fontWeight: FontWeight.w800))),
+          Expanded(
+            child: Text(k, style: const TextStyle(fontWeight: FontWeight.w800)),
+          ),
           Text(v),
         ],
       ),
@@ -172,7 +199,12 @@ class _ApprovalDetailScreenState extends State<ApprovalDetailScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Reject Session', style: Theme.of(ctx).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900)),
+              Text(
+                'Reject Session',
+                style: Theme.of(
+                  ctx,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+              ),
               const SizedBox(height: 12),
               TextField(
                 controller: ctrl,
@@ -186,7 +218,9 @@ class _ApprovalDetailScreenState extends State<ApprovalDetailScreen> {
                   onPressed: () {
                     final t = ctrl.text.trim();
                     if (t.isEmpty) {
-                      ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('Remark required')));
+                      ScaffoldMessenger.of(ctx).showSnackBar(
+                        const SnackBar(content: Text('Remark required')),
+                      );
                       return;
                     }
                     Navigator.pop(ctx, t);

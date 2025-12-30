@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 enum WorkerShift { day, night }
+
 enum PayRateType { perDay, perHour, perBlock }
+
 enum WorkerStatus { active, inactive }
 
 String shiftLabel(WorkerShift s) => s == WorkerShift.day ? 'Day' : 'Night';
@@ -16,7 +18,8 @@ String rateTypeLabel(PayRateType t) {
   }
 }
 
-String statusLabel(WorkerStatus s) => s == WorkerStatus.active ? 'Active' : 'Inactive';
+String statusLabel(WorkerStatus s) =>
+    s == WorkerStatus.active ? 'Active' : 'Inactive';
 
 class Worker {
   final String id;

@@ -63,7 +63,9 @@ class _ApprovalsQueueScreenState extends State<ApprovalsQueueScreen> {
     return _items.where((a) {
       if (_filter != null && a.status != _filter) return false;
       if (q.isEmpty) return true;
-      final hay = '${a.id} ${a.workerName} ${a.workerRole} ${a.workType} ${a.site}'.toLowerCase();
+      final hay =
+          '${a.id} ${a.workerName} ${a.workerRole} ${a.workType} ${a.site}'
+              .toLowerCase();
       return hay.contains(q);
     }).toList();
   }
@@ -79,7 +81,10 @@ class _ApprovalsQueueScreenState extends State<ApprovalsQueueScreen> {
             hint: 'Search worker, work type, id...',
             onChanged: (v) => setState(() => _query = v),
           ),
-          const SectionHeader(title: 'Filters', subtitle: 'Pending / Approved / Rejected'),
+          const SectionHeader(
+            title: 'Filters',
+            subtitle: 'Pending / Approved / Rejected',
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Card(
@@ -97,24 +102,30 @@ class _ApprovalsQueueScreenState extends State<ApprovalsQueueScreen> {
                     FilterChip(
                       label: const Text('Pending'),
                       selected: _filter == ApprovalStatus.pending,
-                      onSelected: (_) => setState(() => _filter = ApprovalStatus.pending),
+                      onSelected: (_) =>
+                          setState(() => _filter = ApprovalStatus.pending),
                     ),
                     FilterChip(
                       label: const Text('Approved'),
                       selected: _filter == ApprovalStatus.approved,
-                      onSelected: (_) => setState(() => _filter = ApprovalStatus.approved),
+                      onSelected: (_) =>
+                          setState(() => _filter = ApprovalStatus.approved),
                     ),
                     FilterChip(
                       label: const Text('Rejected'),
                       selected: _filter == ApprovalStatus.rejected,
-                      onSelected: (_) => setState(() => _filter = ApprovalStatus.rejected),
+                      onSelected: (_) =>
+                          setState(() => _filter = ApprovalStatus.rejected),
                     ),
                   ],
                 ),
               ),
             ),
           ),
-          const SectionHeader(title: 'Queue', subtitle: 'Tap any item to review'),
+          const SectionHeader(
+            title: 'Queue',
+            subtitle: 'Tap any item to review',
+          ),
           if (_filtered.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -125,29 +136,40 @@ class _ApprovalsQueueScreenState extends State<ApprovalsQueueScreen> {
               ),
             )
           else
-            ..._filtered.map((a) => Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                  child: Card(
-                    child: ListTile(
-                      title: Text('${a.workerName} • ${a.workType}', style: const TextStyle(fontWeight: FontWeight.w900)),
-                      subtitle: Text('${a.workerRole} • ${a.site}\n${a.startTime}–${a.endTime} • ${a.duration} • ${a.id}'),
-                      isThreeLine: true,
-                      trailing: StatusChip(status: _toUi(a.status)),
-                      onTap: () async {
-                        final updated = await Navigator.push<ApprovalItem?>(
-                          context,
-                          MaterialPageRoute(builder: (_) => ApprovalDetailScreen(item: a)),
-                        );
-                        if (updated != null) {
-                          setState(() {
-                            final idx = _items.indexWhere((x) => x.id == updated.id);
-                            if (idx != -1) _items[idx] = updated;
-                          });
-                        }
-                      },
+            ..._filtered.map(
+              (a) => Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                child: Card(
+                  child: ListTile(
+                    title: Text(
+                      '${a.workerName} • ${a.workType}',
+                      style: const TextStyle(fontWeight: FontWeight.w900),
                     ),
+                    subtitle: Text(
+                      '${a.workerRole} • ${a.site}\n${a.startTime}–${a.endTime} • ${a.duration} • ${a.id}',
+                    ),
+                    isThreeLine: true,
+                    trailing: StatusChip(status: _toUi(a.status)),
+                    onTap: () async {
+                      final updated = await Navigator.push<ApprovalItem?>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ApprovalDetailScreen(item: a),
+                        ),
+                      );
+                      if (updated != null) {
+                        setState(() {
+                          final idx = _items.indexWhere(
+                            (x) => x.id == updated.id,
+                          );
+                          if (idx != -1) _items[idx] = updated;
+                        });
+                      }
+                    },
                   ),
-                )),
+                ),
+              ),
+            ),
           const SizedBox(height: 16),
         ],
       ),

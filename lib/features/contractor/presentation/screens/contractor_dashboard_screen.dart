@@ -26,7 +26,10 @@ class ContractorDashboardScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Contractor Dashboard'),
         actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.notifications_rounded)),
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.notifications_rounded),
+          ),
         ],
       ),
       body: ListView(
@@ -44,22 +47,36 @@ class ContractorDashboardScreen extends StatelessWidget {
                       height: 46,
                       decoration: BoxDecoration(
                         color: cs.primaryContainer,
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusMd,
+                        ),
                       ),
-                      child: Icon(Icons.admin_panel_settings_rounded, color: cs.onPrimaryContainer),
+                      child: Icon(
+                        Icons.admin_panel_settings_rounded,
+                        color: cs.onPrimaryContainer,
+                      ),
                     ),
                     const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Contractor (Admin)', style: TextStyle(fontWeight: FontWeight.w900)),
+                          const Text(
+                            'Contractor (Admin)',
+                            style: TextStyle(fontWeight: FontWeight.w900),
+                          ),
                           const SizedBox(height: 2),
-                          Text('All Sites Overview (demo)', style: TextStyle(color: cs.onSurfaceVariant)),
+                          Text(
+                            'All Sites Overview (demo)',
+                            style: TextStyle(color: cs.onSurfaceVariant),
+                          ),
                         ],
                       ),
                     ),
-                    const StatusChip(status: UiStatus.ok, labelOverride: 'Live'),
+                    const StatusChip(
+                      status: UiStatus.ok,
+                      labelOverride: 'Live',
+                    ),
                   ],
                 ),
               ),
@@ -70,8 +87,20 @@ class ContractorDashboardScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Row(
               children: const [
-                Expanded(child: KpiCard(title: 'Workers', value: '$totalWorkers', icon: Icons.groups_rounded)),
-                Expanded(child: KpiCard(title: 'Engineers', value: '$totalEngineers', icon: Icons.engineering_rounded)),
+                Expanded(
+                  child: KpiCard(
+                    title: 'Workers',
+                    value: '$totalWorkers',
+                    icon: Icons.groups_rounded,
+                  ),
+                ),
+                Expanded(
+                  child: KpiCard(
+                    title: 'Engineers',
+                    value: '$totalEngineers',
+                    icon: Icons.engineering_rounded,
+                  ),
+                ),
               ],
             ),
           ),
@@ -79,8 +108,20 @@ class ContractorDashboardScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Row(
               children: const [
-                Expanded(child: KpiCard(title: 'Machines Active', value: '$activeMachines', icon: Icons.precision_manufacturing_rounded)),
-                Expanded(child: KpiCard(title: 'Low Stock', value: '$lowStock', icon: Icons.warning_amber_rounded)),
+                Expanded(
+                  child: KpiCard(
+                    title: 'Machines Active',
+                    value: '$activeMachines',
+                    icon: Icons.precision_manufacturing_rounded,
+                  ),
+                ),
+                Expanded(
+                  child: KpiCard(
+                    title: 'Low Stock',
+                    value: '$lowStock',
+                    icon: Icons.warning_amber_rounded,
+                  ),
+                ),
               ],
             ),
           ),
@@ -88,8 +129,20 @@ class ContractorDashboardScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Row(
               children: const [
-                Expanded(child: KpiCard(title: 'Pending Payments', value: '$pendingPayments', icon: Icons.payments_rounded)),
-                Expanded(child: KpiCard(title: 'Backup Alerts', value: '$backupAlerts', icon: Icons.sms_failed_rounded)),
+                Expanded(
+                  child: KpiCard(
+                    title: 'Pending Payments',
+                    value: '$pendingPayments',
+                    icon: Icons.payments_rounded,
+                  ),
+                ),
+                Expanded(
+                  child: KpiCard(
+                    title: 'Backup Alerts',
+                    value: '$backupAlerts',
+                    icon: Icons.sms_failed_rounded,
+                  ),
+                ),
               ],
             ),
           ),
@@ -104,7 +157,10 @@ class ContractorDashboardScreen extends StatelessWidget {
             child: Card(
               child: ListTile(
                 leading: Icon(Icons.groups_rounded, color: cs.primary),
-                title: const Text('Workers', style: TextStyle(fontWeight: FontWeight.w900)),
+                title: const Text(
+                  'Workers',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
                 subtitle: const Text('Create/assign skills, rates, shifts'),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => onNavigateTo(1),
@@ -116,7 +172,10 @@ class ContractorDashboardScreen extends StatelessWidget {
             child: Card(
               child: ListTile(
                 leading: Icon(Icons.engineering_rounded, color: cs.primary),
-                title: const Text('Engineers', style: TextStyle(fontWeight: FontWeight.w900)),
+                title: const Text(
+                  'Engineers',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
                 subtitle: const Text('Sites, permissions, approvals'),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => onNavigateTo(2),
@@ -127,8 +186,14 @@ class ContractorDashboardScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Card(
               child: ListTile(
-                leading: Icon(Icons.precision_manufacturing_rounded, color: cs.primary),
-                title: const Text('Machines', style: TextStyle(fontWeight: FontWeight.w900)),
+                leading: Icon(
+                  Icons.precision_manufacturing_rounded,
+                  color: cs.primary,
+                ),
+                title: const Text(
+                  'Machines',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
                 subtitle: const Text('Block machines + utilization'),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => onNavigateTo(3),
@@ -140,7 +205,10 @@ class ContractorDashboardScreen extends StatelessWidget {
             child: Card(
               child: ListTile(
                 leading: Icon(Icons.inventory_2_rounded, color: cs.primary),
-                title: const Text('Inventory Master', style: TextStyle(fontWeight: FontWeight.w900)),
+                title: const Text(
+                  'Inventory Master',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
                 subtitle: const Text('Thresholds, backup levels'),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => onNavigateTo(4),
@@ -152,7 +220,10 @@ class ContractorDashboardScreen extends StatelessWidget {
             child: Card(
               child: ListTile(
                 leading: Icon(Icons.payments_rounded, color: cs.primary),
-                title: const Text('Payments', style: TextStyle(fontWeight: FontWeight.w900)),
+                title: const Text(
+                  'Payments',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
                 subtitle: const Text('Worker payouts + billing status'),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => onNavigateTo(5),
@@ -164,7 +235,10 @@ class ContractorDashboardScreen extends StatelessWidget {
             child: Card(
               child: ListTile(
                 leading: Icon(Icons.analytics_rounded, color: cs.primary),
-                title: const Text('Reports', style: TextStyle(fontWeight: FontWeight.w900)),
+                title: const Text(
+                  'Reports',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
                 subtitle: const Text('Productivity, materials, trucks'),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => onNavigateTo(6),
@@ -176,7 +250,10 @@ class ContractorDashboardScreen extends StatelessWidget {
             child: Card(
               child: ListTile(
                 leading: Icon(Icons.policy_rounded, color: cs.primary),
-                title: const Text('Audit Log', style: TextStyle(fontWeight: FontWeight.w900)),
+                title: const Text(
+                  'Audit Log',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
                 subtitle: const Text('All critical actions timeline'),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => onNavigateTo(7),

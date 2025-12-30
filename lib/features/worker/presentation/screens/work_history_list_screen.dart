@@ -135,7 +135,12 @@ class _WorkHistoryListScreenState extends State<WorkHistoryListScreen> {
 
           // Range chips
           Padding(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.sm),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              0,
+              AppSpacing.md,
+              AppSpacing.sm,
+            ),
             child: Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -172,17 +177,23 @@ class _WorkHistoryListScreenState extends State<WorkHistoryListScreen> {
                     FilterChip(
                       label: const Text('Pending'),
                       selected: _statusFilter == WorkSessionStatus.pending,
-                      onSelected: (_) => setState(() => _statusFilter = WorkSessionStatus.pending),
+                      onSelected: (_) => setState(
+                        () => _statusFilter = WorkSessionStatus.pending,
+                      ),
                     ),
                     FilterChip(
                       label: const Text('Approved'),
                       selected: _statusFilter == WorkSessionStatus.approved,
-                      onSelected: (_) => setState(() => _statusFilter = WorkSessionStatus.approved),
+                      onSelected: (_) => setState(
+                        () => _statusFilter = WorkSessionStatus.approved,
+                      ),
                     ),
                     FilterChip(
                       label: const Text('Rejected'),
                       selected: _statusFilter == WorkSessionStatus.rejected,
-                      onSelected: (_) => setState(() => _statusFilter = WorkSessionStatus.rejected),
+                      onSelected: (_) => setState(
+                        () => _statusFilter = WorkSessionStatus.rejected,
+                      ),
                     ),
                   ],
                 ),
@@ -225,46 +236,65 @@ class _WorkHistoryListScreenState extends State<WorkHistoryListScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.sm),
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.md,
+                        AppSpacing.sm,
+                        AppSpacing.md,
+                        AppSpacing.sm,
+                      ),
                       child: Text(
                         label,
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w900,
-                              color: cs.onSurfaceVariant,
-                            ),
+                          fontWeight: FontWeight.w900,
+                          color: cs.onSurfaceVariant,
+                        ),
                       ),
                     ),
-                    ...list.map((s) => Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                          child: Card(
-                            child: ListTile(
-                              leading: Container(
-                                width: 46,
-                                height: 46,
-                                decoration: BoxDecoration(
-                                  color: cs.primaryContainer,
-                                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                    ...list.map(
+                      (s) => Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md,
+                        ),
+                        child: Card(
+                          child: ListTile(
+                            leading: Container(
+                              width: 46,
+                              height: 46,
+                              decoration: BoxDecoration(
+                                color: cs.primaryContainer,
+                                borderRadius: BorderRadius.circular(
+                                  AppSpacing.radiusMd,
                                 ),
-                                child: Icon(Icons.work_history_rounded, color: cs.onPrimaryContainer),
                               ),
-                              title: Text(
-                                s.workType,
-                                style: const TextStyle(fontWeight: FontWeight.w900),
+                              child: Icon(
+                                Icons.work_history_rounded,
+                                color: cs.onPrimaryContainer,
                               ),
-                              subtitle: Text(
-                                '${s.startTime}–${s.endTime} • ${s.duration} hrs\n${s.site} • ${s.engineer} • ${s.id}',
-                              ),
-                              isThreeLine: true,
-                              trailing: StatusChip(status: _toUiStatus(s.status)),
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => WorkSessionDetailScreen(session: s)),
-                                );
-                              },
                             ),
+                            title: Text(
+                              s.workType,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            subtitle: Text(
+                              '${s.startTime}–${s.endTime} • ${s.duration} hrs\n${s.site} • ${s.engineer} • ${s.id}',
+                            ),
+                            isThreeLine: true,
+                            trailing: StatusChip(status: _toUiStatus(s.status)),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      WorkSessionDetailScreen(session: s),
+                                ),
+                              );
+                            },
                           ),
-                        )),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               );

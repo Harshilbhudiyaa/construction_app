@@ -8,10 +8,7 @@ import '../../../../app/ui/widgets/status_chip.dart';
 class EngineerDashboardScreen extends StatelessWidget {
   final void Function(int tabIndex) onNavigateToTab;
 
-  const EngineerDashboardScreen({
-    super.key,
-    required this.onNavigateToTab,
-  });
+  const EngineerDashboardScreen({super.key, required this.onNavigateToTab});
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +25,10 @@ class EngineerDashboardScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Engineer Dashboard'),
         actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.notifications_rounded)),
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.notifications_rounded),
+          ),
         ],
       ),
       body: ListView(
@@ -47,22 +47,36 @@ class EngineerDashboardScreen extends StatelessWidget {
                       height: 46,
                       decoration: BoxDecoration(
                         color: cs.primaryContainer,
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusMd,
+                        ),
                       ),
-                      child: Icon(Icons.engineering_rounded, color: cs.onPrimaryContainer),
+                      child: Icon(
+                        Icons.engineering_rounded,
+                        color: cs.onPrimaryContainer,
+                      ),
                     ),
                     const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Engineer A', style: TextStyle(fontWeight: FontWeight.w900)),
+                          const Text(
+                            'Engineer A',
+                            style: TextStyle(fontWeight: FontWeight.w900),
+                          ),
                           const SizedBox(height: 2),
-                          Text('Site A • Shift: Day (demo)', style: TextStyle(color: cs.onSurfaceVariant)),
+                          Text(
+                            'Site A • Shift: Day (demo)',
+                            style: TextStyle(color: cs.onSurfaceVariant),
+                          ),
                         ],
                       ),
                     ),
-                    const StatusChip(status: UiStatus.ok, labelOverride: 'On Duty'),
+                    const StatusChip(
+                      status: UiStatus.ok,
+                      labelOverride: 'On Duty',
+                    ),
                   ],
                 ),
               ),
@@ -74,8 +88,20 @@ class EngineerDashboardScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Row(
               children: const [
-                Expanded(child: KpiCard(title: 'Active Workers', value: '$activeWorkers', icon: Icons.groups_rounded)),
-                Expanded(child: KpiCard(title: 'Pending Approvals', value: '$pendingApprovals', icon: Icons.fact_check_rounded)),
+                Expanded(
+                  child: KpiCard(
+                    title: 'Active Workers',
+                    value: '$activeWorkers',
+                    icon: Icons.groups_rounded,
+                  ),
+                ),
+                Expanded(
+                  child: KpiCard(
+                    title: 'Pending Approvals',
+                    value: '$pendingApprovals',
+                    icon: Icons.fact_check_rounded,
+                  ),
+                ),
               ],
             ),
           ),
@@ -83,8 +109,20 @@ class EngineerDashboardScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Row(
               children: const [
-                Expanded(child: KpiCard(title: 'Blocks Today', value: '$blocksToday', icon: Icons.view_in_ar_rounded)),
-                Expanded(child: KpiCard(title: 'Low Stock Items', value: '$lowStockItems', icon: Icons.warning_amber_rounded)),
+                Expanded(
+                  child: KpiCard(
+                    title: 'Blocks Today',
+                    value: '$blocksToday',
+                    icon: Icons.view_in_ar_rounded,
+                  ),
+                ),
+                Expanded(
+                  child: KpiCard(
+                    title: 'Low Stock Items',
+                    value: '$lowStockItems',
+                    icon: Icons.warning_amber_rounded,
+                  ),
+                ),
               ],
             ),
           ),
@@ -92,8 +130,20 @@ class EngineerDashboardScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Row(
               children: const [
-                Expanded(child: KpiCard(title: 'Trucks In Transit', value: '$trucksInTransit', icon: Icons.local_shipping_rounded)),
-                Expanded(child: KpiCard(title: 'Backup Alerts', value: '1', icon: Icons.sms_failed_rounded)),
+                Expanded(
+                  child: KpiCard(
+                    title: 'Trucks In Transit',
+                    value: '$trucksInTransit',
+                    icon: Icons.local_shipping_rounded,
+                  ),
+                ),
+                Expanded(
+                  child: KpiCard(
+                    title: 'Backup Alerts',
+                    value: '1',
+                    icon: Icons.sms_failed_rounded,
+                  ),
+                ),
               ],
             ),
           ),
@@ -108,9 +158,15 @@ class EngineerDashboardScreen extends StatelessWidget {
             child: Card(
               child: ListTile(
                 leading: Icon(Icons.fact_check_rounded, color: cs.primary),
-                title: const Text('Approvals Queue', style: TextStyle(fontWeight: FontWeight.w900)),
+                title: const Text(
+                  'Approvals Queue',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
                 subtitle: const Text('Verify worker sessions'),
-                trailing: const StatusChip(status: UiStatus.pending, labelOverride: '5 Pending'),
+                trailing: const StatusChip(
+                  status: UiStatus.pending,
+                  labelOverride: '5 Pending',
+                ),
                 onTap: () => onNavigateToTab(1), // ✅ Approvals
               ),
             ),
@@ -120,10 +176,19 @@ class EngineerDashboardScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Card(
               child: ListTile(
-                leading: Icon(Icons.precision_manufacturing_rounded, color: cs.primary),
-                title: const Text('Block Production', style: TextStyle(fontWeight: FontWeight.w900)),
+                leading: Icon(
+                  Icons.precision_manufacturing_rounded,
+                  color: cs.primary,
+                ),
+                title: const Text(
+                  'Block Production',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
                 subtitle: const Text('Production entry + backup logs'),
-                trailing: const StatusChip(status: UiStatus.low, labelOverride: 'Backup Used'),
+                trailing: const StatusChip(
+                  status: UiStatus.low,
+                  labelOverride: 'Backup Used',
+                ),
                 onTap: () => onNavigateToTab(2), // ✅ Blocks
               ),
             ),
@@ -134,9 +199,15 @@ class EngineerDashboardScreen extends StatelessWidget {
             child: Card(
               child: ListTile(
                 leading: Icon(Icons.inventory_2_rounded, color: cs.primary),
-                title: const Text('Inventory', style: TextStyle(fontWeight: FontWeight.w900)),
+                title: const Text(
+                  'Inventory',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
                 subtitle: const Text('Low stock and ledger'),
-                trailing: const StatusChip(status: UiStatus.low, labelOverride: '3 Low'),
+                trailing: const StatusChip(
+                  status: UiStatus.low,
+                  labelOverride: '3 Low',
+                ),
                 onTap: () => onNavigateToTab(3), // ✅ Inventory
               ),
             ),
@@ -147,9 +218,15 @@ class EngineerDashboardScreen extends StatelessWidget {
             child: Card(
               child: ListTile(
                 leading: Icon(Icons.local_shipping_rounded, color: cs.primary),
-                title: const Text('Truck Trips', style: TextStyle(fontWeight: FontWeight.w900)),
+                title: const Text(
+                  'Truck Trips',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
                 subtitle: const Text('Trips list + decision engine'),
-                trailing: const StatusChip(status: UiStatus.ok, labelOverride: '2 Active'),
+                trailing: const StatusChip(
+                  status: UiStatus.ok,
+                  labelOverride: '2 Active',
+                ),
                 onTap: () => onNavigateToTab(4), // ✅ Trucks
               ),
             ),

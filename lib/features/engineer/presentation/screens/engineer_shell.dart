@@ -36,11 +36,26 @@ class _EngineerShellState extends State<EngineerShell> {
         selectedIndex: _index,
         onDestinationSelected: _goTo,
         destinations: const [
-          NavigationDestination(icon: Icon(Icons.dashboard_rounded), label: 'Home'),
-          NavigationDestination(icon: Icon(Icons.fact_check_rounded), label: 'Approvals'),
-          NavigationDestination(icon: Icon(Icons.precision_manufacturing_rounded), label: 'Blocks'),
-          NavigationDestination(icon: Icon(Icons.inventory_2_rounded), label: 'Inventory'),
-          NavigationDestination(icon: Icon(Icons.local_shipping_rounded), label: 'Trucks'),
+          NavigationDestination(
+            icon: Icon(Icons.dashboard_rounded),
+            label: 'Home',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.fact_check_rounded),
+            label: 'Approvals',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.precision_manufacturing_rounded),
+            label: 'Blocks',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.inventory_2_rounded),
+            label: 'Inventory',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.local_shipping_rounded),
+            label: 'Trucks',
+          ),
         ],
       ),
     );

@@ -5,16 +5,17 @@ class AppSearchField extends StatelessWidget {
   final String hint;
   final ValueChanged<String>? onChanged;
 
-  const AppSearchField({
-    super.key,
-    this.hint = 'Search',
-    this.onChanged,
-  });
+  const AppSearchField({super.key, this.hint = 'Search', this.onChanged});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.sm),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.sm,
+        AppSpacing.md,
+        AppSpacing.sm,
+      ),
       child: TextField(
         onChanged: onChanged,
         decoration: InputDecoration(

@@ -10,7 +10,8 @@ class InventoryLowStockScreen extends StatefulWidget {
   const InventoryLowStockScreen({super.key});
 
   @override
-  State<InventoryLowStockScreen> createState() => _InventoryLowStockScreenState();
+  State<InventoryLowStockScreen> createState() =>
+      _InventoryLowStockScreenState();
 }
 
 class _InventoryLowStockScreenState extends State<InventoryLowStockScreen> {
@@ -18,9 +19,19 @@ class _InventoryLowStockScreenState extends State<InventoryLowStockScreen> {
   String _range = 'This Week';
 
   final _items = <LowStockItem>[
-    const LowStockItem(name: 'Cement (Bags)', current: 18, threshold: 25, unit: 'bags'),
+    const LowStockItem(
+      name: 'Cement (Bags)',
+      current: 18,
+      threshold: 25,
+      unit: 'bags',
+    ),
     const LowStockItem(name: 'Sand', current: 2, threshold: 5, unit: 'tons'),
-    const LowStockItem(name: 'Steel Rod', current: 120, threshold: 200, unit: 'kg'),
+    const LowStockItem(
+      name: 'Steel Rod',
+      current: 120,
+      threshold: 200,
+      unit: 'kg',
+    ),
   ];
 
   List<LowStockItem> get _filtered {
@@ -43,7 +54,12 @@ class _InventoryLowStockScreenState extends State<InventoryLowStockScreen> {
             onChanged: (v) => setState(() => _query = v),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.sm),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              0,
+              AppSpacing.md,
+              AppSpacing.sm,
+            ),
             child: Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -57,7 +73,10 @@ class _InventoryLowStockScreenState extends State<InventoryLowStockScreen> {
               }).toList(),
             ),
           ),
-          const SectionHeader(title: 'Items', subtitle: 'Below threshold (UI-only)'),
+          const SectionHeader(
+            title: 'Items',
+            subtitle: 'Below threshold (UI-only)',
+          ),
           if (_filtered.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -80,12 +99,23 @@ class _InventoryLowStockScreenState extends State<InventoryLowStockScreen> {
                       children: [
                         Row(
                           children: const [
-                            Expanded(child: Text('Low Stock Item', style: TextStyle(fontWeight: FontWeight.w900))),
-                            StatusChip(status: UiStatus.low, labelOverride: 'Low'),
+                            Expanded(
+                              child: Text(
+                                'Low Stock Item',
+                                style: TextStyle(fontWeight: FontWeight.w900),
+                              ),
+                            ),
+                            StatusChip(
+                              status: UiStatus.low,
+                              labelOverride: 'Low',
+                            ),
                           ],
                         ),
                         const SizedBox(height: 6),
-                        Text(x.name, style: const TextStyle(fontWeight: FontWeight.w900)),
+                        Text(
+                          x.name,
+                          style: const TextStyle(fontWeight: FontWeight.w900),
+                        ),
                         const SizedBox(height: 6),
                         Text(
                           'Current: ${x.current} ${x.unit} • Threshold: ${x.threshold} ${x.unit}',
@@ -103,7 +133,11 @@ class _InventoryLowStockScreenState extends State<InventoryLowStockScreen> {
                           child: TextButton.icon(
                             onPressed: () {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Restock request for ${x.name} (next UI step)')),
+                                SnackBar(
+                                  content: Text(
+                                    'Restock request for ${x.name} (next UI step)',
+                                  ),
+                                ),
                               );
                             },
                             icon: const Icon(Icons.add_shopping_cart_rounded),

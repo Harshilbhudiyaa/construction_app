@@ -1,6 +1,16 @@
 import 'package:flutter/material.dart';
 
-enum UiStatus { ok, low, pending, approved, rejected, inTransit, arrived, hold, stop }
+enum UiStatus {
+  ok,
+  low,
+  pending,
+  approved,
+  rejected,
+  inTransit,
+  arrived,
+  hold,
+  stop,
+}
 
 class StatusChip extends StatelessWidget {
   final UiStatus status;

@@ -11,7 +11,8 @@ class EarningsBreakdownScreen extends StatefulWidget {
   const EarningsBreakdownScreen({super.key});
 
   @override
-  State<EarningsBreakdownScreen> createState() => _EarningsBreakdownScreenState();
+  State<EarningsBreakdownScreen> createState() =>
+      _EarningsBreakdownScreenState();
 }
 
 class _EarningsBreakdownScreenState extends State<EarningsBreakdownScreen> {
@@ -19,17 +20,47 @@ class _EarningsBreakdownScreenState extends State<EarningsBreakdownScreen> {
   String _query = '';
 
   final _rows = <_BreakdownRow>[
-    const _BreakdownRow(id: 'WS-1005', date: 'Today', workType: 'Concrete Work', amount: 650, status: UiStatus.pending),
-    const _BreakdownRow(id: 'WS-1004', date: 'Today', workType: 'Brick / Block Work', amount: 420, status: UiStatus.approved),
-    const _BreakdownRow(id: 'WS-1001', date: 'Yesterday', workType: 'Plumbing', amount: 300, status: UiStatus.rejected),
-    const _BreakdownRow(id: 'WS-0999', date: 'Earlier', workType: 'Electrical', amount: 260, status: UiStatus.approved),
+    const _BreakdownRow(
+      id: 'WS-1005',
+      date: 'Today',
+      workType: 'Concrete Work',
+      amount: 650,
+      status: UiStatus.pending,
+    ),
+    const _BreakdownRow(
+      id: 'WS-1004',
+      date: 'Today',
+      workType: 'Brick / Block Work',
+      amount: 420,
+      status: UiStatus.approved,
+    ),
+    const _BreakdownRow(
+      id: 'WS-1001',
+      date: 'Yesterday',
+      workType: 'Plumbing',
+      amount: 300,
+      status: UiStatus.rejected,
+    ),
+    const _BreakdownRow(
+      id: 'WS-0999',
+      date: 'Earlier',
+      workType: 'Electrical',
+      amount: 260,
+      status: UiStatus.approved,
+    ),
   ];
 
   List<_BreakdownRow> get _filtered {
     final q = _query.trim().toLowerCase();
     final base = q.isEmpty
         ? _rows
-        : _rows.where((r) => ('${r.id} ${r.date} ${r.workType} ${r.amount}').toLowerCase().contains(q)).toList();
+        : _rows
+              .where(
+                (r) => ('${r.id} ${r.date} ${r.workType} ${r.amount}')
+                    .toLowerCase()
+                    .contains(q),
+              )
+              .toList();
 
     // Range is UI-only; keeping it as visual filter
     return base;
@@ -49,7 +80,12 @@ class _EarningsBreakdownScreenState extends State<EarningsBreakdownScreen> {
             onChanged: (v) => setState(() => _query = v),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.sm),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              0,
+              AppSpacing.md,
+              AppSpacing.sm,
+            ),
             child: Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -63,7 +99,10 @@ class _EarningsBreakdownScreenState extends State<EarningsBreakdownScreen> {
               }).toList(),
             ),
           ),
-          const SectionHeader(title: 'Sessions', subtitle: 'Tap any row to view details'),
+          const SectionHeader(
+            title: 'Sessions',
+            subtitle: 'Tap any row to view details',
+          ),
 
           if (_filtered.isEmpty)
             Padding(
@@ -98,11 +137,19 @@ class _EarningsBreakdownScreenState extends State<EarningsBreakdownScreen> {
                       height: 46,
                       decoration: BoxDecoration(
                         color: badgeColor().withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusMd,
+                        ),
                       ),
-                      child: Icon(Icons.work_history_rounded, color: badgeColor()),
+                      child: Icon(
+                        Icons.work_history_rounded,
+                        color: badgeColor(),
+                      ),
                     ),
-                    title: Text(r.workType, style: const TextStyle(fontWeight: FontWeight.w900)),
+                    title: Text(
+                      r.workType,
+                      style: const TextStyle(fontWeight: FontWeight.w900),
+                    ),
                     subtitle: Text('${r.date} • ₹${r.amount} • ${r.id}'),
                     trailing: StatusChip(status: r.status),
                     onTap: () => Navigator.push(
