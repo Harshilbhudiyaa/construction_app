@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../../../app/theme/professional_theme.dart';
 import '../../../../app/ui/widgets/professional_page.dart';
+import '../../../../app/ui/widgets/helpful_text_field.dart';
+import '../../../../app/ui/widgets/helpful_dropdown.dart';
+import '../../../../app/ui/widgets/confirm_dialog.dart';
+import '../../../../app/utils/input_formatters.dart';
+import '../../../../app/utils/feedback_helper.dart';
 import 'worker_types.dart';
 
 class WorkerFormScreen extends StatefulWidget {
@@ -68,19 +73,30 @@ class _WorkerFormScreenState extends State<WorkerFormScreen> {
   }
 
   void _save() {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      FeedbackHelper.showWarning(
+        context,
+        'Please fill in all required fields correctly',
+      );
+      return;
+    }
+    
     if (_workTypes.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Select at least 1 work type')),
+      FeedbackHelper.showWarning(
+        context,
+        'Please select at least one work type for this worker',
       );
       return;
     }
 
-    final rate = num.tryParse(_rateCtrl.text.trim());
+    // Parse and validate rate amount
+    final rateText = _rateCtrl.text.trim().replaceAll(RegExp(r'[^\d.]'), '');
+    final rate = num.tryParse(rateText);
     if (rate == null || rate <= 0) {
-      ScaffoldMessenger.of(
+      FeedbackHelper.showError(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Enter valid rate amount')));
+        'Please enter a valid pay rate greater than zero',
+      );
       return;
     }
 
@@ -92,7 +108,7 @@ class _WorkerFormScreenState extends State<WorkerFormScreen> {
     final worker = Worker(
       id: id,
       name: _nameCtrl.text.trim(),
-      phone: _phoneCtrl.text.trim(),
+      phone: _phoneCtrl.text.trim().replaceAll(RegExp(r'\D'), ''),
       skill: _skill,
       shift: _shift,
       rateType: _rateType,
@@ -101,14 +117,40 @@ class _WorkerFormScreenState extends State<WorkerFormScreen> {
       assignedWorkTypes: List<String>.from(_workTypes),
     );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          isEdit ? 'Worker updated successfully' : 'Worker added to directory',
-        ),
-      ),
+    FeedbackHelper.showSuccess(
+      context,
+      isEdit 
+          ? '✓ ${worker.name}\'s profile has been updated successfully'
+          : '✓ ${worker.name} has been added to your workforce',
     );
     Navigator.pop(context, worker);
+  }
+
+  Future<void> _handleBack() async {
+    // Check if form has any data
+    final hasData = _nameCtrl.text.trim().isNotEmpty ||
+        _phoneCtrl.text.trim().isNotEmpty ||
+        _rateCtrl.text.trim() != '800';
+
+    if (!hasData) {
+      Navigator.pop(context);
+      return;
+    }
+
+    final confirmed = await ConfirmDialog.show(
+      context: context,
+      title: 'Discard Changes?',
+      message: 'You have unsaved changes. Are you sure you want to go back without saving?',
+      confirmText: 'Discard',
+      cancelText: 'Keep Editing',
+      icon: Icons.warning_rounded,
+      iconColor: Colors.orange,
+      isDangerous: true,
+    );
+
+    if (confirmed && mounted) {
+      Navigator.pop(context);
+    }
   }
 
   @override
@@ -130,31 +172,42 @@ class _WorkerFormScreenState extends State<WorkerFormScreen> {
               key: _formKey,
               child: Column(
                 children: [
-                  _buildField(
+                  HelpfulTextField(
                     label: 'Full Name',
                     controller: _nameCtrl,
                     icon: Icons.person_outline_rounded,
-                    validator: (v) => (v ?? '').trim().isEmpty ? 'Required' : null,
+                    hintText: 'e.g., Ramesh Kumar',
+                    tooltipMessage: 'Enter the worker\'s full legal name as per official documents',
+                    helpText: 'First name and surname',
+                    inputFormatters: [NameFormatter()],
+                    validator: (v) => (v ?? '').trim().isEmpty ? 'Name is required' : null,
                   ),
                   const SizedBox(height: 20),
-                  _buildField(
+                  HelpfulTextField(
                     label: 'Phone Number',
                     controller: _phoneCtrl,
                     icon: Icons.phone_android_rounded,
+                    hintText: 'e.g., 9876543210',
                     keyboardType: TextInputType.phone,
+                    tooltipMessage: 'Primary contact number for work notifications and payments',
+                    helpText: '10-digit mobile number',
+                    inputFormatters: [PhoneNumberFormatter()],
                     validator: (v) {
                       final t = (v ?? '').trim();
-                      if (t.isEmpty) return 'Required';
+                      if (t.isEmpty) return 'Phone number is required';
                       final digits = t.replaceAll(RegExp(r'\D'), '');
-                      if (digits.length < 10) return 'Valid phone required';
+                      if (digits.length < 10) return 'Enter a valid 10-digit phone number';
                       return null;
                     },
                   ),
                   const SizedBox(height: 20),
-                  _buildDropdown<String>(
+                  HelpfulDropdown<String>(
                     label: 'Primary Skill',
                     value: _skill,
                     items: kSkills,
+                    icon: Icons.engineering_rounded,
+                    tooltipMessage: 'Main area of expertise and work specialization',
+                    helpText: 'Select the worker\'s primary skill set',
                     onChanged: (v) => setState(() => _skill = v!),
                   ),
                 ],
@@ -172,11 +225,14 @@ class _WorkerFormScreenState extends State<WorkerFormScreen> {
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                _buildDropdown<WorkerShift>(
+                HelpfulDropdown<WorkerShift>(
                   label: 'Assigned Shift',
                   value: _shift,
                   items: WorkerShift.values,
                   labelMapper: shiftLabel,
+                  icon: Icons.access_time_rounded,
+                  tooltipMessage: 'Work shift timing - affects scheduling and availability',
+                  helpText: 'Day shift: 6 AM - 6 PM, Night shift: 6 PM - 6 AM',
                   onChanged: (v) => setState(() => _shift = v!),
                 ),
                 const SizedBox(height: 20),
@@ -184,31 +240,42 @@ class _WorkerFormScreenState extends State<WorkerFormScreen> {
                   children: [
                     Expanded(
                       flex: 3,
-                      child: _buildDropdown<PayRateType>(
+                      child: HelpfulDropdown<PayRateType>(
                         label: 'Rate Type',
                         value: _rateType,
                         items: PayRateType.values,
                         labelMapper: rateTypeLabel,
+                        icon: Icons.payments_rounded,
+                        tooltipMessage: 'Payment calculation basis',
+                        helpText: 'How the worker will be compensated',
                         onChanged: (v) => setState(() => _rateType = v!),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       flex: 2,
-                      child: _buildField(
+                      child: HelpfulTextField(
                         label: 'Amount (₹)',
                         controller: _rateCtrl,
+                        icon: Icons.currency_rupee_rounded,
+                        hintText: '800',
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        tooltipMessage: 'Pay rate amount in Indian Rupees',
+                        helpText: 'Standard rate for this skill',
+                        inputFormatters: [CurrencyFormatter()],
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 20),
-                _buildDropdown<WorkerStatus>(
+                HelpfulDropdown<WorkerStatus>(
                   label: 'Current Status',
                   value: _status,
                   items: WorkerStatus.values,
                   labelMapper: statusLabel,
+                  icon: Icons.toggle_on_rounded,
+                  tooltipMessage: 'Worker availability status in the system',
+                  helpText: 'Active workers can be assigned to tasks',
                   onChanged: (v) => setState(() => _status = v!),
                 ),
               ],
@@ -260,14 +327,19 @@ class _WorkerFormScreenState extends State<WorkerFormScreen> {
           child: Row(
             children: [
               Expanded(
-                child: TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: TextButton.styleFrom(
+                child: OutlinedButton.icon(
+                  onPressed: _handleBack,
+                  style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
+                    side: BorderSide(color: Colors.grey[300]!),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                  child: Text(
-                    'Discard',
-                    style: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.bold),
+                  icon: Icon(Icons.close_rounded, size: 20, color: Colors.grey[700]),
+                  label: Text(
+                    'Cancel',
+                    style: TextStyle(color: Colors.grey[700], fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -294,92 +366,6 @@ class _WorkerFormScreenState extends State<WorkerFormScreen> {
           ),
         ),
         const SizedBox(height: 100),
-      ],
-    );
-  }
-
-  Widget _buildField({
-    required String label,
-    required TextEditingController controller,
-    IconData? icon,
-    TextInputType? keyboardType,
-    String? Function(String?)? validator,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.grey[600]),
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: controller,
-          keyboardType: keyboardType,
-          validator: validator,
-          decoration: InputDecoration(
-            isDense: true,
-            prefixIcon: icon != null ? Icon(icon, size: 20, color: AppColors.deepBlue1) : null,
-            filled: true,
-            fillColor: Colors.grey[50],
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[200]!),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[200]!),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.deepBlue1, width: 2),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDropdown<T>({
-    required String label,
-    required T value,
-    required List<T> items,
-    String Function(T)? labelMapper,
-    required ValueChanged<T?> onChanged,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.grey[600]),
-        ),
-        const SizedBox(height: 8),
-        DropdownButtonFormField<T>(
-          value: value,
-          onChanged: onChanged,
-          items: items.map((e) => DropdownMenuItem<T>(
-            value: e,
-            child: Text(labelMapper?.call(e) ?? e.toString(), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-          )).toList(),
-          decoration: InputDecoration(
-            isDense: true,
-            filled: true,
-            fillColor: Colors.grey[50],
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[200]!),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[200]!),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.deepBlue1, width: 2),
-            ),
-          ),
-        ),
       ],
     );
   }

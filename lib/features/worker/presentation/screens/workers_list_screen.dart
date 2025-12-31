@@ -7,6 +7,9 @@ import '../../../../app/ui/widgets/empty_state.dart';
 import '../../../../app/ui/widgets/staggered_animation.dart';
 import '../../../../app/ui/widgets/status_chip.dart';
 import '../../../../app/ui/widgets/professional_page.dart';
+import '../../../../app/ui/widgets/confirm_dialog.dart';
+import '../../../../app/ui/widgets/info_tooltip.dart';
+import '../../../../app/utils/feedback_helper.dart';
 import 'worker_detail_screen.dart';
 import 'worker_form_screen.dart';
 import 'worker_types.dart';
@@ -100,20 +103,33 @@ class _WorkersListScreenState extends State<WorkersListScreen> {
     }
   }
 
-  void _toggleActive(Worker w) {
+  Future<void> _toggleActive(Worker w) async {
     final next = w.status == WorkerStatus.active
         ? WorkerStatus.inactive
         : WorkerStatus.active;
+    
+    final action = next == WorkerStatus.active ? 'activate' : 'deactivate';
+    
+    final confirmed = await ConfirmDialog.show(
+      context: context,
+      title: '${action == 'activate' ? 'Activate' : 'Deactivate'} Worker?',
+      message: 'Are you sure you want to $action ${w.name}? ${next == WorkerStatus.inactive ? 'They will not be available for new work assignments.' : 'They will be available for work assignments.'}',
+      confirmText: action == 'activate' ? 'Activate' : 'Deactivate',
+      icon: next == WorkerStatus.active ? Icons.check_circle_outline : Icons.cancel_outlined,
+      iconColor: next == WorkerStatus.active ? Colors.green : Colors.orange,
+      isDangerous: next == WorkerStatus.inactive,
+    );
+
+    if (!confirmed) return;
+
     setState(() {
       final idx = _items.indexWhere((x) => x.id == w.id);
       if (idx != -1) _items[idx] = _items[idx].copyWith(status: next);
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Status updated: ${w.name} → ${statusLabel(next)} (UI-only)',
-        ),
-      ),
+    
+    FeedbackHelper.showSuccess(
+      context,
+      '✓ ${w.name} has been ${next == WorkerStatus.active ? 'activated' : 'deactivated'} successfully',
     );
   }
 
@@ -128,9 +144,20 @@ class _WorkersListScreenState extends State<WorkersListScreen> {
         label: const Text('Add Worker', style: TextStyle(color: Colors.white)),
       ),
       children: [
-        AppSearchField(
-          hint: 'Search name, skill, phone, id...',
-          onChanged: (v) => setState(() => _q = v),
+        Row(
+          children: [
+            Expanded(
+              child: AppSearchField(
+                hint: 'Search name, skill, phone, id...',
+                onChanged: (v) => setState(() => _q = v),
+              ),
+            ),
+            const SizedBox(width: 8),
+            InfoTooltip(
+              message: 'Search across worker names, skills, phone numbers, IDs, shifts, and work types',
+              icon: Icons.help_outline_rounded,
+            ),
+          ],
         ),
 
         const ProfessionalSectionHeader(

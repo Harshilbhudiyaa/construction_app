@@ -4,6 +4,9 @@ import '../../../../app/theme/professional_theme.dart';
 import '../../../../app/ui/widgets/app_search_field.dart';
 import '../../../../app/ui/widgets/professional_page.dart';
 import '../../../../app/ui/widgets/staggered_animation.dart';
+import '../../../../app/ui/widgets/empty_state.dart';
+import '../../../../app/ui/widgets/info_tooltip.dart';
+import '../../../../app/utils/feedback_helper.dart';
 
 class EngineersListScreen extends StatefulWidget {
   const EngineersListScreen({super.key});
@@ -43,15 +46,36 @@ class _EngineersListScreenState extends State<EngineersListScreen> {
         label: const Text('Add Engineer', style: TextStyle(color: Colors.white)),
       ),
       children: [
-        AppSearchField(
-          hint: 'Search by name, site, or role...',
-          onChanged: (v) => setState(() => _q = v),
+        Row(
+          children: [
+            Expanded(
+              child: AppSearchField(
+                hint: 'Search by name, site, or role...',
+                onChanged: (v) => setState(() => _q = v),
+              ),
+            ),
+            const SizedBox(width: 8),
+            InfoTooltip(
+              message: 'Search across engineer names, assigned sites, shifts, and roles',
+              icon: Icons.help_outline_rounded,
+            ),
+          ],
         ),
         const ProfessionalSectionHeader(
           title: 'Management Cadre',
           subtitle: 'Active site engineers and field supervisors',
         ),
-        ...filtered.asMap().entries.map(
+        if (filtered.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            child: EmptyState(
+              icon: Icons.engineering_rounded,
+              title: 'No Engineers Found',
+              message: 'Try adjusting your search or add new engineers to get started.',
+            ),
+          )
+        else
+          ...filtered.asMap().entries.map(
           (entry) {
             final index = entry.key;
             final e = entry.value;
@@ -97,11 +121,47 @@ class _EngineersListScreenState extends State<EngineersListScreen> {
                         ),
                       ],
                     ),
-                    trailing: Icon(Icons.chevron_right_rounded, color: Colors.grey[400]),
-                    onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Accessing Profile: ${e.$1}'),
-                      ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.green.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 6,
+                                height: 6,
+                                decoration: const BoxDecoration(
+                                  color: Colors.green,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Active',
+                                style: TextStyle(
+                                  color: Colors.green[700],
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Icon(Icons.chevron_right_rounded, color: Colors.grey[400]),
+                      ],
+                    ),
+                    onTap: () => FeedbackHelper.showInfo(
+                      context,
+                      'Accessing profile: ${e.$1}',
                     ),
                   ),
                 ),
