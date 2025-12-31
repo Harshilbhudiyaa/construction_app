@@ -1,21 +1,7 @@
 plugins {
     id("com.android.application")
-<<<<<<< Updated upstream
-    // START: FlutterFire Configuration
     id("com.google.gms.google-services")
-    // END: FlutterFire Configuration
-    id("kotlin-android")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
-=======
-
-    // Firebase (Google Services)
-    id("com.google.gms.google-services")
-
-    // Kotlin (recommended id for Kotlin DSL projects)
     id("org.jetbrains.kotlin.android")
-
-    // Flutter Gradle Plugin must be last
->>>>>>> Stashed changes
     id("dev.flutter.flutter-gradle-plugin")
 }
 

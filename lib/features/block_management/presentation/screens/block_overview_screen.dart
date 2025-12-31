@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_spacing.dart';
-import '../../../../app/ui/widgets/kpi_card.dart';
-import '../../../../app/ui/widgets/section_header.dart';
+import '../../../../app/theme/professional_theme.dart';
 import '../../../../app/ui/widgets/status_chip.dart';
+import '../../../../app/ui/widgets/professional_page.dart';
 import 'backup_usage_log_screen.dart';
 import 'block_production_entry_screen.dart';
 
@@ -12,8 +12,6 @@ class BlockOverviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
     // UI-only demo data
     const blocksToday = 3200;
     const mainStock = 42000;
@@ -21,226 +19,301 @@ class BlockOverviewScreen extends StatelessWidget {
     const backupLevel = 15000; // threshold
     final isBackupLow = backupStock < backupLevel;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Block Management'),
-        actions: [
-          IconButton(
-            tooltip: 'Production Entry',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const BlockProductionEntryScreen(),
-                ),
-              );
-            },
-            icon: const Icon(Icons.add_circle_rounded),
-          ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-        children: [
-          // KPI grid
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Row(
-              children: const [
-                Expanded(
-                  child: KpiCard(
-                    title: 'Blocks Today',
-                    value: '$blocksToday',
-                    icon: Icons.view_in_ar_rounded,
-                  ),
-                ),
-                Expanded(
-                  child: KpiCard(
-                    title: 'Machines Active',
-                    value: '2',
-                    icon: Icons.precision_manufacturing_rounded,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Row(
-              children: const [
-                Expanded(
-                  child: KpiCard(
-                    title: 'Main Stock',
-                    value: '$mainStock',
-                    icon: Icons.inventory_2_rounded,
-                  ),
-                ),
-                Expanded(
-                  child: KpiCard(
-                    title: 'Backup Stock',
-                    value: '$backupStock',
-                    icon: Icons.safety_check_rounded,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SectionHeader(
-            title: 'Stock Status',
-            subtitle: 'Backup threshold monitoring (UI-only)',
-          ),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Expanded(
-                          child: Text(
-                            'Backup Threshold',
-                            style: TextStyle(fontWeight: FontWeight.w900),
-                          ),
-                        ),
-                        StatusChip(
-                          status: isBackupLow ? UiStatus.low : UiStatus.ok,
-                          labelOverride: isBackupLow ? 'Below Threshold' : 'OK',
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    _kv(context, 'Backup Level', '$backupLevel blocks'),
-                    _kv(context, 'Current Backup', '$backupStock blocks'),
-                    const SizedBox(height: 10),
-                    LinearProgressIndicator(
-                      value: (backupStock / backupLevel).clamp(0.0, 1.0),
-                      minHeight: 10,
-                      borderRadius: BorderRadius.circular(99),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      isBackupLow
-                          ? 'Backup stock is below threshold. Escalation + refill action needed.'
-                          : 'Backup stock is within safe limit.',
-                      style: TextStyle(color: cs.onSurfaceVariant),
-                    ),
-                  ],
-                ),
+    return ProfessionalPage(
+      title: 'Block Management',
+      actions: [
+        IconButton(
+          tooltip: 'Production Entry',
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const BlockProductionEntryScreen(),
               ),
-            ),
-          ),
-
-          const SectionHeader(
-            title: 'Actions',
-            subtitle: 'Production entry and backup usage logs',
-          ),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Card(
-              child: ListTile(
-                leading: Icon(Icons.add_task_rounded, color: cs.primary),
-                title: const Text(
-                  'Add Production Entry',
-                  style: TextStyle(fontWeight: FontWeight.w900),
-                ),
-                subtitle: const Text('Machine + worker + blocks produced'),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const BlockProductionEntryScreen(),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Card(
-              child: ListTile(
-                leading: Icon(Icons.receipt_long_rounded, color: cs.primary),
-                title: const Text(
-                  'Backup Usage Log',
-                  style: TextStyle(fontWeight: FontWeight.w900),
-                ),
-                subtitle: const Text('Every backup usage entry (audit trail)'),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const BackupUsageLogScreen(),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-
-          const SectionHeader(
-            title: 'Machines (Demo)',
-            subtitle: 'Per-machine output snapshot',
-          ),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Card(
-              child: Column(
+            );
+          },
+          icon: const Icon(Icons.add_circle_rounded, color: Colors.white),
+        ),
+      ],
+      children: [
+        // KPI grid
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          child: Column(
+            children: [
+              Row(
                 children: const [
-                  _MachineTile(
-                    machineId: 'BM-01',
-                    machineType: 'Semi Automatic',
-                    blockType: 'Hollow',
-                    blocksPerCycle: 12,
-                    outputPerHour: 450,
-                    todayOutput: 1800,
-                    status: UiStatus.ok,
+                  Expanded(
+                    child: _KpiTile(
+                      title: 'Blocks Today',
+                      value: '$blocksToday',
+                      icon: Icons.view_in_ar_rounded,
+                      color: Colors.blue,
+                    ),
                   ),
-                  Divider(height: 1),
-                  _MachineTile(
-                    machineId: 'BM-02',
-                    machineType: 'Manual',
-                    blockType: 'Solid',
-                    blocksPerCycle: 8,
-                    outputPerHour: 260,
-                    todayOutput: 1400,
-                    status: UiStatus.pending,
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: _KpiTile(
+                      title: 'Machines',
+                      value: '2 Active',
+                      icon: Icons.precision_manufacturing_rounded,
+                      color: Colors.orange,
+                    ),
                   ),
                 ],
               ),
+              const SizedBox(height: 12),
+              Row(
+                children: const [
+                  Expanded(
+                    child: _KpiTile(
+                      title: 'Main Stock',
+                      value: '$mainStock',
+                      icon: Icons.inventory_2_rounded,
+                      color: Colors.green,
+                    ),
+                  ),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: _KpiTile(
+                      title: 'Backup',
+                      value: '$backupStock',
+                      icon: Icons.safety_check_rounded,
+                      color: Colors.purple,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+
+        const ProfessionalSectionHeader(
+          title: 'Stock Status',
+          subtitle: 'Refill alerts and thresholds',
+        ),
+
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: ProfessionalCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Backup Threshold',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.deepBlue1,
+                        ),
+                      ),
+                    ),
+                    StatusChip(
+                      status: isBackupLow ? UiStatus.low : UiStatus.ok,
+                      labelOverride: isBackupLow ? 'Refill Needed' : 'Safe',
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                _kv(context, 'Critical Level', '$backupLevel blocks'),
+                _kv(context, 'Current Stock', '$backupStock blocks'),
+                const SizedBox(height: 12),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(99),
+                  child: LinearProgressIndicator(
+                    value: (backupStock / backupLevel).clamp(0.0, 1.0),
+                    minHeight: 10,
+                    backgroundColor: Colors.grey[200],
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      isBackupLow ? Colors.orange : Colors.green,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  isBackupLow
+                      ? 'Stock is below threshold. Refill action recommended.'
+                      : 'Stock levels are currently optimal.',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                ),
+              ],
             ),
           ),
+        ),
 
-          const SizedBox(height: 16),
-        ],
-      ),
+        const ProfessionalSectionHeader(
+          title: 'Actions',
+          subtitle: 'Logs and production entries',
+        ),
+
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: ProfessionalCard(
+            child: Column(
+              children: [
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.add_task_rounded, color: AppColors.deepBlue1),
+                  title: const Text(
+                    'Add Production Entry',
+                    style: TextStyle(fontWeight: FontWeight.w900, color: AppColors.deepBlue1),
+                  ),
+                  subtitle: const Text('New block production count'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const BlockProductionEntryScreen(),
+                      ),
+                    );
+                  },
+                ),
+                const Divider(height: 1, indent: 40),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.receipt_long_rounded, color: AppColors.deepBlue1),
+                  title: const Text(
+                    'Backup Usage Log',
+                    style: TextStyle(fontWeight: FontWeight.w900, color: AppColors.deepBlue1),
+                  ),
+                  subtitle: const Text('Audit trail for stock usage'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const BackupUsageLogScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        const ProfessionalSectionHeader(
+          title: 'Machines',
+          subtitle: 'Real-time output monitoring',
+        ),
+
+        const _MachineList(),
+        const SizedBox(height: 24),
+      ],
     );
   }
 
   Widget _kv(BuildContext context, String k, String v) {
-    final cs = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
           Expanded(
-            child: Text(k, style: const TextStyle(fontWeight: FontWeight.w800)),
+            child: Text(
+              k,
+              style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.grey),
+            ),
           ),
-          Text(v, style: TextStyle(color: cs.onSurfaceVariant)),
+          Text(
+            v,
+            style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.deepBlue1),
+          ),
         ],
       ),
     );
   }
 }
+
+class _KpiTile extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  const _KpiTile({
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.deepBlue1,
+            ),
+          ),
+          Text(
+            title,
+            style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MachineList extends StatelessWidget {
+  const _MachineList();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: ProfessionalCard(
+        child: Column(
+          children: const [
+            _MachineTile(
+              machineId: 'BM-01',
+              machineType: 'Semi Automatic',
+              blockType: 'Hollow',
+              blocksPerCycle: 12,
+              outputPerHour: 450,
+              todayOutput: 1800,
+              status: UiStatus.ok,
+            ),
+            Divider(height: 1, indent: 50),
+            _MachineTile(
+              machineId: 'BM-02',
+              machineType: 'Manual',
+              blockType: 'Solid',
+              blocksPerCycle: 8,
+              outputPerHour: 260,
+              todayOutput: 1400,
+              status: UiStatus.pending,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 
 class _MachineTile extends StatelessWidget {
   final String machineId;

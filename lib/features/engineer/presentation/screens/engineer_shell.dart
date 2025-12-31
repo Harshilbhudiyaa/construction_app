@@ -6,6 +6,8 @@ import '../../../block_management/presentation/screens/block_overview_screen.dar
 import '../../../inventory/presentation/screens/inventory_dashboard_screen.dart';
 import '../../../trucks/presentation/screens/truck_trips_list_screen.dart';
 import '../../../../core/utils/navigation_utils.dart';
+import '../../../../app/ui/widgets/app_sidebar.dart';
+import '../../../../app/ui/widgets/responsive_sidebar.dart';
 
 class EngineerShell extends StatefulWidget {
   const EngineerShell({super.key});
@@ -22,11 +24,36 @@ class _EngineerShellState extends State<EngineerShell> {
   }
 
   late final List<Widget> _pages = [
-    EngineerDashboardScreen(onNavigateToTab: _goTo), // ✅ callback
+    EngineerDashboardScreen(onNavigateToTab: _goTo),
     const ApprovalsQueueScreen(),
     const BlockOverviewScreen(),
     const InventoryDashboardScreen(),
     const TruckTripsListScreen(),
+  ];
+
+  static const _destinations = [
+    SidebarDestination(
+      icon: Icons.dashboard_rounded,
+      label: 'Dashboard',
+    ),
+    SidebarDestination(
+      icon: Icons.fact_check_rounded,
+      label: 'Approvals',
+      badge: '5',
+    ),
+    SidebarDestination(
+      icon: Icons.precision_manufacturing_rounded,
+      label: 'Blocks',
+    ),
+    SidebarDestination(
+      icon: Icons.inventory_2_rounded,
+      label: 'Inventory',
+      badge: '3',
+    ),
+    SidebarDestination(
+      icon: Icons.local_shipping_rounded,
+      label: 'Trucks',
+    ),
   ];
 
   @override
@@ -42,36 +69,16 @@ class _EngineerShellState extends State<EngineerShell> {
           await NavigationUtils.showLogoutDialog(context);
         }
       },
-      child: Scaffold(
-        body: _pages[_index],
-        bottomNavigationBar: NavigationBar(
-          selectedIndex: _index,
-          onDestinationSelected: _goTo,
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.dashboard_rounded),
-              label: 'Home',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.fact_check_rounded),
-              label: 'Approvals',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.precision_manufacturing_rounded),
-              label: 'Blocks',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.inventory_2_rounded),
-              label: 'Inventory',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.local_shipping_rounded),
-              label: 'Trucks',
-            ),
-          ],
-        ),
+      child: ResponsiveSidebar(
+        selectedIndex: _index,
+        onDestinationSelected: _goTo,
+        destinations: _destinations,
+        userName: 'Engineer A',
+        userRole: 'Site Engineer',
+        child: _pages[_index],
       ),
     );
   }
 }
+
 

@@ -10,6 +10,7 @@ enum UiStatus {
   arrived,
   hold,
   stop,
+  alert,
 }
 
 class StatusChip extends StatelessWidget {
@@ -43,6 +44,8 @@ class StatusChip extends StatelessWidget {
           return 'Hold';
         case UiStatus.stop:
           return 'Stop';
+        case UiStatus.alert:
+          return 'Alert';
       }
     }
 
@@ -66,6 +69,8 @@ class StatusChip extends StatelessWidget {
           return Colors.orange;
         case UiStatus.stop:
           return cs.error;
+        case UiStatus.alert:
+          return Colors.orangeAccent;
       }
     }
 

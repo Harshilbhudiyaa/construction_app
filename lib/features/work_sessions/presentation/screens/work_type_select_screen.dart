@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../../app/theme/professional_theme.dart';
+import '../../../../app/ui/widgets/professional_page.dart';
 import 'work_session_running_screen.dart';
 
 class WorkTypeSelectScreen extends StatelessWidget {
@@ -17,40 +19,37 @@ class WorkTypeSelectScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Select Work Type')),
-      body: ListView(
-        padding: const EdgeInsets.all(12),
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(4, 4, 4, 10),
-            child: Text(
-              'Choose the work you are starting now.',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
-            ),
-          ),
-          ..._workTypes.map((w) {
-            return Card(
+    return ProfessionalPage(
+      title: 'Select Work Type',
+      children: [
+        const ProfessionalSectionHeader(
+          title: 'New Session',
+          subtitle: 'Choose the work you are starting now',
+        ),
+        ..._workTypes.map((w) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: ProfessionalCard(
               child: ListTile(
+                contentPadding: EdgeInsets.zero,
                 leading: Container(
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: cs.primaryContainer,
+                    color: AppColors.deepBlue1.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Icon(w.icon, color: cs.onPrimaryContainer),
+                  child: Icon(w.icon, color: AppColors.deepBlue1),
                 ),
                 title: Text(
                   w.title,
-                  style: const TextStyle(fontWeight: FontWeight.w700),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.deepBlue1,
+                  ),
                 ),
-                subtitle: const Text('Tap to start (demo)'),
-                trailing: const Icon(Icons.chevron_right_rounded),
+                subtitle: const Text('Tap to start session'),
+                trailing: const Icon(Icons.chevron_right_rounded, color: Colors.grey),
                 onTap: () {
                   Navigator.pushReplacement(
                     context,
@@ -61,10 +60,11 @@ class WorkTypeSelectScreen extends StatelessWidget {
                   );
                 },
               ),
-            );
-          }),
-        ],
-      ),
+            ),
+          );
+        }),
+        const SizedBox(height: 16),
+      ],
     );
   }
 }
@@ -74,3 +74,4 @@ class _WorkType {
   final IconData icon;
   const _WorkType(this.title, this.icon);
 }
+

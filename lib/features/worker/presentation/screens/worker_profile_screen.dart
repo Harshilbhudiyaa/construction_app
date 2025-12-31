@@ -1,109 +1,147 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_spacing.dart';
-import '../../../../app/ui/widgets/section_header.dart';
+import '../../../../app/theme/professional_theme.dart';
 import '../../../../app/ui/widgets/confirm_sheet.dart';
+import '../../../../app/ui/widgets/professional_page.dart';
 
 class WorkerProfileScreen extends StatelessWidget {
   const WorkerProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 46,
-                      height: 46,
-                      decoration: BoxDecoration(
-                        color: cs.primaryContainer,
-                        borderRadius: BorderRadius.circular(
-                          AppSpacing.radiusMd,
+    return ProfessionalPage(
+      title: 'Profile',
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: ProfessionalCard(
+            child: Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: AppColors.deepBlue1.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: const Icon(
+                    Icons.person_rounded,
+                    color: AppColors.deepBlue1,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Ramesh Kumar',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 16,
+                          color: AppColors.deepBlue1,
                         ),
                       ),
-                      child: Icon(
-                        Icons.person_rounded,
-                        color: cs.onPrimaryContainer,
+                      SizedBox(height: 2),
+                      Text(
+                        'Worker • Site A (demo)',
+                        style: TextStyle(color: Colors.grey),
                       ),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Ramesh Kumar',
-                            style: TextStyle(fontWeight: FontWeight.w900),
-                          ),
-                          SizedBox(height: 2),
-                          Text('Worker • Site A (demo)'),
-                        ],
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
+        ),
 
-          const SectionHeader(
-            title: 'Account',
-            subtitle: 'Settings and support',
-          ),
+        const ProfessionalSectionHeader(
+          title: 'Account',
+          subtitle: 'Settings and support',
+        ),
 
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Card(
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: Icon(Icons.lock_rounded),
-                    title: Text('Change Password'),
-                    trailing: Icon(Icons.chevron_right_rounded),
-                  ),
-                  Divider(height: 1),
-                  ListTile(
-                    leading: Icon(Icons.help_outline_rounded),
-                    title: Text('Help & Support'),
-                    trailing: Icon(Icons.chevron_right_rounded),
-                  ),
-                  Divider(height: 1),
-                  ListTile(
-                    leading: Icon(Icons.logout_rounded),
-                    title: Text('Logout'),
-                    trailing: Icon(Icons.chevron_right_rounded),
-                    onTap: () async {
-                      final ok = await showConfirmSheet(
-                        context: context,
-                        title: 'Logout?',
-                        message:
-                            'You will be returned to the login screen (UI-only for now).',
-                        confirmText: 'Logout',
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: ProfessionalCard(
+            child: Column(
+              children: [
+                _ProfileActionTile(
+                  icon: Icons.lock_rounded,
+                  title: 'Change Password',
+                  onTap: () {},
+                ),
+                const Divider(height: 1, indent: 50),
+                _ProfileActionTile(
+                  icon: Icons.help_outline_rounded,
+                  title: 'Help & Support',
+                  onTap: () {},
+                ),
+                const Divider(height: 1, indent: 50),
+                _ProfileActionTile(
+                  icon: Icons.logout_rounded,
+                  title: 'Logout',
+                  color: Colors.redAccent,
+                  onTap: () async {
+                    final ok = await showConfirmSheet(
+                      context: context,
+                      title: 'Logout?',
+                      message: 'You will be returned to the login screen.',
+                      confirmText: 'Logout',
+                    );
+                    if (ok && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Logged out (UI-only)')),
                       );
-                      if (ok && context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Logged out (UI-only)')),
-                        );
-                      }
-                    },
-                  ),
-                ],
-              ),
+                    }
+                  },
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 32),
+      ],
     );
   }
 }
+
+class _ProfileActionTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+  final Color? color;
+
+  const _ProfileActionTile({
+    required this.icon,
+    required this.title,
+    required this.onTap,
+    this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: (color ?? AppColors.deepBlue1).withOpacity(0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(color != null ? icon : icon, color: color ?? AppColors.deepBlue1, size: 20),
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontWeight: FontWeight.w700,
+          color: color ?? const Color(0xFF1E293B),
+        ),
+      ),
+      trailing: const Icon(Icons.chevron_right_rounded, size: 20),
+      onTap: onTap,
+    );
+  }
+}
+

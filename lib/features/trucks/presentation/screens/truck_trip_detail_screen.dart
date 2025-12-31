@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-
-import '../../../../app/theme/app_spacing.dart';
-import '../../../../app/ui/widgets/section_header.dart';
+import '../../../../app/theme/professional_theme.dart';
+import '../../../../app/ui/widgets/professional_page.dart';
 import '../../../../app/ui/widgets/status_chip.dart';
 import 'truck_arrival_confirm_screen.dart';
 import 'truck_trips_list_screen.dart';
@@ -20,266 +19,269 @@ class _TruckTripDetailScreenState extends State<TruckTripDetailScreen> {
 
   UiStatus _toUi(TruckTripStatus s) {
     switch (s) {
-      case TruckTripStatus.scheduled:
-        return UiStatus.pending;
-      case TruckTripStatus.inTransit:
-        return UiStatus.ok;
-      case TruckTripStatus.arrived:
-        return UiStatus.approved;
-      case TruckTripStatus.hold:
-        return UiStatus.low;
-      case TruckTripStatus.stopped:
-        return UiStatus.rejected;
+      case TruckTripStatus.scheduled: return UiStatus.pending;
+      case TruckTripStatus.inTransit: return UiStatus.ok;
+      case TruckTripStatus.arrived: return UiStatus.approved;
+      case TruckTripStatus.hold: return UiStatus.low;
+      case TruckTripStatus.stopped: return UiStatus.rejected;
     }
   }
 
   String _label(TruckTripStatus s) {
     switch (s) {
-      case TruckTripStatus.scheduled:
-        return 'Scheduled';
-      case TruckTripStatus.inTransit:
-        return 'In Transit';
-      case TruckTripStatus.arrived:
-        return 'Arrived';
-      case TruckTripStatus.hold:
-        return 'Hold';
-      case TruckTripStatus.stopped:
-        return 'Stop';
+      case TruckTripStatus.scheduled: return 'Scheduled';
+      case TruckTripStatus.inTransit: return 'In Transit';
+      case TruckTripStatus.arrived: return 'Arrived';
+      case TruckTripStatus.hold: return 'Held';
+      case TruckTripStatus.stopped: return 'Stopped';
     }
   }
 
   void _setStatus(TruckTripStatus s) {
     setState(() => _item = _item.copyWith(status: s));
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Decision applied: ${_label(s)} (UI-only)')),
+      SnackBar(content: Text('Logistics Decision Applied: ${_label(s)}')),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Trip Detail')),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 46,
-                      height: 46,
-                      decoration: BoxDecoration(
-                        color: cs.primaryContainer,
-                        borderRadius: BorderRadius.circular(
-                          AppSpacing.radiusMd,
+    return ProfessionalPage(
+      title: 'Dispatch Intelligence',
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: ProfessionalCard(
+            child: Row(
+              children: [
+                Container(
+                  width: 54,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(colors: AppColors.gradientColors),
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.deepBlue1.withOpacity(0.2),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(Icons.local_shipping_rounded, color: Colors.white, size: 28),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${_item.material} • ${_item.vehicleNo}',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.deepBlue1,
                         ),
                       ),
-                      child: Icon(
-                        Icons.local_shipping_rounded,
-                        color: cs.onPrimaryContainer,
+                      const SizedBox(height: 2),
+                      Text(
+                        _item.supplier,
+                        style: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.w500),
                       ),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
+                    ],
+                  ),
+                ),
+                StatusChip(
+                  status: _toUi(_item.status),
+                  labelOverride: _label(_item.status).toUpperCase(),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        const ProfessionalSectionHeader(
+          title: 'Transit Logistics',
+          subtitle: 'Live telemetry and timing data',
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: ProfessionalCard(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                _kv('Direct Driver', _item.driverName, icon: Icons.person_pin_circle_rounded),
+                const Divider(height: 32),
+                _kv('Departure Time', _item.departAt, icon: Icons.outbox_rounded),
+                const Divider(height: 32),
+                _kv('Estimated Arrival', _item.eta, icon: Icons.timer_rounded, isHighlighted: true),
+                const Divider(height: 32),
+                _kv('Geospatial Tag', _item.lastGps, icon: Icons.map_rounded),
+                const Divider(height: 32),
+                _kv('Trip Reference', _item.id, icon: Icons.tag_rounded),
+              ],
+            ),
+          ),
+        ),
+
+        const ProfessionalSectionHeader(
+          title: 'Verification Proofs',
+          subtitle: 'Visual evidence captured during transit',
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: ProfessionalCard(
+            padding: EdgeInsets.zero,
+            child: Column(
+              children: [
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(color: Colors.blue.withOpacity(0.1), shape: BoxShape.circle),
+                    child: const Icon(Icons.add_a_photo_rounded, color: Colors.blue, size: 20),
+                  ),
+                  title: const Text('Departure Manifesto', style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.deepBlue1)),
+                  subtitle: const Text('Verified by supplier kiosk at gate'),
+                  trailing: const Icon(Icons.chevron_right_rounded, size: 18),
+                  onTap: () {},
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), shape: BoxShape.circle),
+                    child: const Icon(Icons.photo_library_rounded, color: Colors.orange, size: 20),
+                  ),
+                  title: const Text('Load Inspection Photo', style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.deepBlue1)),
+                  subtitle: const Text('Pending arrival confirmation'),
+                  trailing: const Icon(Icons.chevron_right_rounded, size: 18),
+                  onTap: () {},
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        const ProfessionalSectionHeader(
+          title: 'Dispatch Control',
+          subtitle: 'Real-time intervention options',
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: ProfessionalCard(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Automated checks: worker capacity, site space, and safety metrics are green.',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 13, height: 1.4),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${_item.material} • ${_item.vehicleNo}',
-                            style: const TextStyle(fontWeight: FontWeight.w900),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            _item.supplier,
-                            style: TextStyle(color: cs.onSurfaceVariant),
-                          ),
-                        ],
-                      ),
-                    ),
-                    StatusChip(
-                      status: _toUi(_item.status),
-                      labelOverride: _label(_item.status),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          const SectionHeader(
-            title: 'Trip Info',
-            subtitle: 'Driver, timing, location',
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                child: Column(
-                  children: [
-                    _kv('Driver', _item.driverName),
-                    _kv('Depart', _item.departAt),
-                    _kv('ETA', _item.eta),
-                    _kv('Last GPS', _item.lastGps),
-                    _kv('Trip ID', _item.id),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          const SectionHeader(
-            title: 'Proof',
-            subtitle: 'Photo placeholders (UI-only)',
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Card(
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: Icon(
-                      Icons.photo_camera_rounded,
-                      color: cs.primary,
-                    ),
-                    title: const Text(
-                      'Departure Photo',
-                      style: TextStyle(fontWeight: FontWeight.w900),
-                    ),
-                    subtitle: const Text('Tap to open (placeholder)'),
-                    trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Open departure photo (next step)'),
-                      ),
-                    ),
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: Icon(
-                      Icons.photo_camera_rounded,
-                      color: cs.primary,
-                    ),
-                    title: const Text(
-                      'Arrival Photo',
-                      style: TextStyle(fontWeight: FontWeight.w900),
-                    ),
-                    subtitle: const Text('Tap after arrival (placeholder)'),
-                    trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Open arrival photo (next step)'),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          const SectionHeader(
-            title: 'Decision Engine',
-            subtitle: 'Allow / Hold / Stop (UI-only)',
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Checks: worker availability, storage space, safety compliance, weather.',
-                      style: TextStyle(color: cs.onSurfaceVariant),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () => _setStatus(TruckTripStatus.hold),
-                            icon: const Icon(Icons.pause_circle_rounded),
-                            label: const Text('Hold'),
-                          ),
+                      child: OutlinedButton.icon(
+                        onPressed: () => _setStatus(TruckTripStatus.hold),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: Colors.orange[400]!),
+                          foregroundColor: Colors.orange[800],
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () =>
-                                _setStatus(TruckTripStatus.stopped),
-                            icon: const Icon(Icons.stop_circle_rounded),
-                            label: const Text('Stop'),
-                          ),
-                        ),
-                      ],
+                        icon: const Icon(Icons.pause_circle_filled_rounded, size: 18),
+                        label: const Text('Initiate Hold', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
                     ),
-                    const SizedBox(height: AppSpacing.sm),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton.icon(
-                        onPressed: () => _setStatus(TruckTripStatus.inTransit),
-                        icon: const Icon(Icons.check_circle_rounded),
-                        label: const Text('Allow / Continue'),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => _setStatus(TruckTripStatus.stopped),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: Colors.red[400]!),
+                          foregroundColor: Colors.red[800],
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        icon: const Icon(Icons.cancel_rounded, size: 18),
+                        label: const Text('Terminate Trip', style: TextStyle(fontWeight: FontWeight.bold)),
                       ),
                     ),
                   ],
                 ),
-              ),
-            ),
-          ),
-
-          const SectionHeader(
-            title: 'Arrival',
-            subtitle: 'Confirm arrival and unload',
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Card(
-              child: ListTile(
-                leading: Icon(Icons.fact_check_rounded, color: cs.primary),
-                title: const Text(
-                  'Confirm Arrival',
-                  style: TextStyle(fontWeight: FontWeight.w900),
-                ),
-                subtitle: const Text('Capture arrival photo + time (UI-only)'),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () async {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          TruckArrivalConfirmScreen(tripId: _item.id),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton.icon(
+                    onPressed: () => _setStatus(TruckTripStatus.inTransit),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.deepBlue1,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
-                  );
-                },
-              ),
+                    icon: const Icon(Icons.verified_user_rounded, size: 20),
+                    label: const Text('Authorize / Continue', style: TextStyle(fontWeight: FontWeight.w900)),
+                  ),
+                ),
+              ],
             ),
           ),
+        ),
 
-          const SizedBox(height: 16),
-        ],
-      ),
+        const ProfessionalSectionHeader(
+          title: 'Unloading Protocol',
+          subtitle: 'Formal site entry sequence',
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: ProfessionalCard(
+            padding: EdgeInsets.zero,
+            child: ListTile(
+              contentPadding: const EdgeInsets.all(12),
+              leading: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                child: const Icon(Icons.fact_check_rounded, color: Colors.green),
+              ),
+              title: const Text('Execute Arrival Seq', style: TextStyle(fontWeight: FontWeight.w900, color: AppColors.deepBlue1, fontSize: 16)),
+              subtitle: const Text('Capture arrival biometrics + visual proof'),
+              trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.grey),
+              onTap: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => TruckArrivalConfirmScreen(tripId: _item.id)),
+                );
+              },
+            ),
+          ),
+        ),
+        const SizedBox(height: 100),
+      ],
     );
   }
 
-  Widget _kv(String k, String v) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(k, style: const TextStyle(fontWeight: FontWeight.w800)),
-          ),
-          Text(v),
+  Widget _kv(String k, String v, {IconData? icon, bool isHighlighted = false}) {
+    return Row(
+      children: [
+        if (icon != null) ...[
+          Icon(icon, size: 18, color: Colors.grey[400]),
+          const SizedBox(width: 12),
         ],
-      ),
+        Text(k, style: TextStyle(color: Colors.grey[600], fontSize: 13, fontWeight: FontWeight.w700)),
+        const Spacer(),
+        Text(
+          v,
+          style: TextStyle(
+            color: isHighlighted ? Colors.orange[800] : AppColors.deepBlue1,
+            fontWeight: FontWeight.w900,
+            fontSize: 14,
+          ),
+        ),
+      ],
     );
   }
 }

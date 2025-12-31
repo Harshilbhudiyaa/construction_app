@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../../../app/routes.dart';
+import '../../../../app/theme/professional_theme.dart';
+import '../../../../app/ui/widgets/professional_page.dart';
 
 class WorkSessionStopScreen extends StatelessWidget {
   final String workType;
@@ -22,82 +25,127 @@ class WorkSessionStopScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Stop Work')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: cs.primaryContainer,
-                      borderRadius: BorderRadius.circular(14),
+    return ProfessionalPage(
+      title: 'Session Complete',
+      children: [
+        const ProfessionalSectionHeader(
+          title: 'Summary',
+          subtitle: 'Detailed session outcomes',
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: ProfessionalCard(
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: AppColors.deepBlue1.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Icon(
+                        Icons.flag_rounded,
+                        color: AppColors.deepBlue1,
+                      ),
                     ),
-                    child: Icon(
-                      Icons.flag_rounded,
-                      color: cs.onPrimaryContainer,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            workType,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 18,
+                              color: AppColors.deepBlue1,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Total time: ${_format(totalSeconds)}',
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          workType,
-                          style: const TextStyle(fontWeight: FontWeight.w800),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Total time: ${_format(totalSeconds)}',
-                          style: TextStyle(color: cs.onSurfaceVariant),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+                const Divider(height: 32),
+                _kv('Start Time', '09:00 AM'),
+                const Divider(height: 24),
+                _kv('End Time', '11:15 AM'),
+                const Divider(height: 24),
+                _kv('Efficiency', '94%'),
+              ],
             ),
           ),
-          const SizedBox(height: 8),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.photo_camera_front_rounded),
-              title: const Text('End Selfie (placeholder)'),
-              subtitle: const Text('In real app: capture selfie here'),
-              trailing: const Icon(Icons.chevron_right_rounded),
-              onTap: () {},
+        ),
+        const ProfessionalSectionHeader(
+          title: 'Verification',
+          subtitle: 'Final proofs captured',
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: ProfessionalCard(
+            padding: EdgeInsets.zero,
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.photo_camera_front_rounded, color: AppColors.deepBlue1),
+                  title: const Text('End Selfie', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.deepBlue1)),
+                  subtitle: const Text('Captured successfully'),
+                  trailing: const Icon(Icons.check_circle_rounded, color: Colors.green),
+                  onTap: () {},
+                ),
+                Divider(height: 1, indent: 56, color: Colors.grey[200]),
+                const ListTile(
+                  leading: Icon(Icons.info_outline_rounded, color: AppColors.deepBlue1),
+                  title: Text('Status', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.deepBlue1)),
+                  subtitle: Text('Awaiting verification by Site Engineer'),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 8),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.info_outline_rounded),
-              title: const Text('Status'),
-              subtitle: const Text('Pending engineer verification (demo)'),
-            ),
-          ),
-          const SizedBox(height: 14),
-          SizedBox(
+        ),
+        const SizedBox(height: 32),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: SizedBox(
             width: double.infinity,
+            height: 54,
             child: FilledButton(
               onPressed: () {
-                // Pop to worker home shell (two pops: stop -> running -> shell, but we used replacement earlier)
-                Navigator.pop(context);
+                // Redirect to dashboard (WorkerShell)
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  AppRoutes.workerHome,
+                  (route) => false,
+                );
               },
-              child: const Text('Done'),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.deepBlue1,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('Done', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ),
           ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 48),
+      ],
+    );
+  }
+
+  Widget _kv(String k, String v) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(k, style: TextStyle(color: Colors.grey[600], fontSize: 13, fontWeight: FontWeight.w500)),
+        Text(v, style: const TextStyle(color: AppColors.deepBlue1, fontWeight: FontWeight.bold, fontSize: 14)),
+      ],
     );
   }
 }

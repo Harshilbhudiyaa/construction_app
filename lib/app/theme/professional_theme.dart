@@ -85,6 +85,7 @@ class ProfessionalCard extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
   final EdgeInsetsGeometry? margin;
   final double? width;
+  final Gradient? gradient;
 
   const ProfessionalCard({
     super.key,
@@ -92,6 +93,7 @@ class ProfessionalCard extends StatelessWidget {
     this.padding,
     this.margin,
     this.width,
+    this.gradient,
   });
 
   @override
@@ -101,7 +103,8 @@ class ProfessionalCard extends StatelessWidget {
       margin: margin ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: padding ?? const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: gradient == null ? Colors.white : null,
+        gradient: gradient,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(

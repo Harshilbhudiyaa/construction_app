@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_spacing.dart';
+import '../../../../app/theme/professional_theme.dart';
 import '../../../../app/ui/widgets/app_search_field.dart';
 import '../../../../app/ui/widgets/empty_state.dart';
-import '../../../../app/ui/widgets/section_header.dart';
 import '../../../../app/ui/widgets/status_chip.dart';
+import '../../../../app/ui/widgets/professional_page.dart';
 import 'create_truck_entry_screen.dart';
 import 'truck_trip_detail_screen.dart';
 
@@ -102,155 +103,158 @@ class _TruckTripsListScreenState extends State<TruckTripsListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    return ProfessionalPage(
+      title: 'Truck Trips',
+      actions: [
+        IconButton(
+          tooltip: 'Create Truck Entry',
+          onPressed: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const CreateTruckEntryScreen(),
+              ),
+            );
+          },
+          icon: const Icon(Icons.add_circle_rounded, color: Colors.white),
+        ),
+      ],
+      children: [
+        AppSearchField(
+          hint: 'Search supplier, vehicle, id...',
+          onChanged: (v) => setState(() => _query = v),
+        ),
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Truck Trips'),
-        actions: [
-          IconButton(
-            tooltip: 'Create Truck Entry',
-            onPressed: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const CreateTruckEntryScreen(),
-                ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: ['Today', 'This Week', 'This Month'].map((r) {
+              final selected = _range == r;
+              return ChoiceChip(
+                label: Text(r),
+                selected: selected,
+                onSelected: (_) => setState(() => _range = r),
               );
-            },
-            icon: const Icon(Icons.add_circle_rounded),
+            }).toList(),
           ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-        children: [
-          AppSearchField(
-            hint: 'Search supplier, vehicle, id...',
-            onChanged: (v) => setState(() => _query = v),
-          ),
+        ),
 
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.md,
-              0,
-              AppSpacing.md,
-              AppSpacing.sm,
-            ),
+        const ProfessionalSectionHeader(
+          title: 'Filters',
+          subtitle: 'Status-based supply monitoring',
+        ),
+        
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: ProfessionalCard(
             child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: ['Today', 'This Week', 'This Month'].map((r) {
-                final selected = _range == r;
-                return ChoiceChip(
-                  label: Text(r),
-                  selected: selected,
-                  onSelected: (_) => setState(() => _range = r),
-                );
-              }).toList(),
-            ),
-          ),
-
-          const SectionHeader(title: 'Filters', subtitle: 'Status-based'),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                child: Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: [
-                    FilterChip(
-                      label: const Text('All'),
-                      selected: _filter == null,
-                      onSelected: (_) => setState(() => _filter = null),
-                    ),
-                    FilterChip(
-                      label: const Text('In Transit'),
-                      selected: _filter == TruckTripStatus.inTransit,
-                      onSelected: (_) =>
-                          setState(() => _filter = TruckTripStatus.inTransit),
-                    ),
-                    FilterChip(
-                      label: const Text('Arrived'),
-                      selected: _filter == TruckTripStatus.arrived,
-                      onSelected: (_) =>
-                          setState(() => _filter = TruckTripStatus.arrived),
-                    ),
-                    FilterChip(
-                      label: const Text('Hold'),
-                      selected: _filter == TruckTripStatus.hold,
-                      onSelected: (_) =>
-                          setState(() => _filter = TruckTripStatus.hold),
-                    ),
-                    FilterChip(
-                      label: const Text('Stop'),
-                      selected: _filter == TruckTripStatus.stopped,
-                      onSelected: (_) =>
-                          setState(() => _filter = TruckTripStatus.stopped),
-                    ),
-                  ],
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                FilterChip(
+                  label: const Text('All'),
+                  selected: _filter == null,
+                  onSelected: (_) => setState(() => _filter = null),
                 ),
-              ),
+                FilterChip(
+                  label: const Text('In Transit'),
+                  selected: _filter == TruckTripStatus.inTransit,
+                  onSelected: (_) =>
+                      setState(() => _filter = TruckTripStatus.inTransit),
+                ),
+                FilterChip(
+                  label: const Text('Arrived'),
+                  selected: _filter == TruckTripStatus.arrived,
+                  onSelected: (_) =>
+                      setState(() => _filter = TruckTripStatus.arrived),
+                ),
+                FilterChip(
+                  label: const Text('Hold'),
+                  selected: _filter == TruckTripStatus.hold,
+                  onSelected: (_) =>
+                      setState(() => _filter = TruckTripStatus.hold),
+                ),
+                FilterChip(
+                  label: const Text('Stop'),
+                  selected: _filter == TruckTripStatus.stopped,
+                  onSelected: (_) =>
+                      setState(() => _filter = TruckTripStatus.stopped),
+                ),
+              ],
             ),
           ),
+        ),
 
-          const SectionHeader(
-            title: 'Trips',
-            subtitle: 'Tap any trip for details',
-          ),
+        const ProfessionalSectionHeader(
+          title: 'Trips',
+          subtitle: 'Active and recent logistics',
+        ),
 
-          if (_filtered.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-              child: EmptyState(
-                icon: Icons.local_shipping_rounded,
-                title: 'No trips found',
-                message: 'Try changing filters or search.',
-              ),
-            )
-          else
-            ..._filtered.map((x) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                child: Card(
-                  child: ListTile(
-                    leading: Icon(
+        if (_filtered.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            child: EmptyState(
+              icon: Icons.local_shipping_rounded,
+              title: 'No trips found',
+              message: 'Try changing filters or search.',
+            ),
+          )
+        else
+          ..._filtered.map((x) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: ProfessionalCard(
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: AppColors.deepBlue1.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
                       Icons.local_shipping_rounded,
-                      color: cs.primary,
+                      color: AppColors.deepBlue1,
                     ),
-                    title: Text(
-                      '${x.material} • ${x.vehicleNo}',
-                      style: const TextStyle(fontWeight: FontWeight.w900),
-                    ),
-                    subtitle: Text(
-                      '${x.supplier}\nDriver: ${x.driverName} • ${x.departAt} → ETA ${x.eta}',
-                    ),
-                    isThreeLine: true,
-                    trailing: StatusChip(
-                      status: _toUi(x.status),
-                      labelOverride: _label(x.status),
-                    ),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => TruckTripDetailScreen(item: x),
-                        ),
-                      );
-                    },
                   ),
+                  title: Text(
+                    '${x.material} • ${x.vehicleNo}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.deepBlue1,
+                    ),
+                  ),
+                  subtitle: Text(
+                    '${x.supplier}\nDriver: ${x.driverName} • ${x.departAt} → ETA ${x.eta}',
+                    style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                  ),
+                  isThreeLine: true,
+                  trailing: StatusChip(
+                    status: _toUi(x.status),
+                    labelOverride: _label(x.status),
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => TruckTripDetailScreen(item: x),
+                      ),
+                    );
+                  },
                 ),
-              );
-            }),
+              ),
+            );
+          }),
 
-          const SizedBox(height: 16),
-        ],
-      ),
+        const SizedBox(height: 16),
+      ],
     );
   }
 }
+
 
 class TruckTripItem {
   final String id;

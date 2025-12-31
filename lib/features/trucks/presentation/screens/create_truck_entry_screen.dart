@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_spacing.dart';
-import '../../../../app/ui/widgets/section_header.dart';
+import '../../../../app/theme/professional_theme.dart';
+import '../../../../app/ui/widgets/professional_page.dart';
 
 class CreateTruckEntryScreen extends StatefulWidget {
   const CreateTruckEntryScreen({super.key});
@@ -39,150 +40,153 @@ class _CreateTruckEntryScreenState extends State<CreateTruckEntryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Create Truck Entry')),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-        children: [
-          const SectionHeader(
-            title: 'Trip Info',
-            subtitle: 'Supplier, material, driver, qty',
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
+    return ProfessionalPage(
+      title: 'New Truck Entry',
+      children: [
+        const ProfessionalSectionHeader(
+          title: 'Trip Details',
+          subtitle: 'Step 1: Supplier & Material information',
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: ProfessionalCard(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  DropdownButtonFormField<String>(
+                    value: _supplier,
+                    style: const TextStyle(color: AppColors.deepBlue1, fontWeight: FontWeight.w600),
+                    decoration: InputDecoration(
+                      labelText: 'Supplier',
+                      labelStyle: TextStyle(color: Colors.grey[600]),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      prefixIcon: const Icon(Icons.business_rounded, color: AppColors.deepBlue1),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'ABC Sand Supplier', child: Text('ABC Sand Supplier')),
+                      DropdownMenuItem(value: 'Cement Depot', child: Text('Cement Depot')),
+                      DropdownMenuItem(value: 'Steel Yard', child: Text('Steel Yard')),
+                    ],
+                    onChanged: (v) => setState(() => _supplier = v ?? _supplier),
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    value: _material,
+                    style: const TextStyle(color: AppColors.deepBlue1, fontWeight: FontWeight.w600),
+                    decoration: InputDecoration(
+                      labelText: 'Material',
+                      labelStyle: TextStyle(color: Colors.grey[600]),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      prefixIcon: const Icon(Icons.category_rounded, color: AppColors.deepBlue1),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'Sand', child: Text('Sand')),
+                      DropdownMenuItem(value: 'Cement (Bags)', child: Text('Cement (Bags)')),
+                      DropdownMenuItem(value: 'Steel Rod', child: Text('Steel Rod')),
+                    ],
+                    onChanged: (v) => setState(() {
+                      _material = v ?? _material;
+                      _unit = _material == 'Sand' ? 'tons' : _material == 'Steel Rod' ? 'kg' : 'bags';
+                    }),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _vehicleCtrl,
+                    style: const TextStyle(color: AppColors.deepBlue1, fontWeight: FontWeight.w600),
+                    decoration: InputDecoration(
+                      labelText: 'Vehicle Number',
+                      labelStyle: TextStyle(color: Colors.grey[600]),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      prefixIcon: const Icon(Icons.badge_rounded, color: AppColors.deepBlue1),
+                    ),
+                    validator: (v) => (v ?? '').trim().isEmpty ? 'Required' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _driverCtrl,
+                    style: const TextStyle(color: AppColors.deepBlue1, fontWeight: FontWeight.w600),
+                    decoration: InputDecoration(
+                      labelText: 'Driver Name',
+                      labelStyle: TextStyle(color: Colors.grey[600]),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      prefixIcon: const Icon(Icons.person_rounded, color: AppColors.deepBlue1),
+                    ),
+                    validator: (v) => (v ?? '').trim().isEmpty ? 'Required' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
                     children: [
-                      DropdownButtonFormField<String>(
-                        value: _supplier,
-                        decoration: const InputDecoration(
-                          labelText: 'Supplier',
+                      Expanded(
+                        child: TextFormField(
+                          controller: _qtyCtrl,
+                          keyboardType: TextInputType.number,
+                          style: const TextStyle(color: AppColors.deepBlue1, fontWeight: FontWeight.w600),
+                          decoration: InputDecoration(
+                            labelText: 'Quantity',
+                            labelStyle: TextStyle(color: Colors.grey[600]),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          validator: (v) {
+                            final t = (v ?? '').trim();
+                            if (t.isEmpty) return 'Required';
+                            final n = num.tryParse(t);
+                            if (n == null || n <= 0) return 'Invalid';
+                            return null;
+                          },
                         ),
-                        items: const [
-                          DropdownMenuItem(
-                            value: 'ABC Sand Supplier',
-                            child: Text('ABC Sand Supplier'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Cement Depot',
-                            child: Text('Cement Depot'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Steel Yard',
-                            child: Text('Steel Yard'),
-                          ),
-                        ],
-                        onChanged: (v) =>
-                            setState(() => _supplier = v ?? _supplier),
                       ),
-                      const SizedBox(height: AppSpacing.sm),
-                      DropdownButtonFormField<String>(
-                        value: _material,
-                        decoration: const InputDecoration(
-                          labelText: 'Material',
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextFormField(
+                          readOnly: true,
+                          controller: TextEditingController(text: _unit),
+                          style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w600),
+                          decoration: InputDecoration(
+                            labelText: 'Unit',
+                            labelStyle: TextStyle(color: Colors.grey[600]),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            filled: true,
+                            fillColor: Colors.grey[50],
+                          ),
                         ),
-                        items: const [
-                          DropdownMenuItem(value: 'Sand', child: Text('Sand')),
-                          DropdownMenuItem(
-                            value: 'Cement (Bags)',
-                            child: Text('Cement (Bags)'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Steel Rod',
-                            child: Text('Steel Rod'),
-                          ),
-                        ],
-                        onChanged: (v) => setState(() {
-                          _material = v ?? _material;
-                          _unit = _material == 'Sand'
-                              ? 'tons'
-                              : _material == 'Steel Rod'
-                              ? 'kg'
-                              : 'bags';
-                        }),
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      TextFormField(
-                        controller: _vehicleCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'Vehicle Number',
-                        ),
-                        validator: (v) =>
-                            (v ?? '').trim().isEmpty ? 'Required' : null,
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      TextFormField(
-                        controller: _driverCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'Driver Name',
-                        ),
-                        validator: (v) =>
-                            (v ?? '').trim().isEmpty ? 'Required' : null,
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: _qtyCtrl,
-                              keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(
-                                labelText: 'Quantity',
-                              ),
-                              validator: (v) {
-                                final t = (v ?? '').trim();
-                                if (t.isEmpty) return 'Required';
-                                final n = num.tryParse(t);
-                                if (n == null || n <= 0) return 'Invalid';
-                                return null;
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.sm),
-                          Expanded(
-                            child: TextFormField(
-                              readOnly: true,
-                              controller: TextEditingController(text: _unit),
-                              decoration: const InputDecoration(
-                                labelText: 'Unit',
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () => Navigator.pop(context),
-                              icon: const Icon(Icons.close_rounded),
-                              label: const Text('Cancel'),
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.sm),
-                          Expanded(
-                            child: FilledButton.icon(
-                              onPressed: _save,
-                              icon: const Icon(Icons.save_rounded),
-                              label: const Text('Save'),
-                            ),
-                          ),
-                        ],
                       ),
                     ],
                   ),
-                ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: const Text('Cancel'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: FilledButton(
+                          onPressed: _save,
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AppColors.deepBlue1,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: const Text('Save Trip'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
-          const SizedBox(height: 16),
-        ],
-      ),
+        ),
+        const SizedBox(height: 32),
+      ],
     );
   }
 }

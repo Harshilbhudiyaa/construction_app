@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_spacing.dart';
+import '../../../../app/theme/professional_theme.dart';
 import '../../../../app/ui/widgets/app_search_field.dart';
 import '../../../../app/ui/widgets/empty_state.dart';
-import '../../../../app/ui/widgets/section_header.dart';
+import '../../../../app/ui/widgets/staggered_animation.dart';
 import '../../../../app/ui/widgets/status_chip.dart';
+import '../../../../app/ui/widgets/professional_page.dart';
 import 'worker_detail_screen.dart';
 import 'worker_form_screen.dart';
 import 'worker_types.dart';
@@ -117,160 +119,162 @@ class _WorkersListScreenState extends State<WorkersListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Workers')),
+    return ProfessionalPage(
+      title: 'Workers',
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _add,
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Add'),
+        backgroundColor: AppColors.deepBlue1,
+        icon: const Icon(Icons.add_rounded, color: Colors.white),
+        label: const Text('Add Worker', style: TextStyle(color: Colors.white)),
       ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-        children: [
-          AppSearchField(
-            hint: 'Search name, skill, phone, id...',
-            onChanged: (v) => setState(() => _q = v),
-          ),
+      children: [
+        AppSearchField(
+          hint: 'Search name, skill, phone, id...',
+          onChanged: (v) => setState(() => _q = v),
+        ),
 
-          const SectionHeader(
-            title: 'Filters',
-            subtitle: 'Shift, status, skill',
-          ),
+        const ProfessionalSectionHeader(
+          title: 'Filters',
+          subtitle: 'Shift, status, and skill selection',
+        ),
 
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: ProfessionalCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
                   children: [
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: [
-                        FilterChip(
-                          label: const Text('All Shifts'),
-                          selected: _shift == null,
-                          onSelected: (_) => setState(() => _shift = null),
-                        ),
-                        FilterChip(
-                          label: const Text('Day'),
-                          selected: _shift == WorkerShift.day,
-                          onSelected: (_) =>
-                              setState(() => _shift = WorkerShift.day),
-                        ),
-                        FilterChip(
-                          label: const Text('Night'),
-                          selected: _shift == WorkerShift.night,
-                          onSelected: (_) =>
-                              setState(() => _shift = WorkerShift.night),
-                        ),
-                      ],
+                    FilterChip(
+                      label: const Text('All Shifts'),
+                      selected: _shift == null,
+                      onSelected: (_) => setState(() => _shift = null),
                     ),
-                    const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: [
-                        FilterChip(
-                          label: const Text('All Status'),
-                          selected: _status == null,
-                          onSelected: (_) => setState(() => _status = null),
-                        ),
-                        FilterChip(
-                          label: const Text('Active'),
-                          selected: _status == WorkerStatus.active,
-                          onSelected: (_) =>
-                              setState(() => _status = WorkerStatus.active),
-                        ),
-                        FilterChip(
-                          label: const Text('Inactive'),
-                          selected: _status == WorkerStatus.inactive,
-                          onSelected: (_) =>
-                              setState(() => _status = WorkerStatus.inactive),
-                        ),
-                      ],
+                    FilterChip(
+                      label: const Text('Day'),
+                      selected: _shift == WorkerShift.day,
+                      onSelected: (_) =>
+                          setState(() => _shift = WorkerShift.day),
                     ),
-                    const SizedBox(height: 10),
-                    DropdownButtonFormField<String?>(
-                      value: _skill,
-                      decoration: const InputDecoration(
-                        labelText: 'Skill (Optional)',
-                      ),
-                      items: [
-                        const DropdownMenuItem(
-                          value: null,
-                          child: Text('All Skills'),
-                        ),
-                        ...kSkills.map(
-                          (s) => DropdownMenuItem(value: s, child: Text(s)),
-                        ),
-                      ],
-                      onChanged: (v) => setState(() => _skill = v),
-                    ),
-                    const SizedBox(height: 6),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton.icon(
-                        onPressed: () => setState(() {
-                          _q = '';
-                          _shift = null;
-                          _status = null;
-                          _skill = null;
-                        }),
-                        icon: const Icon(Icons.refresh_rounded),
-                        label: const Text('Reset'),
-                      ),
+                    FilterChip(
+                      label: const Text('Night'),
+                      selected: _shift == WorkerShift.night,
+                      onSelected: (_) =>
+                          setState(() => _shift = WorkerShift.night),
                     ),
                   ],
                 ),
-              ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    FilterChip(
+                      label: const Text('All Status'),
+                      selected: _status == null,
+                      onSelected: (_) => setState(() => _status = null),
+                    ),
+                    FilterChip(
+                      label: const Text('Active'),
+                      selected: _status == WorkerStatus.active,
+                      onSelected: (_) =>
+                          setState(() => _status = WorkerStatus.active),
+                    ),
+                    FilterChip(
+                      label: const Text('Inactive'),
+                      selected: _status == WorkerStatus.inactive,
+                      onSelected: (_) =>
+                          setState(() => _status = WorkerStatus.inactive),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String?>(
+                  value: _skill,
+                  decoration: const InputDecoration(
+                    labelText: 'Skill (Optional)',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+                  ),
+                  items: [
+                    const DropdownMenuItem(
+                      value: null,
+                      child: Text('All Skills'),
+                    ),
+                    ...kSkills.map(
+                      (s) => DropdownMenuItem(value: s, child: Text(s)),
+                    ),
+                  ],
+                  onChanged: (v) => setState(() => _skill = v),
+                ),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    onPressed: () => setState(() {
+                      _q = '';
+                      _shift = null;
+                      _status = null;
+                      _skill = null;
+                    }),
+                    icon: const Icon(Icons.refresh_rounded, size: 18),
+                    label: const Text('Reset Filters'),
+                  ),
+                ),
+              ],
             ),
           ),
+        ),
 
-          const SectionHeader(
-            title: 'Workers',
-            subtitle: 'Tap to open details',
-          ),
+        const ProfessionalSectionHeader(
+          title: 'Staff Directory',
+          subtitle: 'Manage active workforce',
+        ),
 
-          if (_filtered.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-              child: EmptyState(
-                icon: Icons.groups_rounded,
-                title: 'No workers found',
-                message: 'Try changing filters or search.',
-              ),
-            )
-          else
-            ..._filtered.map((w) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                child: Card(
+        if (_filtered.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            child: EmptyState(
+              icon: Icons.groups_rounded,
+              title: 'No workers found',
+              message: 'Try changing filters or search.',
+            ),
+          )
+        else
+          ..._filtered.asMap().entries.map((entry) {
+            final index = entry.key;
+            final w = entry.value;
+            return StaggeredAnimation(
+              index: index,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: ProfessionalCard(
                   child: ListTile(
+                    contentPadding: EdgeInsets.zero,
                     leading: Container(
                       width: 46,
                       height: 46,
                       decoration: BoxDecoration(
-                        color: cs.primaryContainer,
-                        borderRadius: BorderRadius.circular(
-                          AppSpacing.radiusMd,
-                        ),
+                        color: AppColors.deepBlue1.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.person_rounded,
-                        color: cs.onPrimaryContainer,
+                        color: AppColors.deepBlue1,
                       ),
                     ),
                     title: Text(
                       w.name,
-                      style: const TextStyle(fontWeight: FontWeight.w900),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.deepBlue1,
+                      ),
                     ),
                     subtitle: Text(
                       '${w.skill} • ${shiftLabel(w.shift)}\nRate: ₹${w.rateAmount} (${rateTypeLabel(w.rateType)})',
+                      style: TextStyle(color: Colors.grey[600], fontSize: 13),
                     ),
                     isThreeLine: true,
                     trailing: PopupMenuButton<String>(
@@ -304,12 +308,13 @@ class _WorkersListScreenState extends State<WorkersListScreen> {
                     },
                   ),
                 ),
-              );
-            }),
+              ),
+            );
+          }),
 
-          const SizedBox(height: 80),
-        ],
-      ),
+        const SizedBox(height: 100),
+      ],
     );
   }
 }
+

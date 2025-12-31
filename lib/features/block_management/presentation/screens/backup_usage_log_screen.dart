@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_spacing.dart';
+import '../../../../app/theme/professional_theme.dart';
 import '../../../../app/ui/widgets/app_search_field.dart';
 import '../../../../app/ui/widgets/empty_state.dart';
-import '../../../../app/ui/widgets/section_header.dart';
 import '../../../../app/ui/widgets/status_chip.dart';
+import '../../../../app/ui/widgets/professional_page.dart';
 
 class BackupUsageLogScreen extends StatefulWidget {
   const BackupUsageLogScreen({super.key});
@@ -51,105 +52,102 @@ class _BackupUsageLogScreenState extends State<BackupUsageLogScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    return ProfessionalPage(
+      title: 'Backup Usage Log',
+      children: [
+        AppSearchField(
+          hint: 'Search by work type, worker, id...',
+          onChanged: (v) => setState(() => _query = v),
+        ),
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Backup Usage Log')),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-        children: [
-          AppSearchField(
-            hint: 'Search by work type, worker, id...',
-            onChanged: (v) => setState(() => _query = v),
-          ),
+        const ProfessionalSectionHeader(
+          title: 'Duration Filters',
+          subtitle: 'Audit stock movement across timelines',
+        ),
 
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.md,
-              0,
-              AppSpacing.md,
-              AppSpacing.sm,
-            ),
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
               children: ['Today', 'This Week', 'This Month'].map((r) {
                 final selected = _range == r;
-                return ChoiceChip(
-                  label: Text(r),
-                  selected: selected,
-                  onSelected: (_) => setState(() => _range = r),
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: ChoiceChip(
+                    label: Text(r),
+                    selected: selected,
+                    onSelected: (_) => setState(() => _range = r),
+                    backgroundColor: Colors.white.withOpacity(0.1),
+                    selectedColor: Colors.white,
+                    labelStyle: TextStyle(
+                      color: selected ? AppColors.deepBlue1 : Colors.white,
+                      fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
                 );
               }).toList(),
             ),
           ),
+        ),
 
-          const SectionHeader(
-            title: 'Entries',
-            subtitle: 'Each backup usage is logged for audit',
-          ),
+        const ProfessionalSectionHeader(
+          title: 'Usage Records',
+          subtitle: 'Detailed logs for site verification',
+        ),
 
-          if (_filtered.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-              child: const EmptyState(
-                icon: Icons.receipt_long_rounded,
-                title: 'No backup usage entries',
-                message: 'No records match your search.',
-              ),
-            )
-          else
-            ..._filtered.map((x) {
-              final status = x.acknowledged
-                  ? UiStatus.approved
-                  : UiStatus.pending;
-              final label = x.acknowledged ? 'Acknowledged' : 'Pending Ack';
+        if (_filtered.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: EmptyState(
+              icon: Icons.receipt_long_rounded,
+              title: 'No backup usage entries',
+              message: 'No records match your search.',
+            ),
+          )
+        else
+          ..._filtered.map((x) {
+            final status = x.acknowledged ? UiStatus.approved : UiStatus.pending;
+            final label = x.acknowledged ? 'Acknowledged' : 'Pending Ack';
 
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                child: Card(
-                  child: ListTile(
-                    leading: Container(
-                      width: 46,
-                      height: 46,
-                      decoration: BoxDecoration(
-                        color: (x.acknowledged ? Colors.green : cs.tertiary)
-                            .withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(
-                          AppSpacing.radiusMd,
-                        ),
-                      ),
-                      child: Icon(
-                        Icons.safety_check_rounded,
-                        color: x.acknowledged ? Colors.green : cs.tertiary,
-                      ),
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: ProfessionalCard(
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: AppColors.deepBlue1.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    title: Text(
-                      'Qty: ${x.qty} • ${x.workType}',
-                      style: const TextStyle(fontWeight: FontWeight.w900),
+                    child: Icon(
+                      Icons.history_edu_rounded,
+                      color: x.acknowledged ? Colors.green : Colors.orange,
                     ),
-                    subtitle: Text(
-                      '${x.date}\nWorker: ${x.worker} • Engineer: ${x.engineer} • ${x.id}',
-                    ),
-                    isThreeLine: true,
-                    trailing: StatusChip(status: status, labelOverride: label),
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Open backup usage detail (${x.id}) — next UI step',
-                          ),
-                        ),
-                      );
-                    },
                   ),
+                  title: Text(
+                    'Qty: ${x.qty} • ${x.workType}',
+                    style: const TextStyle(fontWeight: FontWeight.w900, color: AppColors.deepBlue1),
+                  ),
+                  subtitle: Text(
+                    '${x.date}\nWorker: ${x.worker} • Ref: ${x.id}',
+                    style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                  ),
+                  isThreeLine: true,
+                  trailing: StatusChip(status: status, labelOverride: label),
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Open entry: ${x.id}')),
+                    );
+                  },
                 ),
-              );
-            }),
-
-          const SizedBox(height: 16),
-        ],
-      ),
+              ),
+            );
+          }),
+        const SizedBox(height: 32),
+      ],
     );
   }
 }

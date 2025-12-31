@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../../app/theme/app_spacing.dart';
+import '../../../../app/theme/professional_theme.dart';
 import '../../../../app/ui/widgets/app_search_field.dart';
-import '../../../../app/ui/widgets/section_header.dart';
 import '../../../../app/ui/widgets/status_chip.dart';
+import '../../../../app/ui/widgets/professional_page.dart';
 
 class InventoryMasterListScreen extends StatefulWidget {
   const InventoryMasterListScreen({super.key});
@@ -23,60 +24,76 @@ class _InventoryMasterListScreenState extends State<InventoryMasterListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final filtered = _items
         .where(
           (x) => ('${x.$1} ${x.$3}').toLowerCase().contains(_q.toLowerCase()),
         )
         .toList();
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Inventory Master')),
+    return ProfessionalPage(
+      title: 'Inventory Master',
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Add Material (next step)')),
         ),
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Add'),
+        backgroundColor: AppColors.deepBlue1,
+        icon: const Icon(Icons.add_rounded, color: Colors.white),
+        label: const Text('Add Material', style: TextStyle(color: Colors.white)),
       ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-        children: [
-          AppSearchField(
-            hint: 'Search materials...',
-            onChanged: (v) => setState(() => _q = v),
-          ),
-          const SectionHeader(
-            title: 'Thresholds',
-            subtitle: 'Backup/low-stock configuration (UI-only)',
-          ),
-          ...filtered.map(
-            (x) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-              child: Card(
-                child: ListTile(
-                  leading: Icon(Icons.inventory_2_rounded, color: cs.primary),
-                  title: Text(
-                    x.$1,
-                    style: const TextStyle(fontWeight: FontWeight.w900),
+      children: [
+        AppSearchField(
+          hint: 'Search materials by name...',
+          onChanged: (v) => setState(() => _q = v),
+        ),
+        const ProfessionalSectionHeader(
+          title: 'Thresholds',
+          subtitle: 'Stock monitoring and backup settings',
+        ),
+        ...filtered.map(
+          (x) => Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: ProfessionalCard(
+              child: ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: AppColors.deepBlue1.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                   ),
-                  subtitle: Text('Backup threshold: ${x.$2} ${x.$3}'),
-                  trailing: StatusChip(
-                    status: x.$4,
-                    labelOverride: x.$4 == UiStatus.low ? 'Needs Review' : 'OK',
+                  child: const Icon(
+                    Icons.inventory_2_rounded,
+                    color: AppColors.deepBlue1,
                   ),
-                  onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Edit threshold: ${x.$1} (next step)'),
-                    ),
+                ),
+                title: Text(
+                  x.$1,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.deepBlue1,
+                  ),
+                ),
+                subtitle: Text(
+                  'Backup threshold: ${x.$2} ${x.$3}',
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
+                trailing: StatusChip(
+                  status: x.$4,
+                  labelOverride: x.$4 == UiStatus.low ? 'Needs Review' : 'OK',
+                ),
+                onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Edit threshold: ${x.$1} (next step)'),
                   ),
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 80),
-        ],
-      ),
+        ),
+        const SizedBox(height: 100),
+      ],
     );
   }
 }
+

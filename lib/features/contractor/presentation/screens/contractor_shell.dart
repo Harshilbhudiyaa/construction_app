@@ -6,9 +6,12 @@ import '../../../engineer/presentation/screens/engineers_list_screen.dart';
 import '../../../block_management/presentation/screens/machines_list_screen.dart';
 import '../../../inventory/presentation/screens/inventory_master_list_screen.dart';
 import '../../../payments/presentation/screens/payments_dashboard_screen.dart';
-import '../../../reports/presentation/screens/reports_home_screen.dart';
+import '../../../analytics/presentation/screens/analytics_dashboard_screen.dart';
+import '../../../notifications/presentation/screens/notifications_screen.dart';
 import 'audit_log_list_screen.dart';
 import '../../../../core/utils/navigation_utils.dart';
+import '../../../../app/ui/widgets/app_sidebar.dart';
+import '../../../../app/ui/widgets/responsive_sidebar.dart';
 
 class ContractorShell extends StatefulWidget {
   const ContractorShell({super.key});
@@ -29,8 +32,49 @@ class _ContractorShellState extends State<ContractorShell> {
     const MachinesListScreen(),
     const InventoryMasterListScreen(),
     const PaymentsDashboardScreen(),
-    const ReportsHomeScreen(),
+    const AnalyticsDashboardScreen(),
+    const NotificationsScreen(),
     const AuditLogListScreen(),
+  ];
+
+  static const _destinations = [
+    SidebarDestination(
+      icon: Icons.dashboard_rounded,
+      label: 'Dashboard',
+    ),
+    SidebarDestination(
+      icon: Icons.groups_rounded,
+      label: 'Workers',
+    ),
+    SidebarDestination(
+      icon: Icons.engineering_rounded,
+      label: 'Engineers',
+    ),
+    SidebarDestination(
+      icon: Icons.precision_manufacturing_rounded,
+      label: 'Machines',
+    ),
+    SidebarDestination(
+      icon: Icons.inventory_2_rounded,
+      label: 'Inventory',
+    ),
+    SidebarDestination(
+      icon: Icons.payments_rounded,
+      label: 'Payments',
+    ),
+    SidebarDestination(
+      icon: Icons.analytics_rounded,
+      label: 'Analytics',
+    ),
+    SidebarDestination(
+      icon: Icons.notifications_rounded,
+      label: 'Notifications',
+      badge: '3',
+    ),
+    SidebarDestination(
+      icon: Icons.policy_rounded,
+      label: 'Audit Log',
+    ),
   ];
 
   @override
@@ -46,48 +90,16 @@ class _ContractorShellState extends State<ContractorShell> {
           await NavigationUtils.showLogoutDialog(context);
         }
       },
-      child: Scaffold(
-        body: _pages[_index],
-        bottomNavigationBar: NavigationBar(
-          selectedIndex: _index,
-          onDestinationSelected: _goTo,
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.dashboard_rounded),
-              label: 'Home',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.groups_rounded),
-              label: 'Workers',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.engineering_rounded),
-              label: 'Engineers',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.precision_manufacturing_rounded),
-              label: 'Machines',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.inventory_2_rounded),
-              label: 'Inventory',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.payments_rounded),
-              label: 'Payments',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.analytics_rounded),
-              label: 'Reports',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.policy_rounded),
-              label: 'Audit',
-            ),
-          ],
-        ),
+      child: ResponsiveSidebar(
+        selectedIndex: _index,
+        onDestinationSelected: _goTo,
+        destinations: _destinations,
+        userName: 'Contractor Admin',
+        userRole: 'Administrator',
+        child: _pages[_index],
       ),
     );
   }
 }
+
 

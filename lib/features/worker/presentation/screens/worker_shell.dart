@@ -6,6 +6,8 @@ import '../../../work_sessions/presentation/screens/work_history_list_screen.dar
 import '../../../payments/presentation/screens/earnings_dashboard_screen.dart';
 import 'worker_profile_screen.dart';
 import '../../../../core/utils/navigation_utils.dart';
+import '../../../../app/ui/widgets/app_sidebar.dart';
+import '../../../../app/ui/widgets/responsive_sidebar.dart';
 
 class WorkerShell extends StatefulWidget {
   const WorkerShell({super.key});
@@ -17,13 +19,35 @@ class WorkerShell extends StatefulWidget {
 class _WorkerShellState extends State<WorkerShell> {
   int _index = 0;
 
-  // No const list -> works even if some screens are not const constructors
   late final List<Widget> _pages = [
     const WorkerHomeDashboardScreen(),
     const WorkTypeSelectScreen(),
     const WorkHistoryListScreen(),
     const EarningsDashboardScreen(),
     const WorkerProfileScreen(),
+  ];
+
+  static const _destinations = [
+    SidebarDestination(
+      icon: Icons.dashboard_rounded,
+      label: 'Dashboard',
+    ),
+    SidebarDestination(
+      icon: Icons.play_circle_rounded,
+      label: 'Start Work',
+    ),
+    SidebarDestination(
+      icon: Icons.history_rounded,
+      label: 'History',
+    ),
+    SidebarDestination(
+      icon: Icons.account_balance_wallet_rounded,
+      label: 'Earnings',
+    ),
+    SidebarDestination(
+      icon: Icons.person_rounded,
+      label: 'Profile',
+    ),
   ];
 
   @override
@@ -39,36 +63,16 @@ class _WorkerShellState extends State<WorkerShell> {
           await NavigationUtils.showLogoutDialog(context);
         }
       },
-      child: Scaffold(
-        body: _pages[_index],
-        bottomNavigationBar: NavigationBar(
-          selectedIndex: _index,
-          onDestinationSelected: (i) => setState(() => _index = i),
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.dashboard_rounded),
-              label: 'Home',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.play_circle_rounded),
-              label: 'Work',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.history_rounded),
-              label: 'History',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.account_balance_wallet_rounded),
-              label: 'Earnings',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.person_rounded),
-              label: 'Profile',
-            ),
-          ],
-        ),
+      child: ResponsiveSidebar(
+        selectedIndex: _index,
+        onDestinationSelected: (i) => setState(() => _index = i),
+        destinations: _destinations,
+        userName: 'Ramesh Kumar',
+        userRole: 'Mason',
+        child: _pages[_index],
       ),
     );
   }
 }
+
 

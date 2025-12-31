@@ -4,7 +4,9 @@ import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/professional_theme.dart';
 import '../../../../app/ui/widgets/staggered_animation.dart';
 import '../../../../app/ui/widgets/status_chip.dart';
+import '../../../../app/ui/widgets/responsive_sidebar.dart';
 import '../../../../core/utils/navigation_utils.dart';
+import '../../../work_sessions/presentation/screens/work_type_select_screen.dart';
 
 class WorkerHomeDashboardScreen extends StatefulWidget {
   const WorkerHomeDashboardScreen({super.key});
@@ -23,9 +25,19 @@ class _WorkerHomeDashboardScreenState extends State<WorkerHomeDashboardScreen> {
     const lastSession = 'Concrete Work • 10:10 AM–11:45 AM';
     const currentStatus = UiStatus.pending;
 
+    // Check if we're on mobile
+    final sidebarProvider = SidebarProvider.of(context);
+    final isMobile = sidebarProvider?.isMobile ?? false;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
+        leading: isMobile
+            ? IconButton(
+                icon: const Icon(Icons.menu_rounded, color: Colors.white),
+                onPressed: () => SidebarProvider.openDrawer(context),
+              )
+            : null,
         title: const Text(
           'Worker Dashboard',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -160,7 +172,12 @@ class _WorkerHomeDashboardScreenState extends State<WorkerHomeDashboardScreen> {
                         icon: Icons.play_circle_rounded,
                         title: 'Start Work',
                         subtitle: 'Begin session',
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const WorkTypeSelectScreen()),
+                          );
+                        },
                       ),
                     ),
                     Expanded(
