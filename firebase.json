@@ -1,5 +1,1 @@
-<<<<<<< Updated upstream
-{"flutter":{"platforms":{"android":{"default":{"projectId":"interview-41f79","appId":"1:228677570502:android:7d2b4c9351ebd8d7f56cc7","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"interview-41f79","configurations":{"android":"1:228677570502:android:7d2b4c9351ebd8d7f56cc7","ios":"1:228677570502:ios:2cf359526e2f48f7f56cc7","macos":"1:228677570502:ios:2cf359526e2f48f7f56cc7","web":"1:228677570502:web:3d49c16a293d18aef56cc7","windows":"1:228677570502:web:ba146fef009e922af56cc7"}}}}}}
-=======
 {"flutter":{"platforms":{"android":{"default":{"projectId":"construction-app-10060","appId":"1:363864331050:android:3d18e2a7086b021458c453","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"construction-app-10060","configurations":{"android":"1:363864331050:android:3d18e2a7086b021458c453","ios":"1:363864331050:ios:b80caca73eb7a14f58c453","macos":"1:363864331050:ios:b80caca73eb7a14f58c453","web":"1:363864331050:web:6776752af49a077858c453","windows":"1:363864331050:web:18ce76fbbde6d7ab58c453"}}}}}}
->>>>>>> Stashed changes
