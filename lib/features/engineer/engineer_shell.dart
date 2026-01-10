@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'engineer_dashboard_screen.dart';
-import '../../../approvals/presentation/screens/approvals_queue_screen.dart';
-import '../../../block_management/presentation/screens/block_overview_screen.dart';
-import '../../../inventory/presentation/screens/inventory_dashboard_screen.dart';
-import '../../../trucks/presentation/screens/truck_trips_list_screen.dart';
+import '../approvals/approvals_queue_screen.dart';
+import '../block_management/block_overview_screen.dart';
+import '../inventory/inventory_dashboard_screen.dart';
+import '../trucks/truck_trips_list_screen.dart';
 import '../../../../core/utils/navigation_utils.dart';
 import '../../../../app/ui/widgets/app_sidebar.dart';
 import '../../../../app/ui/widgets/responsive_sidebar.dart';

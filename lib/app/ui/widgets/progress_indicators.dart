@@ -302,3 +302,4 @@ class _SuccessAnimationState extends State<SuccessAnimation>
     );
   }
 }
+  

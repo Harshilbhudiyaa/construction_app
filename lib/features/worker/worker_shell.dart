@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 import 'worker_home_dashboard_screen.dart';
-import '../../../work_sessions/presentation/screens/work_type_select_screen.dart';
-import '../../../work_sessions/presentation/screens/work_history_list_screen.dart';
-import '../../../payments/presentation/screens/earnings_dashboard_screen.dart';
+import '../work_sessions/work_type_select_screen.dart';
+import '../work_sessions/work_history_list_screen.dart';
+import '../payments/earnings_dashboard_screen.dart';
 import 'worker_profile_screen.dart';
 import '../../../../core/utils/navigation_utils.dart';
 import '../../../../app/ui/widgets/app_sidebar.dart';

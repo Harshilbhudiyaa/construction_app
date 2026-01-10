@@ -6,7 +6,7 @@ import '../../../../app/ui/widgets/staggered_animation.dart';
 import '../../../../app/ui/widgets/status_chip.dart';
 import '../../../../app/ui/widgets/responsive_sidebar.dart';
 import '../../../../core/utils/navigation_utils.dart';
-import '../../../work_sessions/presentation/screens/work_type_select_screen.dart';
+import '../work_sessions/work_type_select_screen.dart';
 
 class WorkerHomeDashboardScreen extends StatefulWidget {
   const WorkerHomeDashboardScreen({super.key});

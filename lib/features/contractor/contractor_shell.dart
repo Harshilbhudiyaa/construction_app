@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 import 'contractor_dashboard_screen.dart';
-import '../../../worker/presentation/screens/workers_list_screen.dart';
-import '../../../engineer/presentation/screens/engineers_list_screen.dart';
-import '../../../block_management/presentation/screens/machines_list_screen.dart';
-import '../../../inventory/presentation/screens/inventory_master_list_screen.dart';
-import '../../../payments/presentation/screens/payments_dashboard_screen.dart';
-import '../../../analytics/presentation/screens/analytics_dashboard_screen.dart';
-import '../../../notifications/presentation/screens/notifications_screen.dart';
+import '../worker/workers_list_screen.dart';
+import '../engineer/engineers_list_screen.dart';
+import '../block_management/machines_list_screen.dart';
+import '../inventory/inventory_master_list_screen.dart';
+import '../payments/payments_dashboard_screen.dart';
+import '../analytics/analytics_dashboard_screen.dart';
+import '../notifications/notifications_screen.dart';
 import 'audit_log_list_screen.dart';
 import '../../../../core/utils/navigation_utils.dart';
 import '../../../../app/ui/widgets/app_sidebar.dart';
