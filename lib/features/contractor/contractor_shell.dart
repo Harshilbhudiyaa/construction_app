@@ -3,8 +3,12 @@ import 'package:flutter/material.dart';
 import 'contractor_dashboard_screen.dart';
 import '../worker/workers_list_screen.dart';
 import '../engineer/engineers_list_screen.dart';
+import '../engineer/engineer_management_screen.dart';
+import '../engineer/machine_management_screen.dart';
+import '../engineer/tools_management_screen.dart';
 import '../block_management/machines_list_screen.dart';
 import '../inventory/inventory_master_list_screen.dart';
+import '../inventory/inventory_detail_management_screen.dart';
 import '../payments/payments_dashboard_screen.dart';
 import '../analytics/analytics_dashboard_screen.dart';
 import '../notifications/notifications_screen.dart';
@@ -28,9 +32,10 @@ class _ContractorShellState extends State<ContractorShell> {
   late final List<Widget> _pages = [
     ContractorDashboardScreen(onNavigateTo: _goTo),
     const WorkersListScreen(),
-    const EngineersListScreen(),
-    const MachinesListScreen(),
-    const InventoryMasterListScreen(),
+    const EngineerManagementScreen(), // Updated to new engineer management
+    const MachineManagementScreen(), // Updated to new machine management
+    const InventoryDetailManagementScreen(), // Updated to new inventory detail
+    const ToolsManagementScreen(), // New tools management
     const PaymentsDashboardScreen(),
     const AnalyticsDashboardScreen(),
     const NotificationsScreen(),
@@ -48,7 +53,7 @@ class _ContractorShellState extends State<ContractorShell> {
     ),
     SidebarDestination(
       icon: Icons.engineering_rounded,
-      label: 'Engineers',
+      label: 'Personnel',
     ),
     SidebarDestination(
       icon: Icons.precision_manufacturing_rounded,
@@ -57,6 +62,10 @@ class _ContractorShellState extends State<ContractorShell> {
     SidebarDestination(
       icon: Icons.inventory_2_rounded,
       label: 'Inventory',
+    ),
+    SidebarDestination(
+      icon: Icons.build_rounded,
+      label: 'Tools',
     ),
     SidebarDestination(
       icon: Icons.payments_rounded,
