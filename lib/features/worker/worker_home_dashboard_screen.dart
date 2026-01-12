@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'dart:math' as math;
 
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/professional_theme.dart';
 import '../../../../app/ui/widgets/staggered_animation.dart';
 import '../../../../app/ui/widgets/status_chip.dart';
-import '../../../../app/ui/widgets/responsive_sidebar.dart';
+import '../../../../app/ui/widgets/professional_page.dart';
 import '../../../../core/utils/navigation_utils.dart';
 import '../work_sessions/work_type_select_screen.dart';
 
@@ -18,352 +20,406 @@ class WorkerHomeDashboardScreen extends StatefulWidget {
 class _WorkerHomeDashboardScreenState extends State<WorkerHomeDashboardScreen> {
   @override
   Widget build(BuildContext context) {
-    // Demo values (UI-only)
-    const todayMinutes = 135;
-    const earnedToday = 650;
-    const pending = 2;
-    const lastSession = 'Concrete Work • 10:10 AM–11:45 AM';
-    const currentStatus = UiStatus.pending;
-
-    // Check if we're on mobile
-    final sidebarProvider = SidebarProvider.of(context);
-    final isMobile = sidebarProvider?.isMobile ?? false;
-
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        leading: isMobile
-            ? IconButton(
-                icon: const Icon(Icons.menu_rounded, color: Colors.white),
-                onPressed: () => SidebarProvider.openDrawer(context),
-              )
-            : null,
-        title: const Text(
-          'Worker Dashboard',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+    return ProfessionalPage(
+      title: 'Worker Console',
+      actions: [
+        IconButton(
+          onPressed: () {},
+          icon: const Icon(Icons.notifications_rounded, color: Colors.white),
         ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            onPressed: () => NavigationUtils.showLogoutDialog(context),
-            icon: const Icon(Icons.logout_rounded, color: Colors.white),
+        IconButton(
+          onPressed: () => NavigationUtils.showLogoutDialog(context),
+          icon: const Icon(Icons.logout_rounded, color: Colors.white),
+        ),
+      ],
+      children: [
+        _buildWorkerProfileHeader(),
+        
+        const ProfessionalSectionHeader(
+          title: 'Shift Performance',
+          subtitle: 'Daily work and earnings tracking',
+        ),
+        
+        _buildWorkerKpis(),
+        
+        const ProfessionalSectionHeader(
+          title: 'Quick Operations',
+          subtitle: 'Manage sessions and history',
+        ),
+        
+        _buildQuickActions(),
+        
+        const ProfessionalSectionHeader(
+          title: 'Recent Activity',
+          subtitle: 'Your latest work session',
+        ),
+        
+        _buildRecentActivity(),
+        
+        const SizedBox(height: 100),
+      ],
+    );
+  }
+
+  Widget _buildWorkerProfileHeader() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: ProfessionalCard(
+        padding: const EdgeInsets.all(20),
+        gradient: LinearGradient(
+          colors: [
+            AppColors.deepBlue1,
+            AppColors.deepBlue1.withOpacity(0.8),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
+              ),
+              child: const CircleAvatar(
+                radius: 28,
+                backgroundColor: Colors.white12,
+                child: Icon(Icons.person_rounded, color: Colors.white, size: 28),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Ramesh Kumar',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'MASON • METROPOLIS SITE A',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.7),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const StatusChip(
+              status: UiStatus.ok,
+              labelOverride: 'ACTIVE',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWorkerKpis() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: GridView.count(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        crossAxisCount: 2,
+        childAspectRatio: 1.3,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        children: const [
+          _WorkerKpiTile(
+            title: 'Today Work',
+            value: '135m',
+            icon: Icons.timer_rounded,
+            color: Colors.orangeAccent,
+            trend: 'On Track',
           ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.notifications_rounded, color: Colors.white),
+          _WorkerKpiTile(
+            title: 'Earned Today',
+            value: '₹650',
+            icon: Icons.paid_rounded,
+            color: Colors.greenAccent,
+            trend: '+₹150 OT',
+          ),
+          _WorkerKpiTile(
+            title: 'Pending',
+            value: '2',
+            icon: Icons.fact_check_rounded,
+            color: Colors.blueAccent,
+            trend: 'Approvals',
+          ),
+          _WorkerKpiTile(
+            title: 'Weekly Total',
+            value: '₹2.4K',
+            icon: Icons.trending_up_rounded,
+            color: Colors.purpleAccent,
+            trend: 'Optimal',
           ),
         ],
       ),
-      body: ProfessionalBackground(
-        child: SafeArea(
-          child: ListView(
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-            children: [
-              // Profile header card
-              ProfessionalCard(
-                child: Row(
-                  children: [
-                    Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: AppColors.deepBlue1.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.badge_rounded,
-                        color: AppColors.deepBlue1,
-                        size: 28,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Ramesh Kumar',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w800,
-                              fontSize: 18,
-                              color: AppColors.deepBlue1,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Mason • Site A',
-                            style: TextStyle(color: Colors.grey[600]),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const StatusChip(status: currentStatus),
-                  ],
-                ),
-              ),
+    );
+  }
 
-              // KPIs
-              StaggeredAnimation(
-                index: 0,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Row(
-                    children: const [
-                      Expanded(
-                        child: _KpiTile(
-                          title: 'Today Work',
-                          value: '${todayMinutes} min',
-                          icon: Icons.timer_rounded,
-                          color: Colors.orange,
-                        ),
-                      ),
-                      Expanded(
-                        child: _KpiTile(
-                          title: 'Earned Today',
-                          value: '₹$earnedToday',
-                          icon: Icons.paid_rounded,
-                          color: Colors.green,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              StaggeredAnimation(
-                index: 1,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Row(
-                    children: const [
-                      Expanded(
-                        child: _KpiTile(
-                          title: 'Pending',
-                          value: '$pending',
-                          icon: Icons.fact_check_rounded,
-                          color: Colors.blue,
-                        ),
-                      ),
-                      Expanded(
-                        child: _KpiTile(
-                          title: 'This Week',
-                          value: '₹2,450',
-                          icon: Icons.trending_up_rounded,
-                          color: Colors.purple,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              const ProfessionalSectionHeader(
-                title: 'Quick Actions',
-                subtitle: 'Manage your work and profile',
-              ),
-
-              // Quick actions grid
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _ActionCard(
-                        icon: Icons.play_circle_rounded,
-                        title: 'Start Work',
-                        subtitle: 'Begin session',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const WorkTypeSelectScreen()),
-                          );
-                        },
-                      ),
-                    ),
-                    Expanded(
-                      child: _ActionCard(
-                        icon: Icons.history_rounded,
-                        title: 'History',
-                        subtitle: 'View logs',
-                        onTap: () {},
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _ActionCard(
-                        icon: Icons.account_balance_wallet_rounded,
-                        title: 'Earnings',
-                        subtitle: 'Check payments',
-                        onTap: () {},
-                      ),
-                    ),
-                    Expanded(
-                      child: _ActionCard(
-                        icon: Icons.person_rounded,
-                        title: 'Profile',
-                        subtitle: 'Settings',
-                        onTap: () {},
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const ProfessionalSectionHeader(
-                title: 'Last Session',
-                subtitle: 'Recent activity log',
-              ),
-
-              ProfessionalCard(
-                child: ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: AppColors.deepBlue1.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.work_history_rounded, color: AppColors.deepBlue1),
-                  ),
-                  title: const Text(
-                    'Last session summary',
-                    style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.deepBlue1),
-                  ),
-                  subtitle: const Text(lastSession),
-                  trailing: const Icon(Icons.chevron_right_rounded, color: Colors.grey),
-                  onTap: () {},
-                ),
-              ),
-
-              const SizedBox(height: 16),
-            ],
+  Widget _buildQuickActions() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: GridView.count(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        crossAxisCount: 2,
+        childAspectRatio: 1.25,
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 8,
+        children: [
+          _ActionSquare(
+            icon: Icons.play_circle_rounded,
+            title: 'Start Work',
+            subtitle: 'Begin session',
+            color: Colors.blueAccent,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const WorkTypeSelectScreen()),
+              );
+            },
           ),
+          _ActionSquare(
+            icon: Icons.history_rounded,
+            title: 'Sessions',
+            subtitle: 'Work history',
+            color: Colors.orangeAccent,
+            onTap: () {},
+          ),
+          _ActionSquare(
+            icon: Icons.account_balance_wallet_rounded,
+            title: 'Earnings',
+            subtitle: 'Check salary',
+            color: Colors.greenAccent,
+            onTap: () {},
+          ),
+          _ActionSquare(
+            icon: Icons.manage_accounts_rounded,
+            title: 'Profile',
+            subtitle: 'Your settings',
+            color: Colors.purpleAccent,
+            onTap: () {},
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecentActivity() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: ProfessionalCard(
+        padding: const EdgeInsets.all(16),
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withOpacity(0.08),
+            Colors.white.withOpacity(0.02),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.blueAccent.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.work_history_rounded, color: Colors.blueAccent, size: 20),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text(
+                    'Concrete Work Summary',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    '10:10 AM – 11:45 AM • 95 mins',
+                    style: TextStyle(color: Colors.white60, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            const StatusChip(status: UiStatus.pending, labelOverride: 'WAITING'),
+          ],
         ),
       ),
     );
   }
 }
 
-class _KpiTile extends StatelessWidget {
+class _WorkerKpiTile extends StatelessWidget {
   final String title;
   final String value;
   final IconData icon;
   final Color color;
+  final String trend;
 
-  const _KpiTile({
+  const _WorkerKpiTile({
     required this.title,
     required this.value,
     required this.icon,
     required this.color,
+    required this.trend,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
+    return ProfessionalCard(
+      padding: EdgeInsets.zero,
+      gradient: LinearGradient(
+        colors: [
+          Colors.white.withOpacity(0.15),
+          Colors.white.withOpacity(0.05),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Icon(icon, color: color, size: 24),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.deepBlue1,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, color: color, size: 18),
+                ),
+                Text(
+                  trend,
+                  style: TextStyle(
+                    color: color.withOpacity(0.8),
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const Spacer(),
+            Text(
+              value,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.5,
+              ),
+            ),
+            Text(
+              title.toUpperCase(),
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.5),
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 16,
+              child: LineChart(
+                LineChartData(
+                  gridData: const FlGridData(show: false),
+                  titlesData: const FlTitlesData(show: false),
+                  borderData: FlBorderData(show: false),
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: _generateDummySpots(),
+                      isCurved: true,
+                      color: color,
+                      barWidth: 2,
+                      isStrokeCapRound: true,
+                      dotData: const FlDotData(show: false),
+                      belowBarData: BarAreaData(show: false),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            title,
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
+
+  List<FlSpot> _generateDummySpots() {
+    final rand = math.Random(title.hashCode);
+    return List.generate(6, (i) => FlSpot(i.toDouble(), rand.nextDouble() * 5));
+  }
 }
 
-class _ActionCard extends StatelessWidget {
+class _ActionSquare extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
+  final Color color;
   final VoidCallback onTap;
 
-  const _ActionCard({
+  const _ActionSquare({
     required this.icon,
     required this.title,
     required this.subtitle,
+    required this.color,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.all(8),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.9),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: AppColors.deepBlue2),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: AppColors.deepBlue1,
+    return ProfessionalCard(
+      padding: EdgeInsets.zero,
+      gradient: LinearGradient(
+        colors: [
+          Colors.white.withOpacity(0.12),
+          Colors.white.withOpacity(0.04),
+        ],
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: color, size: 20),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: 12,
+              const Spacer(),
+              Text(
+                title,
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
               ),
-            ),
-          ],
+              Text(
+                subtitle,
+                style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 11),
+              ),
+            ],
+          ),
         ),
       ),
     );

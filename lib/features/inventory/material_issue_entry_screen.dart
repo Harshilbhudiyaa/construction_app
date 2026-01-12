@@ -4,6 +4,7 @@ import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/professional_theme.dart';
 import '../../../../app/ui/widgets/status_chip.dart';
 import '../../../../app/ui/widgets/professional_page.dart';
+import '../../../../app/ui/widgets/staggered_animation.dart';
 
 class MaterialIssueEntryScreen extends StatefulWidget {
   const MaterialIssueEntryScreen({super.key});
@@ -45,182 +46,300 @@ class _MaterialIssueEntryScreenState extends State<MaterialIssueEntryScreen> {
       title: 'Issue Material',
       children: [
         const ProfessionalSectionHeader(
-          title: 'Issue Entry',
-          subtitle: 'Record outward movement of site inventory',
+          title: 'Inventory Command',
+          subtitle: 'Record outward tactical movement',
         ),
+        
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: ProfessionalCard(
-            child: Form(
-              key: _formKey,
-              child: Column(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: StaggeredAnimation(
+            index: 0,
+            child: ProfessionalCard(
+              padding: const EdgeInsets.all(24),
+              gradient: LinearGradient(
+                colors: [
+                  Colors.white.withOpacity(0.08),
+                  Colors.white.withOpacity(0.02),
+                ],
+              ),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    _buildGlassDropdown(
+                      label: 'Target Work Segment',
+                      icon: Icons.segment_rounded,
+                      value: _workType,
+                      items: const [
+                        'Concrete Work',
+                        'Brick / Block Work',
+                        'Electrical',
+                        'Plumbing'
+                      ],
+                      onChanged: (v) => setState(() => _workType = v!),
+                    ),
+                    const SizedBox(height: 20),
+                    _buildGlassDropdown(
+                      label: 'Primary Material',
+                      icon: Icons.inventory_2_rounded,
+                      value: _material,
+                      items: const [
+                        'Cement (Bags)',
+                        'Sand',
+                        'Steel Rod'
+                      ],
+                      onChanged: (v) => setState(() {
+                        _material = v!;
+                        _unit = _material == 'Sand' ? 'tons' : _material == 'Steel Rod' ? 'kg' : 'bags';
+                      }),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: _buildGlassInput(
+                            label: 'Tactical Qty',
+                            controller: _qtyCtrl,
+                            keyboardType: TextInputType.number,
+                            validator: (v) {
+                              if (v == null || v.isEmpty) return '??';
+                              if (double.tryParse(v) == null) return '!#';
+                              return null;
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildGlassInput(
+                            label: 'Metrics',
+                            controller: TextEditingController(text: _unit),
+                            readOnly: true,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    _buildGlassDropdown(
+                      label: 'Deploy To (Engineer/Worker)',
+                      icon: Icons.person_rounded,
+                      value: _issuedTo,
+                      items: const [
+                        'Ramesh Kumar',
+                        'Suresh Patel',
+                        'Eng. Rajesh Khanna'
+                      ],
+                      onChanged: (v) => setState(() => _issuedTo = v!),
+                    ),
+                    const SizedBox(height: 20),
+                    _buildGlassInput(
+                      label: 'Strategic Remarks (optional)',
+                      controller: _noteCtrl,
+                      maxLines: 2,
+                    ),
+                    const SizedBox(height: 32),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.white70,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                            ),
+                            child: const Text('CANCEL', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1)),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(colors: AppColors.gradientColors),
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.deepBlue1.withOpacity(0.3),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: ElevatedButton(
+                              onPressed: _submit,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                              ),
+                              child: const Text(
+                                'ISSUE MATERIAL',
+                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, letterSpacing: 1),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 24),
+        
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: StaggeredAnimation(
+            index: 1,
+            child: ProfessionalCard(
+              padding: const EdgeInsets.all(16),
+              gradient: LinearGradient(
+                colors: [
+                  Colors.blueAccent.withOpacity(0.1),
+                  Colors.blueAccent.withOpacity(0.05),
+                ],
+              ),
+              child: Row(
                 children: [
-                  DropdownButtonFormField<String>(
-                    value: _workType,
-                    style: const TextStyle(color: AppColors.deepBlue1, fontWeight: FontWeight.w600),
-                    decoration: InputDecoration(
-                      labelText: 'Work Type',
-                      labelStyle: TextStyle(color: Colors.grey[600]),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      prefixIcon: const Icon(Icons.category_rounded, color: AppColors.deepBlue1),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.blueAccent.withOpacity(0.2),
+                      shape: BoxShape.circle,
                     ),
-                    items: const [
-                      DropdownMenuItem(value: 'Concrete Work', child: Text('Concrete Work')),
-                      DropdownMenuItem(value: 'Brick / Block Work', child: Text('Brick / Block Work')),
-                      DropdownMenuItem(value: 'Electrical', child: Text('Electrical')),
-                      DropdownMenuItem(value: 'Plumbing', child: Text('Plumbing')),
-                    ],
-                    onChanged: (v) => setState(() => _workType = v ?? _workType),
+                    child: const Icon(Icons.info_outline_rounded, color: Colors.blueAccent, size: 20),
                   ),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    value: _material,
-                    style: const TextStyle(color: AppColors.deepBlue1, fontWeight: FontWeight.w600),
-                    decoration: InputDecoration(
-                      labelText: 'Material',
-                      labelStyle: TextStyle(color: Colors.grey[600]),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      prefixIcon: const Icon(Icons.inventory_2_rounded, color: AppColors.deepBlue1),
+                  const SizedBox(width: 16),
+                  const Expanded(
+                    child: Text(
+                      'All tactical issuances are logged to the digital ledger and tracked against site budgets.',
+                      style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500),
                     ),
-                    items: const [
-                      DropdownMenuItem(value: 'Cement (Bags)', child: Text('Cement (Bags)')),
-                      DropdownMenuItem(value: 'Sand', child: Text('Sand')),
-                      DropdownMenuItem(value: 'Steel Rod', child: Text('Steel Rod')),
-                    ],
-                    onChanged: (v) => setState(() {
-                      _material = v ?? _material;
-                      _unit = _material == 'Sand' ? 'tons' : _material == 'Steel Rod' ? 'kg' : 'bags';
-                    }),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          controller: _qtyCtrl,
-                          keyboardType: TextInputType.number,
-                          style: const TextStyle(color: AppColors.deepBlue1, fontWeight: FontWeight.w600),
-                          decoration: InputDecoration(
-                            labelText: 'Quantity',
-                            labelStyle: TextStyle(color: Colors.grey[600]),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          validator: (v) {
-                            final t = (v ?? '').trim();
-                            if (t.isEmpty) return 'Required';
-                            final n = int.tryParse(t);
-                            if (n == null || n <= 0) return 'Invalid qty';
-                            return null;
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: TextFormField(
-                          readOnly: true,
-                          controller: TextEditingController(text: _unit),
-                          style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w600),
-                          decoration: InputDecoration(
-                            labelText: 'Unit',
-                            labelStyle: TextStyle(color: Colors.grey[600]),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                            filled: true,
-                            fillColor: Colors.grey[50],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    value: _issuedTo,
-                    style: const TextStyle(color: AppColors.deepBlue1, fontWeight: FontWeight.w600),
-                    decoration: InputDecoration(
-                      labelText: 'Issued To (Worker)',
-                      labelStyle: TextStyle(color: Colors.grey[600]),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      prefixIcon: const Icon(Icons.person_rounded, color: AppColors.deepBlue1),
-                    ),
-                    items: const [
-                      DropdownMenuItem(value: 'Ramesh Kumar', child: Text('Ramesh Kumar')),
-                      DropdownMenuItem(value: 'Suresh Patel', child: Text('Suresh Patel')),
-                    ],
-                    onChanged: (v) => setState(() => _issuedTo = v ?? _issuedTo),
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _noteCtrl,
-                    maxLines: 3,
-                    style: const TextStyle(color: AppColors.deepBlue1),
-                    decoration: InputDecoration(
-                      labelText: 'Note (optional)',
-                      labelStyle: TextStyle(color: Colors.grey[600]),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      hintText: 'Add remark like machine used, location, etc.',
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          child: const Text('Cancel'),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: FilledButton(
-                          onPressed: _submit,
-                          style: FilledButton.styleFrom(
-                            backgroundColor: AppColors.deepBlue1,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          child: const Text('Issue Material'),
-                        ),
-                      ),
-                    ],
                   ),
                 ],
               ),
             ),
           ),
         ),
-        const SizedBox(height: 16),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: ProfessionalCard(
-            child: ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.info_outline_rounded, color: Colors.blue),
-              ),
-              title: const Text(
-                'Note',
-                style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.deepBlue1),
-              ),
-              subtitle: const Text(
-                'Final version will decrease stock and add a ledger entry automatically.',
-                style: TextStyle(fontSize: 13),
-              ),
-              trailing: const StatusChip(
-                status: UiStatus.pending,
-                labelOverride: 'UI-only',
-              ),
+        
+        const SizedBox(height: 100),
+      ],
+    );
+  }
+
+  Widget _buildGlassInput({
+    required String label,
+    required TextEditingController controller,
+    TextInputType? keyboardType,
+    bool readOnly = false,
+    int maxLines = 1,
+    String? Function(String?)? validator,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.4),
+            fontSize: 10,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.5,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          readOnly: readOnly,
+          maxLines: maxLines,
+          keyboardType: keyboardType,
+          validator: validator,
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.white.withOpacity(0.05),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.blueAccent, width: 1.5),
             ),
           ),
         ),
-        const SizedBox(height: 32),
+      ],
+    );
+  }
+
+  Widget _buildGlassDropdown({
+    required String label,
+    required IconData icon,
+    required String value,
+    required List<String> items,
+    required void Function(String?) onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.4),
+            fontSize: 10,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.5,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withOpacity(0.1)),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: value,
+              isExpanded: true,
+              dropdownColor: AppColors.deepBlue1,
+              icon: Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white.withOpacity(0.5)),
+              selectedItemBuilder: (context) {
+                return items.map((String item) {
+                  return Row(
+                    children: [
+                      Icon(icon, size: 18, color: Colors.blueAccent),
+                      const SizedBox(width: 12),
+                      Text(
+                        item,
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
+                      ),
+                    ],
+                  );
+                }).toList();
+              },
+              items: items.map((String item) {
+                return DropdownMenuItem<String>(
+                  value: item,
+                  child: Text(
+                    item,
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                  ),
+                );
+              }).toList(),
+              onChanged: onChanged,
+            ),
+          ),
+        ),
       ],
     );
   }

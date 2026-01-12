@@ -6,6 +6,7 @@ import '../../../../app/ui/widgets/app_search_field.dart';
 import '../../../../app/ui/widgets/empty_state.dart';
 import '../../../../app/ui/widgets/status_chip.dart';
 import '../../../../app/ui/widgets/professional_page.dart';
+import '../../../../app/ui/widgets/staggered_animation.dart';
 
 enum LedgerEntryType { inward, outward }
 
@@ -66,26 +67,45 @@ class _InventoryLedgerScreenState extends State<InventoryLedgerScreen> {
       t == LedgerEntryType.inward ? UiStatus.approved : UiStatus.pending;
 
   String _label(LedgerEntryType t) =>
-      t == LedgerEntryType.inward ? 'Inward' : 'Outward';
+      t == LedgerEntryType.inward ? 'INWARD' : 'OUTWARD';
 
   @override
   Widget build(BuildContext context) {
     return ProfessionalPage(
       title: 'Inventory Ledger',
       children: [
-        AppSearchField(
-          hint: 'Search item, id, reference...',
-          onChanged: (v) => setState(() => _query = v),
-        ),
+        _buildTacticalHeader(),
 
         const ProfessionalSectionHeader(
-          title: 'Timeline & Filters',
-          subtitle: 'Track stock movements',
+          title: 'Tactical Filter',
+          subtitle: 'Segment stock movements',
         ),
 
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: SingleChildScrollView(
+        _buildFilterBar(),
+
+        const ProfessionalSectionHeader(
+          title: 'Movement Stream',
+          subtitle: 'Detailed strategic logs',
+        ),
+
+        _buildEntryList(),
+
+        const SizedBox(height: 100),
+      ],
+    );
+  }
+
+  Widget _buildTacticalHeader() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        children: [
+          AppSearchField(
+            hint: 'Search item, id, reference...',
+            onChanged: (v) => setState(() => _query = v),
+          ),
+          const SizedBox(height: 12),
+          SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children: ['Today', 'This Week', 'This Month'].map((r) {
@@ -96,111 +116,155 @@ class _InventoryLedgerScreenState extends State<InventoryLedgerScreen> {
                     label: Text(r),
                     selected: selected,
                     onSelected: (_) => setState(() => _range = r),
-                    backgroundColor: Colors.white.withOpacity(0.1),
-                    selectedColor: Colors.white,
+                    backgroundColor: Colors.white.withOpacity(0.05),
+                    selectedColor: Colors.blueAccent,
                     labelStyle: TextStyle(
-                      color: selected ? AppColors.deepBlue1 : Colors.white,
+                      color: selected ? Colors.white : Colors.white70,
                       fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+                      fontSize: 12,
                     ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    side: BorderSide(color: Colors.white.withOpacity(0.1)),
                   ),
                 );
               }).toList(),
             ),
           ),
-        ),
+        ],
+      ),
+    );
+  }
 
-        const SizedBox(height: 16),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: ProfessionalCard(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
+  Widget _buildFilterBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          _buildFilterChip('ALL', null),
+          const SizedBox(width: 8),
+          _buildFilterChip('INWARD', LedgerEntryType.inward),
+          const SizedBox(width: 8),
+          _buildFilterChip('OUTWARD', LedgerEntryType.outward),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(String label, LedgerEntryType? type) {
+    final selected = _filter == type;
+    return Expanded(
+      child: InkWell(
+        onTap: () => setState(() => _filter = type),
+        borderRadius: BorderRadius.circular(12),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: selected ? Colors.blueAccent : Colors.white.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withOpacity(0.1)),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: TextStyle(
+                color: selected ? Colors.white : Colors.white60,
+                fontSize: 11,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEntryList() {
+    if (_filteredItems.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 40),
+        child: EmptyState(
+          icon: Icons.receipt_long_rounded,
+          title: 'NO STRATEGIC LOGS',
+          message: 'Refine your search or filter parameters.',
+        ),
+      );
+    }
+
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: _filteredItems.length,
+      itemBuilder: (context, index) {
+        final x = _filteredItems[index];
+        return StaggeredAnimation(
+          index: index,
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: ProfessionalCard(
+              padding: const EdgeInsets.all(16),
+              gradient: LinearGradient(
+                colors: [
+                  Colors.white.withOpacity(0.08),
+                  Colors.white.withOpacity(0.02),
+                ],
+              ),
               child: Row(
                 children: [
-                   FilterChip(
-                    label: const Text('All'),
-                    selected: _filter == null,
-                    onSelected: (_) => setState(() => _filter = null),
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: (x.type == LedgerEntryType.inward ? Colors.greenAccent : Colors.orangeAccent).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      x.type == LedgerEntryType.inward ? Icons.south_rounded : Icons.north_rounded,
+                      color: x.type == LedgerEntryType.inward ? Colors.greenAccent : Colors.orangeAccent,
+                      size: 20,
+                    ),
                   ),
-                  const SizedBox(width: 8),
-                  FilterChip(
-                    label: const Text('Inward'),
-                    selected: _filter == LedgerEntryType.inward,
-                    onSelected: (_) => setState(() => _filter = LedgerEntryType.inward),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${x.item.toUpperCase()} • ${x.qty}${x.unit[0]}',
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${x.date} • ${x.id}',
+                          style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 10, fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            x.ref.toUpperCase(),
+                            style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 9, fontWeight: FontWeight.w800),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(width: 8),
-                  FilterChip(
-                    label: const Text('Outward'),
-                    selected: _filter == LedgerEntryType.outward,
-                    onSelected: (_) => setState(() => _filter = LedgerEntryType.outward),
+                  StatusChip(
+                    status: _toUi(x.type),
+                    labelOverride: _label(x.type),
                   ),
                 ],
               ),
             ),
           ),
-        ),
-
-        const ProfessionalSectionHeader(
-          title: 'Ledger Entries',
-          subtitle: 'Detailed history of materials',
-        ),
-
-        if (_filteredItems.isEmpty)
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: EmptyState(
-              icon: Icons.receipt_long_rounded,
-              title: 'No entries found',
-              message: 'Try changing filter or search.',
-            ),
-          )
-        else
-          ..._filteredItems.map((x) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: ProfessionalCard(
-                child: ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: Container(
-                    width: 46,
-                    height: 46,
-                    decoration: BoxDecoration(
-                      color: AppColors.deepBlue1.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      x.type == LedgerEntryType.inward
-                          ? Icons.arrow_downward_rounded
-                          : Icons.arrow_upward_rounded,
-                      color: x.type == LedgerEntryType.inward ? Colors.green : Colors.orange,
-                    ),
-                  ),
-                  title: Text(
-                    '${x.item} • ${x.qty} ${x.unit}',
-                    style: const TextStyle(fontWeight: FontWeight.w900, color: AppColors.deepBlue1),
-                  ),
-                  subtitle: Text(
-                    '${x.date}\nRef: ${x.ref} • ${x.id}',
-                    style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                  ),
-                  isThreeLine: true,
-                  trailing: StatusChip(
-                    status: _toUi(x.type),
-                    labelOverride: _label(x.type),
-                  ),
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Open detail: ${x.id}')),
-                    );
-                  },
-                ),
-              ),
-            );
-          }),
-
-        const SizedBox(height: 32),
-      ],
+        );
+      },
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/professional_theme.dart';
@@ -133,131 +134,94 @@ class _WorkersListScreenState extends State<WorkersListScreen> {
     );
   }
 
+  void _showFilters() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => _FilterSheet(
+        currentShift: _shift,
+        currentStatus: _status,
+        currentSkill: _skill,
+        onApply: (shift, status, skill) {
+          setState(() {
+            _shift = shift;
+            _status = status;
+            _skill = skill;
+          });
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final activeCount = _items.where((w) => w.status == WorkerStatus.active).length;
+    final dayCount = _items.where((w) => w.shift == WorkerShift.day).length;
+    final nightCount = _items.where((w) => w.shift == WorkerShift.night).length;
+
     return ProfessionalPage(
-      title: 'Workers',
+      title: 'Workforce',
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _add,
         backgroundColor: AppColors.deepBlue1,
         icon: const Icon(Icons.add_rounded, color: Colors.white),
-        label: const Text('Add Worker', style: TextStyle(color: Colors.white)),
+        label: const Text('Add Worker', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: AppSearchField(
-                hint: 'Search name, skill, phone, id...',
-                onChanged: (v) => setState(() => _q = v),
-              ),
-            ),
-            const SizedBox(width: 8),
-            InfoTooltip(
-              message: 'Search across worker names, skills, phone numbers, IDs, shifts, and work types',
-              icon: Icons.help_outline_rounded,
-            ),
-          ],
+        // Workforce Summary Header
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          child: Row(
+            children: [
+              _SummaryTile(label: 'Total', value: '${_items.length}', color: Colors.blue),
+              _SummaryTile(label: 'Active', value: '$activeCount', color: Colors.green),
+              _SummaryTile(label: 'Day', value: '$dayCount', color: Colors.orange),
+              _SummaryTile(label: 'Night', value: '$nightCount', color: Colors.indigo),
+            ],
+          ),
         ),
 
-        const ProfessionalSectionHeader(
-          title: 'Filters',
-          subtitle: 'Shift, status, and skill selection',
-        ),
+        const SizedBox(height: 8),
 
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: ProfessionalCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: [
-                    FilterChip(
-                      label: const Text('All Shifts'),
-                      selected: _shift == null,
-                      onSelected: (_) => setState(() => _shift = null),
-                    ),
-                    FilterChip(
-                      label: const Text('Day'),
-                      selected: _shift == WorkerShift.day,
-                      onSelected: (_) =>
-                          setState(() => _shift = WorkerShift.day),
-                    ),
-                    FilterChip(
-                      label: const Text('Night'),
-                      selected: _shift == WorkerShift.night,
-                      onSelected: (_) =>
-                          setState(() => _shift = WorkerShift.night),
-                    ),
-                  ],
+          child: Row(
+            children: [
+              Expanded(
+                child: AppSearchField(
+                  hint: 'Search name, skill...',
+                  onChanged: (v) => setState(() => _q = v),
                 ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: [
-                    FilterChip(
-                      label: const Text('All Status'),
-                      selected: _status == null,
-                      onSelected: (_) => setState(() => _status = null),
+              ),
+              const SizedBox(width: 12),
+              Material(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                child: InkWell(
+                  onTap: _showFilters,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey[200]!),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    FilterChip(
-                      label: const Text('Active'),
-                      selected: _status == WorkerStatus.active,
-                      onSelected: (_) =>
-                          setState(() => _status = WorkerStatus.active),
+                    child: Badge(
+                      isLabelVisible: _shift != null || _status != null || _skill != null,
+                      child: Icon(Icons.tune_rounded, color: AppColors.deepBlue1),
                     ),
-                    FilterChip(
-                      label: const Text('Inactive'),
-                      selected: _status == WorkerStatus.inactive,
-                      onSelected: (_) =>
-                          setState(() => _status = WorkerStatus.inactive),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String?>(
-                  value: _skill,
-                  decoration: const InputDecoration(
-                    labelText: 'Skill (Optional)',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
-                  ),
-                  items: [
-                    const DropdownMenuItem(
-                      value: null,
-                      child: Text('All Skills'),
-                    ),
-                    ...kSkills.map(
-                      (s) => DropdownMenuItem(value: s, child: Text(s)),
-                    ),
-                  ],
-                  onChanged: (v) => setState(() => _skill = v),
-                ),
-                const SizedBox(height: 8),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton.icon(
-                    onPressed: () => setState(() {
-                      _q = '';
-                      _shift = null;
-                      _status = null;
-                      _skill = null;
-                    }),
-                    icon: const Icon(Icons.refresh_rounded, size: 18),
-                    label: const Text('Reset Filters'),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
 
         const ProfessionalSectionHeader(
-          title: 'Staff Directory',
-          subtitle: 'Manage active workforce',
+          title: 'Directory',
+          subtitle: 'Active and archived workforce records',
         ),
 
         if (_filtered.isEmpty)
@@ -266,7 +230,7 @@ class _WorkersListScreenState extends State<WorkersListScreen> {
             child: EmptyState(
               icon: Icons.groups_rounded,
               title: 'No workers found',
-              message: 'Try changing filters or search.',
+              message: 'Try changing filters or search terms.',
             ),
           )
         else
@@ -276,55 +240,10 @@ class _WorkersListScreenState extends State<WorkersListScreen> {
             return StaggeredAnimation(
               index: index,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 child: ProfessionalCard(
                   child: ListTile(
                     contentPadding: EdgeInsets.zero,
-                    leading: Container(
-                      width: 46,
-                      height: 46,
-                      decoration: BoxDecoration(
-                        color: AppColors.deepBlue1.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                      ),
-                      child: const Icon(
-                        Icons.person_rounded,
-                        color: AppColors.deepBlue1,
-                      ),
-                    ),
-                    title: Text(
-                      w.name,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.deepBlue1,
-                      ),
-                    ),
-                    subtitle: Text(
-                      '${w.skill} • ${shiftLabel(w.shift)}\nRate: ₹${w.rateAmount} (${rateTypeLabel(w.rateType)})',
-                      style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                    ),
-                    isThreeLine: true,
-                    trailing: PopupMenuButton<String>(
-                      onSelected: (v) {
-                        if (v == 'edit') _edit(w);
-                        if (v == 'toggle') _toggleActive(w);
-                      },
-                      itemBuilder: (_) => [
-                        const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                        PopupMenuItem(
-                          value: 'toggle',
-                          child: Text(
-                            w.status == WorkerStatus.active
-                                ? 'Deactivate'
-                                : 'Activate',
-                          ),
-                        ),
-                      ],
-                      child: StatusChip(
-                        status: _toUi(w.status),
-                        labelOverride: statusLabel(w.status),
-                      ),
-                    ),
                     onTap: () async {
                       await Navigator.push(
                         context,
@@ -333,6 +252,72 @@ class _WorkersListScreenState extends State<WorkersListScreen> {
                         ),
                       );
                     },
+                    leading: Hero(
+                      tag: 'worker_icon_${w.id}',
+                      child: Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: AppColors.deepBlue1.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: const Icon(
+                          Icons.person_outline_rounded,
+                          color: AppColors.deepBlue1,
+                          size: 26,
+                        ),
+                      ),
+                    ),
+                    title: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            w.name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.deepBlue1,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                        _SkillBadge(skill: w.skill),
+                      ],
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 4),
+                        Text(
+                          '${shiftLabel(w.shift)} Shift • Rate: ₹${w.rateAmount}',
+                          style: TextStyle(color: Colors.grey[600], fontSize: 13, fontWeight: FontWeight.w500),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            StatusChip(
+                              status: _toUi(w.status),
+                              labelOverride: statusLabel(w.status),
+                            ),
+                            const Spacer(),
+                            IconButton(
+                              onPressed: () => launchUrl(Uri.parse('tel:${w.phone}')),
+                              icon: const Icon(Icons.phone_rounded, color: Colors.green, size: 20),
+                              constraints: const BoxConstraints(),
+                              padding: const EdgeInsets.all(4),
+                              tooltip: 'Call Worker',
+                            ),
+                            const SizedBox(width: 8),
+                            Switch.adaptive(
+                              value: w.status == WorkerStatus.active,
+                              onChanged: (_) => _toggleActive(w),
+                              activeColor: Colors.green,
+                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    isThreeLine: true,
                   ),
                 ),
               ),
@@ -345,3 +330,222 @@ class _WorkersListScreenState extends State<WorkersListScreen> {
   }
 }
 
+class _SummaryTile extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+
+  const _SummaryTile({required this.label, required this.value, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(right: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: Colors.grey[100]!),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.05),
+            offset: const Offset(0, 4),
+            blurRadius: 10,
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+              color: color,
+            ),
+          ),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[500],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SkillBadge extends StatelessWidget {
+  final String skill;
+
+  const _SkillBadge({required this.skill});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.deepBlue1.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        skill.toUpperCase(),
+        style: const TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w800,
+          color: AppColors.deepBlue1,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+}
+
+class _FilterSheet extends StatefulWidget {
+  final WorkerShift? currentShift;
+  final WorkerStatus? currentStatus;
+  final String? currentSkill;
+  final Function(WorkerShift?, WorkerStatus?, String?) onApply;
+
+  const _FilterSheet({
+    this.currentShift,
+    this.currentStatus,
+    this.currentSkill,
+    required this.onApply,
+  });
+
+  @override
+  State<_FilterSheet> createState() => _FilterSheetState();
+}
+
+class _FilterSheetState extends State<_FilterSheet> {
+  late WorkerShift? _shift = widget.currentShift;
+  late WorkerStatus? _status = widget.currentStatus;
+  late String? _skill = widget.currentSkill;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Filter Workforce',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.deepBlue1,
+                ),
+              ),
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close_rounded),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          const Text('Shift Assignment', style: TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            children: [
+              _chip('All', _shift == null, () => setState(() => _shift = null)),
+              _chip('Day', _shift == WorkerShift.day, () => setState(() => _shift = WorkerShift.day)),
+              _chip('Night', _shift == WorkerShift.night, () => setState(() => _shift = WorkerShift.night)),
+            ],
+          ),
+          const SizedBox(height: 24),
+          const Text('Work Status', style: TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            children: [
+              _chip('All', _status == null, () => setState(() => _status = null)),
+              _chip('Active', _status == WorkerStatus.active, () => setState(() => _status = WorkerStatus.active)),
+              _chip('Inactive', _status == WorkerStatus.inactive, () => setState(() => _status = WorkerStatus.inactive)),
+            ],
+          ),
+          const SizedBox(height: 24),
+          const Text('Expertise / Skill', style: TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+          DropdownButtonFormField<String?>(
+            value: _skill,
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.grey[50],
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+            ),
+            items: [
+              const DropdownMenuItem(value: null, child: Text('All Skills')),
+              ...kSkills.map((s) => DropdownMenuItem(value: s, child: Text(s))),
+            ],
+            onChanged: (v) => setState(() => _skill = v),
+          ),
+          const SizedBox(height: 32),
+          Row(
+            children: [
+              Expanded(
+                child: TextButton(
+                  onPressed: () {
+                    setState(() {
+                      _shift = null;
+                      _status = null;
+                      _skill = null;
+                    });
+                  },
+                  child: const Text('Reset All'),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                flex: 2,
+                child: ElevatedButton(
+                  onPressed: () {
+                    widget.onApply(_shift, _status, _skill);
+                    Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.deepBlue1,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Apply Filters', style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  Widget _chip(String label, bool selected, VoidCallback onTap) {
+    return ChoiceChip(
+      label: Text(label),
+      selected: selected,
+      onSelected: (_) => onTap(),
+      selectedColor: AppColors.deepBlue1.withOpacity(0.1),
+      labelStyle: TextStyle(
+        color: selected ? AppColors.deepBlue1 : Colors.grey[600],
+        fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+      ),
+    );
+  }
+}

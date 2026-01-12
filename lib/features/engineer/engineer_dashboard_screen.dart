@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'dart:math' as math;
 
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/professional_theme.dart';
@@ -16,22 +18,31 @@ class EngineerDashboardScreen extends StatefulWidget {
   State<EngineerDashboardScreen> createState() => _EngineerDashboardScreenState();
 }
 
-class _EngineerDashboardScreenState extends State<EngineerDashboardScreen> {
+class _EngineerDashboardScreenState extends State<EngineerDashboardScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _pulseController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    // UI-only demo values
-    const activeWorkers = 12;
-    const pendingApprovals = 5;
-    const blocksToday = 3200;
-    const lowStockItems = 3;
-    const trucksInTransit = 2;
-    const backupAlerts = 1;
-
     return ProfessionalPage(
       title: 'Engineer Console',
       actions: [
         IconButton(
-          onPressed: () {}, // Navigate to notifications if needed
+          onPressed: () {},
           icon: const Icon(Icons.notifications_rounded, color: Colors.white),
         ),
         IconButton(
@@ -40,260 +51,176 @@ class _EngineerDashboardScreenState extends State<EngineerDashboardScreen> {
         ),
       ],
       children: [
-        // Header card
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: ProfessionalCard(
-            child: Row(
-              children: [
-                Container(
-                  width: 54,
-                  height: 54,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: AppColors.gradientColors),
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.deepBlue1.withOpacity(0.3),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.engineering_rounded,
-                    color: Colors.white,
-                    size: 28,
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Eng. Rajesh Khanna',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 19,
-                          color: AppColors.deepBlue1,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Row(
-                        children: [
-                          Icon(Icons.location_on_rounded, size: 12, color: Colors.grey[500]),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Metropolis Heights • Day Shift',
-                            style: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.w500, fontSize: 13),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const StatusChip(
-                  status: UiStatus.ok,
-                  labelOverride: 'Active',
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        // KPI grid
+        _buildEngineerIdCard(),
+        
         const ProfessionalSectionHeader(
-          title: 'Field Metrics',
-          subtitle: 'Live site performance indicators',
+          title: 'Field Operations',
+          subtitle: 'Live tactical metrics',
         ),
-
-        StaggeredAnimation(
-          index: 0,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              childAspectRatio: 1.4,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              children: const [
-                _KpiTile(
-                  title: 'Active Workers',
-                  value: '$activeWorkers',
-                  icon: Icons.groups_rounded,
-                  color: Colors.blue,
-                  trend: '92% Cap',
-                  isPositive: true,
-                ),
-                _KpiTile(
-                  title: 'Pending Appr.',
-                  value: '$pendingApprovals',
-                  icon: Icons.fact_check_rounded,
-                  color: Colors.orange,
-                  trend: 'Priority',
-                  isPositive: false,
-                ),
-                _KpiTile(
-                  title: 'Blocks Yield',
-                  value: '$blocksToday',
-                  icon: Icons.view_in_ar_rounded,
-                  color: Colors.teal,
-                  trend: '+12%',
-                  isPositive: true,
-                ),
-                _KpiTile(
-                  title: 'Stock Alerts',
-                  value: '$lowStockItems',
-                  icon: Icons.warning_amber_rounded,
-                  color: Colors.red,
-                  trend: 'Reorder',
-                  isPositive: false,
-                ),
-                _KpiTile(
-                  title: 'Trucks Inbound',
-                  value: '$trucksInTransit',
-                  icon: Icons.local_shipping_rounded,
-                  color: Colors.indigo,
-                  trend: 'On-time',
-                  isPositive: true,
-                ),
-                _KpiTile(
-                  title: 'System Alerts',
-                  value: '$backupAlerts',
-                  icon: Icons.sms_failed_rounded,
-                  color: Colors.deepOrange,
-                  trend: 'Action Reqd',
-                  isPositive: false,
-                ),
-              ],
-            ),
-          ),
-        ),
-
+        
+        _buildEngineerKpis(),
+        
         const ProfessionalSectionHeader(
-          title: 'Operations Hub',
-          subtitle: 'Execute site-level tasks',
+          title: 'Strategic Control',
+          subtitle: 'Execute site-level operations',
         ),
-
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Column(
-            children: [
-              _ActionTile(
-                icon: Icons.fact_check_rounded,
-                title: 'Approvals Queue',
-                subtitle: 'Verify worker sessions and attendance',
-                status: UiStatus.pending,
-                statusLabel: '5 Pending',
-                onTap: () => widget.onNavigateToTab(1),
-              ),
-              _ActionTile(
-                icon: Icons.precision_manufacturing_rounded,
-                title: 'Production Logs',
-                subtitle: 'Daily block yield and machine logs',
-                status: UiStatus.low,
-                statusLabel: 'Backup Active',
-                onTap: () => widget.onNavigateToTab(2),
-              ),
-              _ActionTile(
-                icon: Icons.inventory_2_rounded,
-                title: 'Inventory Control',
-                subtitle: 'Track material usage and stock levels',
-                status: UiStatus.low,
-                statusLabel: '3 Items Low',
-                onTap: () => widget.onNavigateToTab(3),
-              ),
-              _ActionTile(
-                icon: Icons.local_shipping_rounded,
-                title: 'Logistics Monitor',
-                subtitle: 'Inbound truck tracking and manifests',
-                status: UiStatus.ok,
-                statusLabel: '2 In Transit',
-                onTap: () => widget.onNavigateToTab(4),
-              ),
-            ],
-          ),
-        ),
-
+        
+        _buildOperationsHub(),
+        
         const SizedBox(height: 100),
       ],
     );
   }
-}
 
-class _KpiTile extends StatelessWidget {
-  final String title;
-  final String value;
-  final IconData icon;
-  final Color color;
-  final String trend;
-  final bool isPositive;
-
-  const _KpiTile({
-    required this.title,
-    required this.value,
-    required this.icon,
-    required this.color,
-    required this.trend,
-    required this.isPositive,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ProfessionalCard(
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: color, size: 20),
+  Widget _buildEngineerIdCard() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: ProfessionalCard(
+        padding: const EdgeInsets.all(20),
+        gradient: LinearGradient(
+          colors: [
+            AppColors.deepBlue1,
+            AppColors.deepBlue1.withOpacity(0.8),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: (isPositive ? Colors.green : Colors.orange).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  trend,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: isPositive ? Colors.green[700] : Colors.orange[800],
+              child: const CircleAvatar(
+                radius: 30,
+                backgroundColor: Colors.white12,
+                child: Icon(Icons.engineering_rounded, color: Colors.white, size: 32),
+              ),
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Eng. Rajesh Khanna',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Text(
+                      'METROPOLIS HEIGHTS • DAY SHIFT',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-          const Spacer(),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w900,
-              color: AppColors.deepBlue1,
-              letterSpacing: -1,
             ),
-          ),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[500],
-              fontWeight: FontWeight.w600,
+            const StatusChip(
+              status: UiStatus.ok,
+              labelOverride: 'ON SITE',
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEngineerKpis() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: GridView.count(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        crossAxisCount: 2,
+        childAspectRatio: 1.3,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        children: [
+          _EngineerKpiTile(
+            title: 'Active Crew',
+            value: '14/15',
+            icon: Icons.groups_3_rounded,
+            color: Colors.blueAccent,
+            trend: '94% Cap',
+          ),
+          _EngineerKpiTile(
+            title: 'Pending Appr.',
+            value: '5',
+            icon: Icons.fact_check_rounded,
+            color: Colors.orangeAccent,
+            trend: 'Priority',
+          ),
+          _EngineerKpiTile(
+            title: 'Yield Today',
+            value: '3.2K',
+            icon: Icons.view_in_ar_rounded,
+            color: Colors.greenAccent,
+            trend: '+12%',
+          ),
+          _EngineerKpiTile(
+            title: 'Material Alert',
+            value: '3 High',
+            icon: Icons.warning_amber_rounded,
+            color: Colors.redAccent,
+            trend: 'Action Reqd',
+            shouldPulse: true,
+            pulseController: _pulseController,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOperationsHub() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        children: [
+          _OperationTile(
+            icon: Icons.approval_rounded,
+            title: 'Approvals Queue',
+            subtitle: 'Verify work sessions and attendance',
+            status: '5 Pending',
+            onTap: () => widget.onNavigateToTab(1),
+          ),
+          _OperationTile(
+            icon: Icons.precision_manufacturing_rounded,
+            title: 'Production Ledger',
+            subtitle: 'Detailed block yield and machine logs',
+            status: 'Synced',
+            onTap: () => widget.onNavigateToTab(2),
+          ),
+          _OperationTile(
+            icon: Icons.inventory_2_rounded,
+            title: 'Inventory Ops',
+            subtitle: 'Stock levels and material consumption',
+            status: '3 Low',
+            onTap: () => widget.onNavigateToTab(3),
+          ),
+          _OperationTile(
+            icon: Icons.local_shipping_rounded,
+            title: 'Logistics Monitor',
+            subtitle: 'Track inbound trucks and manifests',
+            status: '2 Inbound',
+            onTap: () => widget.onNavigateToTab(4),
           ),
         ],
       ),
@@ -301,56 +228,201 @@ class _KpiTile extends StatelessWidget {
   }
 }
 
-class _ActionTile extends StatelessWidget {
+class _EngineerKpiTile extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+  final Color color;
+  final String trend;
+  final bool shouldPulse;
+  final AnimationController? pulseController;
+
+  const _EngineerKpiTile({
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.color,
+    required this.trend,
+    this.shouldPulse = false,
+    this.pulseController,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: pulseController ?? kAlwaysDismissedAnimation,
+      builder: (context, child) {
+        final scale = shouldPulse ? 1.0 + (pulseController!.value * 0.05) : 1.0;
+        return Transform.scale(
+          scale: scale,
+          child: ProfessionalCard(
+            padding: EdgeInsets.zero,
+            gradient: LinearGradient(
+              colors: [
+                Colors.white.withOpacity(0.15),
+                Colors.white.withOpacity(0.05),
+              ],
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white.withOpacity(0.1)),
+              ),
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: color.withOpacity(0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(icon, color: color, size: 18),
+                      ),
+                      Text(
+                        trend,
+                        style: TextStyle(
+                          color: color.withOpacity(0.8),
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Spacer(),
+                  Text(
+                    value,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  Text(
+                    title.toUpperCase(),
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.5),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 16,
+                    child: LineChart(
+                      LineChartData(
+                        gridData: const FlGridData(show: false),
+                        titlesData: const FlTitlesData(show: false),
+                        borderData: FlBorderData(show: false),
+                        lineBarsData: [
+                          LineChartBarData(
+                            spots: _generateDummySpots(),
+                            isCurved: true,
+                            color: color,
+                            barWidth: 2,
+                            isStrokeCapRound: true,
+                            dotData: const FlDotData(show: false),
+                            belowBarData: BarAreaData(show: false),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  List<FlSpot> _generateDummySpots() {
+    final rand = math.Random(title.hashCode);
+    return List.generate(6, (i) => FlSpot(i.toDouble(), rand.nextDouble() * 5));
+  }
+}
+
+class _OperationTile extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
-  final UiStatus status;
-  final String statusLabel;
+  final String status;
   final VoidCallback onTap;
 
-  const _ActionTile({
+  const _OperationTile({
     required this.icon,
     required this.title,
     required this.subtitle,
     required this.status,
-    required this.statusLabel,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 12),
       child: ProfessionalCard(
-        child: ListTile(
-          contentPadding: EdgeInsets.zero,
-          leading: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.deepBlue1.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: AppColors.deepBlue1, size: 22),
-          ),
-          title: Text(
-            title,
-            style: const TextStyle(
-              fontWeight: FontWeight.w900,
-              color: AppColors.deepBlue1,
-              fontSize: 15,
-            ),
-          ),
-          subtitle: Text(
-            subtitle,
-            style: TextStyle(color: Colors.grey[600], fontSize: 13),
-          ),
-          trailing: StatusChip(status: status, labelOverride: statusLabel),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withOpacity(0.08),
+            Colors.white.withOpacity(0.02),
+          ],
+        ),
+        child: InkWell(
           onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.deepBlue1.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: Colors.blueAccent, size: 24),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    Text(
+                      subtitle,
+                      style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                ),
+                child: Text(
+                  status,
+                  style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Icon(Icons.arrow_forward_ios_rounded, color: Colors.white.withOpacity(0.2), size: 14),
+            ],
+          ),
         ),
       ),
     );
   }
 }
-
-

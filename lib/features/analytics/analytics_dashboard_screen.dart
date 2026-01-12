@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'dart:math' as math;
+
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../app/theme/professional_theme.dart';
+import '../../../../app/ui/widgets/staggered_animation.dart';
 import '../../../../app/ui/widgets/professional_page.dart';
 
 class AnalyticsDashboardScreen extends StatefulWidget {
@@ -17,320 +20,387 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return ProfessionalPage(
-      title: 'Analytics Dashboard',
+      title: 'Operations Analytics',
       children: [
-        // Period Selector
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: ['Day', 'Week', 'Month'].map((period) {
-                final isSelected = _selectedPeriod == period;
-                return Expanded(
-                  child: GestureDetector(
-                    onTap: () => setState(() => _selectedPeriod = period),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      decoration: BoxDecoration(
-                        color: isSelected ? AppColors.deepBlue1 : Colors.transparent,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        period,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: isSelected ? Colors.white : Colors.grey[700],
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-        ),
-
+        _buildPeriodSelector(),
+        
         const ProfessionalSectionHeader(
-          title: 'Key Performance Indicators',
-          subtitle: 'Overview of critical metrics',
+          title: 'Core Efficiency',
+          subtitle: 'Real-time performance distribution',
         ),
-
-        // KPI Grid
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildKpiCard(
-                      'Productivity',
-                      '87%',
-                      Icons.trending_up_rounded,
-                      Colors.green,
-                      '+12%',
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildKpiCard(
-                      'Workers',
-                      '124',
-                      Icons.groups_rounded,
-                      Colors.blue,
-                      '+8',
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildKpiCard(
-                      'Expenses',
-                      '₹12.4L',
-                      Icons.account_balance_wallet_rounded,
-                      Colors.orange,
-                      '+5%',
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildKpiCard(
-                      'Blocks',
-                      '45.2K',
-                      Icons.precision_manufacturing_rounded,
-                      Colors.purple,
-                      '+2.1K',
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-
+        
+        _buildAnalyticsKpiGrid(),
+        
         const ProfessionalSectionHeader(
-          title: 'Worker Productivity',
-          subtitle: 'Output per shift analysis',
+          title: 'Productivity Distribution',
+          subtitle: 'Daily output performance analysis',
         ),
-
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: ProfessionalCard(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Blocks Produced (Daily)',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                      color: AppColors.deepBlue1,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    height: 200,
-                    child: BarChart(
-                      BarChartData(
-                        alignment: BarChartAlignment.spaceAround,
-                        maxY: 10000,
-                        barTouchData: BarTouchData(enabled: true),
-                        titlesData: FlTitlesData(
-                          show: true,
-                          bottomTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              getTitlesWidget: (value, meta) {
-                                const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-                                return Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: Text(
-                                    days[value.toInt() % days.length],
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: Colors.grey[600],
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                          leftTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              reservedSize: 40,
-                              getTitlesWidget: (value, meta) {
-                                return Text(
-                                  '${(value / 1000).toStringAsFixed(0)}K',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: Colors.grey[600],
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        ),
-                        gridData: FlGridData(
-                          show: true,
-                          drawVerticalLine: false,
-                          horizontalInterval: 2000,
-                          getDrawingHorizontalLine: (value) {
-                            return FlLine(
-                              color: Colors.grey[200],
-                              strokeWidth: 1,
-                            );
-                          },
-                        ),
-                        borderData: FlBorderData(show: false),
-                        barGroups: [
-                          _buildBarGroup(0, 6500),
-                          _buildBarGroup(1, 7200),
-                          _buildBarGroup(2, 6800),
-                          _buildBarGroup(3, 8100),
-                          _buildBarGroup(4, 7500),
-                          _buildBarGroup(5, 5200),
-                          _buildBarGroup(6, 4800),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-
+        
+        _buildProductivityChart(),
+        
         const ProfessionalSectionHeader(
-          title: 'Material Consumption',
-          subtitle: 'Usage trends over time',
+          title: 'Resource Allocation',
+          subtitle: 'Material consumption & utility',
         ),
-
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: ProfessionalCard(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Top Materials',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                      color: AppColors.deepBlue1,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    height: 200,
-                    child: PieChart(
-                      PieChartData(
-                        sectionsSpace: 2,
-                        centerSpaceRadius: 50,
-                        sections: [
-                          PieChartSectionData(
-                            value: 35,
-                            title: 'Cement',
-                            color: Colors.blue,
-                            radius: 60,
-                            titleStyle: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          PieChartSectionData(
-                            value: 28,
-                            title: 'Sand',
-                            color: Colors.orange,
-                            radius: 60,
-                            titleStyle: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          PieChartSectionData(
-                            value: 22,
-                            title: 'Steel',
-                            color: Colors.purple,
-                            radius: 60,
-                            titleStyle: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          PieChartSectionData(
-                            value: 15,
-                            title: 'Others',
-                            color: Colors.grey,
-                            radius: 60,
-                            titleStyle: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildLegend(),
-                ],
-              ),
-            ),
-          ),
-        ),
-
+        
+        _buildMaterialAllocationChart(),
+        
         const ProfessionalSectionHeader(
-          title: 'Truck Performance',
-          subtitle: 'Delivery efficiency metrics',
+          title: 'Operational Precision',
+          subtitle: 'Logistics and delivery performance',
         ),
-
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: ProfessionalCard(
-            child: Column(
-              children: [
-                _buildMetricRow('On-Time Deliveries', '92%', Colors.green),
-                const Divider(height: 1),
-                _buildMetricRow('Average Delay', '18 mins', Colors.orange),
-                const Divider(height: 1),
-                _buildMetricRow('Total Trips (Week)', '147', Colors.blue),
-                const Divider(height: 1),
-                _buildMetricRow('Material Delivered', '342 tons', Colors.purple),
-              ],
-            ),
-          ),
-        ),
-
-        const SizedBox(height: 32),
+        
+        _buildLogisticsMetrics(),
+        
+        const SizedBox(height: 100),
       ],
     );
   }
 
-  Widget _buildKpiCard(String label, String value, IconData icon, Color color, String change) {
-    return ProfessionalCard(
-      margin: EdgeInsets.zero,
+  Widget _buildPeriodSelector() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
+      child: Container(
+        height: 48,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        child: Row(
+          children: ['Day', 'Week', 'Month'].map((period) {
+            final isSelected = _selectedPeriod == period;
+            return Expanded(
+              child: GestureDetector(
+                onTap: () => setState(() => _selectedPeriod = period),
+                child: Container(
+                  margin: const EdgeInsets.all(4),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: isSelected ? Colors.white.withOpacity(0.15) : Colors.transparent,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    period,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.white60,
+                      fontWeight: isSelected ? FontWeight.w900 : FontWeight.w500,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAnalyticsKpiGrid() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: GridView.count(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        crossAxisCount: 2,
+        childAspectRatio: 1.3,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        children: [
+          _AnalyticsKpiTile(
+            title: 'Productivity',
+            value: '87.4%',
+            icon: Icons.speed_rounded,
+            color: Colors.greenAccent,
+            trend: '+5.2%',
+          ),
+          _AnalyticsKpiTile(
+            title: 'Personnel',
+            value: '142',
+            icon: Icons.groups_3_rounded,
+            color: Colors.blueAccent,
+            trend: 'Active',
+          ),
+          _AnalyticsKpiTile(
+            title: 'Efficiency',
+            value: '94.1%',
+            icon: Icons.bolt_rounded,
+            color: Colors.orangeAccent,
+            trend: 'Optimal',
+          ),
+          _AnalyticsKpiTile(
+            title: 'Precision',
+            value: '22ms',
+            icon: Icons.query_builder_rounded,
+            color: Colors.purpleAccent,
+            trend: 'Avg Latency',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProductivityChart() {
+    return StaggeredAnimation(
+      index: 4,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: ProfessionalCard(
+          padding: const EdgeInsets.all(20),
+          gradient: LinearGradient(
+            colors: [
+              Colors.white.withOpacity(0.12),
+              Colors.white.withOpacity(0.05),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Daily Production (Units)',
+                    style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold),
+                  ),
+                  Icon(Icons.more_vert_rounded, color: Colors.white.withOpacity(0.3)),
+                ],
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                height: 220,
+                child: BarChart(
+                  BarChartData(
+                    alignment: BarChartAlignment.spaceAround,
+                    maxY: 100,
+                    barTouchData: BarTouchData(
+                      enabled: true,
+                      touchTooltipData: BarTouchTooltipData(
+                        getTooltipColor: (_) => AppColors.deepBlue1,
+                        tooltipRoundedRadius: 8,
+                        getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                          return BarTooltipItem(
+                            '${rod.toY.round()}%',
+                            const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          );
+                        },
+                      ),
+                    ),
+                    titlesData: FlTitlesData(
+                      show: true,
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          getTitlesWidget: (value, meta) {
+                            const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 10),
+                              child: Text(
+                                days[value.toInt() % days.length],
+                                style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 10, fontWeight: FontWeight.bold),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    ),
+                    gridData: const FlGridData(show: false),
+                    borderData: FlBorderData(show: false),
+                    barGroups: List.generate(7, (i) {
+                      final rand = math.Random(i + 100);
+                      return BarChartGroupData(
+                        x: i,
+                        barRods: [
+                          BarChartRodData(
+                            toY: 40 + rand.nextDouble() * 50,
+                            gradient: LinearGradient(
+                              colors: [Colors.blueAccent, Colors.blueAccent.withOpacity(0.3)],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                            width: 14,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ],
+                      );
+                    }),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMaterialAllocationChart() {
+    return StaggeredAnimation(
+      index: 5,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: ProfessionalCard(
+          padding: const EdgeInsets.all(20),
+          gradient: LinearGradient(
+            colors: [
+              Colors.white.withOpacity(0.12),
+              Colors.white.withOpacity(0.05),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Resources Used',
+                    style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
+                    child: const Text('Q4 Data', style: TextStyle(color: Colors.white38, fontSize: 10)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                height: 180,
+                child: PieChart(
+                  PieChartData(
+                    sectionsSpace: 4,
+                    centerSpaceRadius: 45,
+                    sections: [
+                      PieChartSectionData(color: Colors.blueAccent, value: 35, title: '35%', radius: 50, titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                      PieChartSectionData(color: Colors.orangeAccent, value: 25, title: '25%', radius: 50, titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                      PieChartSectionData(color: Colors.purpleAccent, value: 20, title: '20%', radius: 50, titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                      PieChartSectionData(color: Colors.greenAccent, value: 20, title: '20%', radius: 50, titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              _buildModernLegend(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModernLegend() {
+    final legends = [
+      ('Cement', Colors.blueAccent),
+      ('Aggregate', Colors.orangeAccent),
+      ('Steel', Colors.purpleAccent),
+      ('Man-Hours', Colors.greenAccent),
+    ];
+
+    return Wrap(
+      spacing: 16,
+      runSpacing: 10,
+      children: legends.map((leg) {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(width: 8, height: 8, decoration: BoxDecoration(color: leg.$2, shape: BoxShape.circle)),
+            const SizedBox(width: 8),
+            Text(leg.$1, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 11)),
+          ],
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildLogisticsMetrics() {
+    return Column(
+      children: [
+        _buildMetricSummaryCard('Avg Turnaround Time', '14.2 Hours', Icons.timer_outlined, Colors.orangeAccent),
+        _buildMetricSummaryCard('Success Rate', '99.8%', Icons.verified_user_outlined, Colors.greenAccent),
+        _buildMetricSummaryCard('Fleet Utilization', '84%', Icons.local_shipping_outlined, Colors.blueAccent),
+      ],
+    );
+  }
+
+  Widget _buildMetricSummaryCard(String label, String value, IconData icon, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: ProfessionalCard(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withOpacity(0.08),
+            Colors.white.withOpacity(0.02),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(color: Colors.white.withOpacity(0.6), fontWeight: FontWeight.w500),
+              ),
+            ),
+            Text(
+              value,
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AnalyticsKpiTile extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+  final Color color;
+  final String trend;
+
+  const _AnalyticsKpiTile({
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.color,
+    required this.trend,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ProfessionalCard(
+      padding: EdgeInsets.zero,
+      gradient: LinearGradient(
+        colors: [
+          Colors.white.withOpacity(0.15),
+          Colors.white.withOpacity(0.05),
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -340,44 +410,60 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    color: color.withOpacity(0.2),
+                    shape: BoxShape.circle,
                   ),
-                  child: Icon(icon, color: color, size: 20),
+                  child: Icon(icon, color: color, size: 18),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    change,
-                    style: const TextStyle(
-                      color: Colors.green,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
+                Text(
+                  trend,
+                  style: TextStyle(
+                    color: color.withOpacity(0.8),
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const Spacer(),
             Text(
               value,
               style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.deepBlue1,
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.5,
               ),
             ),
-            const SizedBox(height: 4),
             Text(
-              label,
+              title.toUpperCase(),
               style: TextStyle(
-                fontSize: 11,
-                color: Colors.grey[600],
-                fontWeight: FontWeight.w500,
+                color: Colors.white.withOpacity(0.5),
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 16,
+              child: LineChart(
+                LineChartData(
+                  gridData: const FlGridData(show: false),
+                  titlesData: const FlTitlesData(show: false),
+                  borderData: FlBorderData(show: false),
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: _generateDummySpots(),
+                      isCurved: true,
+                      color: color,
+                      barWidth: 2,
+                      isStrokeCapRound: true,
+                      dotData: const FlDotData(show: false),
+                      belowBarData: BarAreaData(show: false),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -386,100 +472,8 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
     );
   }
 
-  BarChartGroupData _buildBarGroup(int x, double value) {
-    return BarChartGroupData(
-      x: x,
-      barRods: [
-        BarChartRodData(
-          toY: value,
-          color: AppColors.deepBlue1,
-          width: 16,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
-          gradient: LinearGradient(
-            colors: [AppColors.deepBlue1, AppColors.deepBlue2],
-            begin: Alignment.bottomCenter,
-            end: Alignment.topCenter,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLegend() {
-    final items = [
-      ('Cement', Colors.blue, '35%'),
-      ('Sand', Colors.orange, '28%'),
-      ('Steel', Colors.purple, '22%'),
-      ('Others', Colors.grey, '15%'),
-    ];
-
-    return Wrap(
-      spacing: 16,
-      runSpacing: 8,
-      children: items.map((item) {
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 12,
-              height: 12,
-              decoration: BoxDecoration(
-                color: item.$2,
-                borderRadius: BorderRadius.circular(3),
-              ),
-            ),
-            const SizedBox(width: 6),
-            Text(
-              '${item.$1} ${item.$3}',
-              style: TextStyle(
-                fontSize: 11,
-                color: Colors.grey[700],
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildMetricRow(String label, String value, Color color) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 4,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: AppColors.deepBlue1,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-        ],
-      ),
-    );
+  List<FlSpot> _generateDummySpots() {
+    final rand = math.Random(title.hashCode);
+    return List.generate(6, (i) => FlSpot(i.toDouble(), rand.nextDouble() * 5));
   }
 }
