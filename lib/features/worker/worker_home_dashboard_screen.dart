@@ -65,28 +65,25 @@ class _WorkerHomeDashboardScreenState extends State<WorkerHomeDashboardScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ProfessionalCard(
-        padding: const EdgeInsets.all(20),
-        gradient: LinearGradient(
-          colors: [
-            AppColors.deepBlue1,
-            AppColors.deepBlue1.withOpacity(0.8),
-          ],
-        ),
+        useGlass: true,
+        padding: const EdgeInsets.all(24),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(2),
+              padding: const EdgeInsets.all(3),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
+                gradient: LinearGradient(
+                  colors: [Colors.white.withOpacity(0.5), Colors.white.withOpacity(0.1)],
+                ),
               ),
-              child: const CircleAvatar(
-                radius: 28,
-                backgroundColor: Colors.white12,
-                child: Icon(Icons.person_rounded, color: Colors.white, size: 28),
+              child: CircleAvatar(
+                radius: 30,
+                backgroundColor: AppColors.deepBlue2,
+                child: const Icon(Icons.person_rounded, color: Colors.white, size: 32),
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 20),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,24 +92,31 @@ class _WorkerHomeDashboardScreenState extends State<WorkerHomeDashboardScreen> {
                     'Ramesh Kumar',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 18,
+                      fontSize: 22,
                       fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'MASON • METROPOLIS SITE A',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.5,
-                    ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Icon(Icons.location_on_rounded, size: 12, color: Colors.white.withOpacity(0.5)),
+                      const SizedBox(width: 4),
+                      Text(
+                        'METROPOLIS SITE A',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.5),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-            const StatusChip(
+            StatusChip(
               status: UiStatus.ok,
               labelOverride: 'ACTIVE',
             ),
@@ -219,40 +223,37 @@ class _WorkerHomeDashboardScreenState extends State<WorkerHomeDashboardScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: ProfessionalCard(
+        useGlass: true,
         padding: const EdgeInsets.all(16),
-        gradient: LinearGradient(
-          colors: [
-            Colors.white.withOpacity(0.08),
-            Colors.white.withOpacity(0.02),
-          ],
-        ),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.blueAccent.withOpacity(0.1),
-                shape: BoxShape.circle,
+                color: Colors.blueAccent.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.blueAccent.withOpacity(0.2)),
               ),
-              child: const Icon(Icons.work_history_rounded, color: Colors.blueAccent, size: 20),
+              child: const Icon(Icons.work_history_rounded, color: Colors.blueAccent, size: 22),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
+                children: [
+                  const Text(
                     'Concrete Work Summary',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 15),
                   ),
+                  const SizedBox(height: 4),
                   Text(
                     '10:10 AM – 11:45 AM • 95 mins',
-                    style: TextStyle(color: Colors.white60, fontSize: 12),
+                    style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12, fontWeight: FontWeight.w600),
                   ),
                 ],
               ),
             ),
-            const StatusChip(status: UiStatus.pending, labelOverride: 'WAITING'),
+            StatusChip(status: UiStatus.pending, labelOverride: 'WAITING'),
           ],
         ),
       ),
@@ -278,86 +279,94 @@ class _WorkerKpiTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ProfessionalCard(
-      padding: EdgeInsets.zero,
-      gradient: LinearGradient(
-        colors: [
-          Colors.white.withOpacity(0.15),
-          Colors.white.withOpacity(0.05),
-        ],
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
-        ),
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(icon, color: color, size: 18),
+      useGlass: true,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: color.withOpacity(0.2)),
                 ),
-                Text(
+                child: Icon(icon, color: color, size: 20),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
                   trend,
                   style: TextStyle(
-                    color: color.withOpacity(0.8),
+                    color: color,
                     fontSize: 10,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.5,
                   ),
                 ),
-              ],
-            ),
-            const Spacer(),
-            Text(
-              value,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 22,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -0.5,
               ),
+            ],
+          ),
+          const Spacer(),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -1,
             ),
-            Text(
-              title.toUpperCase(),
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.5),
-                fontSize: 10,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.5,
-              ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            title.toUpperCase(),
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.4),
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1,
             ),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 16,
-              child: LineChart(
-                LineChartData(
-                  gridData: const FlGridData(show: false),
-                  titlesData: const FlTitlesData(show: false),
-                  borderData: FlBorderData(show: false),
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: _generateDummySpots(),
-                      isCurved: true,
-                      color: color,
-                      barWidth: 2,
-                      isStrokeCapRound: true,
-                      dotData: const FlDotData(show: false),
-                      belowBarData: BarAreaData(show: false),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 24,
+            child: LineChart(
+              LineChartData(
+                gridData: const FlGridData(show: false),
+                titlesData: const FlTitlesData(show: false),
+                borderData: FlBorderData(show: false),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: _generateDummySpots(),
+                    isCurved: true,
+                    color: color,
+                    barWidth: 3,
+                    isStrokeCapRound: true,
+                    dotData: const FlDotData(show: false),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          color.withOpacity(0.2),
+                          color.withOpacity(0),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -386,37 +395,39 @@ class _ActionSquare extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ProfessionalCard(
+      useGlass: true,
       padding: EdgeInsets.zero,
-      gradient: LinearGradient(
-        colors: [
-          Colors.white.withOpacity(0.12),
-          Colors.white.withOpacity(0.04),
-        ],
-      ),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.15),
-                  shape: BoxShape.circle,
+                  color: color.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: color.withOpacity(0.2)),
                 ),
-                child: Icon(icon, color: color, size: 20),
+                child: Icon(icon, color: color, size: 22),
               ),
               const Spacer(),
               Text(
                 title,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: -0.5),
               ),
+              const SizedBox(height: 4),
               Text(
-                subtitle,
-                style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 11),
+                subtitle.toUpperCase(),
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.4),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.5,
+                ),
               ),
             ],
           ),

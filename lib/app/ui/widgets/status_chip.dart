@@ -26,66 +26,53 @@ class StatusChip extends StatelessWidget {
     String label() {
       if (labelOverride != null) return labelOverride!;
       switch (status) {
-        case UiStatus.ok:
-          return 'OK';
-        case UiStatus.low:
-          return 'Low';
-        case UiStatus.pending:
-          return 'Pending';
-        case UiStatus.approved:
-          return 'Approved';
-        case UiStatus.rejected:
-          return 'Rejected';
-        case UiStatus.inTransit:
-          return 'In Transit';
-        case UiStatus.arrived:
-          return 'Arrived';
-        case UiStatus.hold:
-          return 'Hold';
-        case UiStatus.stop:
-          return 'Stop';
-        case UiStatus.alert:
-          return 'Alert';
+        case UiStatus.ok: return 'OK';
+        case UiStatus.low: return 'LOW';
+        case UiStatus.pending: return 'PENDING';
+        case UiStatus.approved: return 'APPROVED';
+        case UiStatus.rejected: return 'REJECTED';
+        case UiStatus.inTransit: return 'IN TRANSIT';
+        case UiStatus.arrived: return 'ARRIVED';
+        case UiStatus.hold: return 'HOLD';
+        case UiStatus.stop: return 'STOP';
+        case UiStatus.alert: return 'ALERT';
       }
     }
 
     Color color() {
       switch (status) {
-        case UiStatus.ok:
-          return cs.primary;
-        case UiStatus.low:
-          return cs.error;
-        case UiStatus.pending:
-          return cs.tertiary;
-        case UiStatus.approved:
-          return Colors.green;
-        case UiStatus.rejected:
-          return cs.error;
-        case UiStatus.inTransit:
-          return cs.tertiary;
-        case UiStatus.arrived:
-          return Colors.green;
-        case UiStatus.hold:
-          return Colors.orange;
-        case UiStatus.stop:
-          return cs.error;
-        case UiStatus.alert:
-          return Colors.orangeAccent;
+        case UiStatus.ok: return Colors.greenAccent;
+        case UiStatus.low: return Colors.redAccent;
+        case UiStatus.pending: return Colors.orangeAccent;
+        case UiStatus.approved: return Colors.greenAccent;
+        case UiStatus.rejected: return Colors.redAccent;
+        case UiStatus.inTransit: return Colors.blueAccent;
+        case UiStatus.arrived: return Colors.greenAccent;
+        case UiStatus.hold: return Colors.orangeAccent;
+        case UiStatus.stop: return Colors.redAccent;
+        case UiStatus.alert: return Colors.orangeAccent;
       }
     }
 
     final c = color();
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: c.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: c.withOpacity(0.25), width: 1),
       ),
       child: Text(
-        label(),
-        style: TextStyle(fontWeight: FontWeight.w800, color: c, fontSize: 12),
+        label().toUpperCase(),
+        style: TextStyle(
+          fontWeight: FontWeight.w900,
+          color: c,
+          fontSize: 10,
+          letterSpacing: 0.5,
+        ),
       ),
     );
   }
+
 }

@@ -394,9 +394,9 @@ class _ContractorDashboardScreenState extends State<ContractorDashboardScreen> w
 
   Widget _buildRecentActivity() {
     final activities = [
-      {'title': 'Worker Entry', 'time': '5 mins ago', 'desc': 'Ramesh Kumar checked in at Site A', 'icon': Icons.login_rounded},
-      {'title': 'Material Alert', 'time': '12 mins ago', 'desc': 'Cement stock dropped below 10%', 'icon': Icons.warning_rounded},
-      {'title': 'Shift Started', 'time': '40 mins ago', 'desc': 'Night shift deployment completed', 'icon': Icons.history_rounded},
+      {'title': 'Worker Entry', 'time': '5 mins ago', 'desc': 'Ramesh Kumar checked in at Site A', 'icon': Icons.login_rounded, 'color': Colors.blueAccent},
+      {'title': 'Material Alert', 'time': '12 mins ago', 'desc': 'Cement stock dropped below 10%', 'icon': Icons.warning_rounded, 'color': Colors.redAccent},
+      {'title': 'Shift Started', 'time': '40 mins ago', 'desc': 'Night shift deployment completed', 'icon': Icons.history_rounded, 'color': Colors.greenAccent},
     ];
 
     return Column(
@@ -408,18 +408,19 @@ class _ContractorDashboardScreenState extends State<ContractorDashboardScreen> w
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: ProfessionalCard(
-              padding: const EdgeInsets.all(12),
+              useGlass: true,
+              padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: AppColors.deepBlue1.withOpacity(0.05),
+                      color: (act['color'] as Color).withOpacity(0.15),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(act['icon'] as IconData, size: 18, color: AppColors.deepBlue1),
+                    child: Icon(act['icon'] as IconData, size: 20, color: act['color'] as Color),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -429,17 +430,30 @@ class _ContractorDashboardScreenState extends State<ContractorDashboardScreen> w
                           children: [
                             Text(
                               act['title'] as String,
-                              style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.deepBlue1),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                                fontSize: 15,
+                              ),
                             ),
                             Text(
                               act['time'] as String,
-                              style: TextStyle(fontSize: 11, color: Colors.grey[400]),
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.white.withOpacity(0.4),
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
                         ),
+                        const SizedBox(height: 4),
                         Text(
                           act['desc'] as String,
-                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white.withOpacity(0.6),
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ],
                     ),
@@ -511,21 +525,14 @@ class _KpiTileState extends State<_KpiTile> with SingleTickerProviderStateMixin 
           child: Transform.scale(
             scale: widget.shouldPulse ? scale : 1.0,
             child: ProfessionalCard(
-              padding: const EdgeInsets.all(12),
-              gradient: LinearGradient(
-                colors: [
-                  Colors.white.withOpacity(0.12),
-                  Colors.white.withOpacity(0.05),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              useGlass: true,
+              padding: EdgeInsets.zero,
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: Colors.white.withOpacity(0.1)),
                 ),
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
                     Row(
@@ -541,10 +548,10 @@ class _KpiTileState extends State<_KpiTile> with SingleTickerProviderStateMixin 
                         ),
                         Flexible(
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color: (widget.isPositive ? Colors.greenAccent : Colors.redAccent).withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(4),
+                              borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
                               widget.trend,
@@ -554,6 +561,7 @@ class _KpiTileState extends State<_KpiTile> with SingleTickerProviderStateMixin 
                                 fontSize: 10,
                                 fontWeight: FontWeight.w900,
                                 color: widget.isPositive ? Colors.greenAccent : Colors.redAccent,
+                                letterSpacing: 0.5,
                               ),
                             ),
                           ),
@@ -573,7 +581,7 @@ class _KpiTileState extends State<_KpiTile> with SingleTickerProviderStateMixin 
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
-                                  fontSize: 26,
+                                  fontSize: 28,
                                   fontWeight: FontWeight.w900,
                                   color: Colors.white,
                                   letterSpacing: -1,
@@ -585,17 +593,17 @@ class _KpiTileState extends State<_KpiTile> with SingleTickerProviderStateMixin 
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontSize: 10,
-                                  color: Colors.white.withOpacity(0.6),
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.8,
+                                  color: Colors.white.withOpacity(0.5),
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 1.2,
                                 ),
                               ),
                             ],
                           ),
                         ),
                         SizedBox(
-                          width: 45,
-                          height: 24,
+                          width: 40,
+                          height: 20,
                           child: LineChart(
                             LineChartData(
                               gridData: const FlGridData(show: false),
@@ -606,7 +614,7 @@ class _KpiTileState extends State<_KpiTile> with SingleTickerProviderStateMixin 
                                   spots: _generateDummySpots(),
                                   isCurved: true,
                                   color: widget.color,
-                                  barWidth: 3,
+                                  barWidth: 2.5,
                                   isStrokeCapRound: true,
                                   dotData: const FlDotData(show: false),
                                   belowBarData: BarAreaData(
@@ -652,41 +660,66 @@ class _ActionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 12),
       child: ProfessionalCard(
-        child: ListTile(
-          contentPadding: EdgeInsets.zero,
-          leading: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.deepBlue1.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: AppColors.deepBlue1, size: 22),
-          ),
-          title: Text(
-            title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontWeight: FontWeight.w900,
-              color: AppColors.deepBlue1,
-              fontSize: 15,
-            ),
-          ),
-          subtitle: Text(
-            subtitle,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: Colors.grey[600], fontSize: 13),
-          ),
-          trailing: Icon(Icons.arrow_forward_ios_rounded, color: Colors.grey[300], size: 14),
+        useGlass: true,
+        padding: EdgeInsets.zero,
+        child: InkWell(
           onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  ),
+                  child: Icon(icon, color: Colors.white, size: 24),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          fontSize: 16,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.5),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right_rounded, color: Colors.white.withOpacity(0.3), size: 24),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 }
+
 
 class _QuickAddFab extends StatelessWidget {
   final bool isExpanded;

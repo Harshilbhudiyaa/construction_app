@@ -3,6 +3,7 @@ import '../../app/theme/app_spacing.dart';
 import '../../app/theme/professional_theme.dart';
 import '../../app/ui/widgets/professional_page.dart';
 import '../../app/ui/widgets/staggered_animation.dart';
+import '../../app/ui/widgets/status_chip.dart';
 import '../../app/ui/widgets/app_search_field.dart';
 import '../../app/ui/widgets/empty_state.dart';
 import '../../app/utils/feedback_helper.dart';
@@ -93,12 +94,28 @@ class _EngineerManagementScreenState extends State<EngineerManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return ProfessionalPage(
-      title: 'Engineer & Workforce',
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddEngineerDialog(context),
-        backgroundColor: AppColors.deepBlue1,
-        icon: const Icon(Icons.person_add_rounded, color: Colors.white),
-        label: const Text('Add Personnel', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+      title: 'Personnel Center',
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Colors.blueAccent, AppColors.deepBlue1],
+          ),
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.blueAccent.withOpacity(0.3),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: FloatingActionButton.extended(
+          onPressed: () => _showAddEngineerDialog(context),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          icon: const Icon(Icons.person_add_rounded, color: Colors.white),
+          label: const Text('Add Personnel', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        ),
       ),
       children: [
         AppSearchField(
@@ -107,8 +124,8 @@ class _EngineerManagementScreenState extends State<EngineerManagementScreen> {
         ),
         
         const ProfessionalSectionHeader(
-          title: 'Management Team',
-          subtitle: 'Site engineers and workforce with role-based access',
+          title: 'Management Tier',
+          subtitle: 'Operational workforce and site engineers',
         ),
 
         if (_filteredEngineers.isEmpty)
@@ -129,25 +146,50 @@ class _EngineerManagementScreenState extends State<EngineerManagementScreen> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 child: ProfessionalCard(
-                  child: InkWell(
-                    onTap: () => _viewEngineerDetails(context, engineer),
-                    borderRadius: BorderRadius.circular(12),
+                  useGlass: true,
+                  padding: EdgeInsets.zero,
+                  child: Theme(
+                    data: Theme.of(context).copyWith(
+                      dividerColor: Colors.transparent,
+                      unselectedWidgetColor: Colors.white70,
+                      colorScheme: const ColorScheme.dark().copyWith(
+                        primary: Colors.white,
+                      ),
+                    ),
                     child: ExpansionTile(
-                      tilePadding: const EdgeInsets.symmetric(horizontal: 16),
-                      leading: Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(colors: AppColors.gradientColors),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Center(
-                          child: Text(
-                            engineer.name.substring(0, 1).toUpperCase(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
+                      tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      leading: Hero(
+                        tag: 'personnel_icon_${engineer.id}',
+                        child: Container(
+                          width: 56,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.white.withOpacity(0.18),
+                                Colors.white.withOpacity(0.05),
+                              ],
+                            ),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white.withOpacity(0.25), width: 1.5),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.15),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Text(
+                              engineer.name.substring(0, 1).toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontWeight: FontWeight.w900,
+                              ),
                             ),
                           ),
                         ),
@@ -156,103 +198,131 @@ class _EngineerManagementScreenState extends State<EngineerManagementScreen> {
                         engineer.name,
                         style: const TextStyle(
                           fontWeight: FontWeight.w900,
-                          color: AppColors.deepBlue1,
-                          fontSize: 16,
+                          color: Colors.white,
+                          fontSize: 18,
+                          letterSpacing: -0.5,
                         ),
                       ),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 8),
                           Row(
                             children: [
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: AppColors.deepBlue1.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(4),
+                                  color: Colors.white.withOpacity(0.08),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.white.withOpacity(0.15)),
                                 ),
                                 child: Text(
-                                  engineer.role.displayName,
+                                  engineer.role.displayName.toUpperCase(),
                                   style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.deepBlue1,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white70,
+                                    letterSpacing: 0.8,
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              Container(
-                                width: 6,
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  color: engineer.isActive ? Colors.green : Colors.grey,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                engineer.isActive ? 'Active' : 'Inactive',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey[600],
-                                ),
+                              const SizedBox(width: 12),
+                              StatusChip(
+                                status: engineer.isActive ? UiStatus.ok : UiStatus.pending,
+                                labelOverride: engineer.isActive ? 'ACTIVE' : 'INACTIVE',
                               ),
                             ],
                           ),
-                          if (engineer.email != null) ...[
-                            const SizedBox(height: 2),
-                            Text(
-                              engineer.email!,
-                              style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                            ),
-                          ],
                         ],
                       ),
                       trailing: IconButton(
-                        icon: const Icon(Icons.edit_rounded, color: AppColors.deepBlue1),
+                        icon: const Icon(Icons.edit_note_rounded, color: Colors.white, size: 28),
                         onPressed: () => _showEditEngineerDialog(context, engineer),
                       ),
                       children: [
-                        const Divider(height: 1),
-                        Padding(
-                          padding: const EdgeInsets.all(16),
+                        Container(
+                          width: double.infinity,
+                          margin: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.04),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.white.withOpacity(0.08)),
+                          ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                'Permissions',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 14,
-                                  color: AppColors.deepBlue1,
+                              Row(
+                                children: [
+                                  const Icon(Icons.security_rounded, size: 14, color: Colors.white38),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'ACCESS PERMISSIONS',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 10,
+                                      color: Colors.white.withOpacity(0.4),
+                                      letterSpacing: 1.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              _buildPermissionGrid(engineer.permissions),
+                              const SizedBox(height: 24),
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.04),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Column(
+                                  children: [
+                                    _buildInfoRow('Primary Contact', engineer.phone ?? 'Not provided', Icons.phone_android_rounded),
+                                    const Padding(
+                                      padding: EdgeInsets.symmetric(vertical: 12),
+                                      child: Divider(color: Colors.white10),
+                                    ),
+                                    _buildInfoRow('Last Active', engineer.lastLogin != null ? _formatDateTime(engineer.lastLogin!) : 'Never', Icons.history_rounded),
+                                    const Padding(
+                                      padding: EdgeInsets.symmetric(vertical: 12),
+                                      child: Divider(color: Colors.white10),
+                                    ),
+                                    _buildInfoRow('Member Since', _formatDate(engineer.createdAt), Icons.calendar_today_rounded),
+                                  ],
                                 ),
                               ),
-                              const SizedBox(height: 12),
-                              _buildPermissionGrid(engineer.permissions),
-                              const SizedBox(height: 16),
-                              _buildInfoRow('Phone', engineer.phone ?? 'Not set'),
-                              const SizedBox(height: 8),
-                              _buildInfoRow(
-                                'Last Login',
-                                engineer.lastLogin != null
-                                    ? _formatDateTime(engineer.lastLogin!)
-                                    : 'Never',
-                              ),
-                              const SizedBox(height: 8),
-                              _buildInfoRow('Member Since', _formatDate(engineer.createdAt)),
-                              const SizedBox(height: 12),
-                              // View Full Details Button
-                              SizedBox(
-                                width: double.infinity,
+                              const SizedBox(height: 24),
+                              Container(
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Colors.blueAccent, AppColors.deepBlue3],
+                                  ),
+                                  borderRadius: BorderRadius.circular(14),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.blueAccent.withOpacity(0.2),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
                                 child: ElevatedButton.icon(
                                   onPressed: () => _viewEngineerDetails(context, engineer),
-                                  icon: const Icon(Icons.visibility_rounded, size: 18),
-                                  label: const Text('View Full Details'),
+                                  icon: const Icon(Icons.analytics_outlined, size: 20),
+                                  label: const Text(
+                                    'VIEW PERFORMANCE ANALYTICS',
+                                    style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 0.5),
+                                  ),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.deepBlue1,
+                                    backgroundColor: Colors.transparent,
                                     foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    shadowColor: Colors.transparent,
+                                    padding: const EdgeInsets.symmetric(vertical: 18),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                    elevation: 0,
                                   ),
                                 ),
                               ),
@@ -267,6 +337,8 @@ class _EngineerManagementScreenState extends State<EngineerManagementScreen> {
             );
           }),
 
+
+
         const SizedBox(height: 100),
       ],
     );
@@ -277,7 +349,7 @@ class _EngineerManagementScreenState extends State<EngineerManagementScreen> {
       ('Site Management', permissions.siteManagement, Icons.location_city_rounded),
       ('Worker Management', permissions.workerManagement, Icons.groups_rounded),
       ('Inventory Management', permissions.inventoryManagement, Icons.inventory_2_rounded),
-      ('Tool & Machine', permissions.toolMachineManagement, Icons.precision_manufacturing_rounded),
+      ('Machine Management', permissions.toolMachineManagement, Icons.precision_manufacturing_rounded),
       ('Report Viewing', permissions.reportViewing, Icons.analytics_rounded),
       ('Approval & Verification', permissions.approvalVerification, Icons.verified_rounded),
       ('Create Site', permissions.createSite, Icons.add_location_rounded),
@@ -292,10 +364,10 @@ class _EngineerManagementScreenState extends State<EngineerManagementScreen> {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            color: enabled ? Colors.green.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+            color: enabled ? Colors.greenAccent.withOpacity(0.1) : Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: enabled ? Colors.green.withOpacity(0.3) : Colors.grey.withOpacity(0.3),
+              color: enabled ? Colors.greenAccent.withOpacity(0.3) : Colors.white.withOpacity(0.1),
             ),
           ),
           child: Row(
@@ -303,16 +375,16 @@ class _EngineerManagementScreenState extends State<EngineerManagementScreen> {
             children: [
               Icon(
                 enabled ? Icons.check_circle_rounded : Icons.cancel_rounded,
-                size: 16,
-                color: enabled ? Colors.green[700] : Colors.grey[500],
+                size: 14,
+                color: enabled ? Colors.greenAccent : Colors.white24,
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 8),
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: FontWeight.w600,
-                  color: enabled ? Colors.green[700] : Colors.grey[600],
+                  color: enabled ? Colors.white : Colors.white38,
                 ),
               ),
             ],
@@ -322,34 +394,41 @@ class _EngineerManagementScreenState extends State<EngineerManagementScreen> {
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _buildInfoRow(String label, String value, IconData icon) {
     return Row(
       children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.05),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, size: 14, color: Colors.white38),
+        ),
+        const SizedBox(width: 12),
         Expanded(
           flex: 2,
           child: Text(
             label,
             style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey[600],
+              fontSize: 12,
+              color: Colors.white.withOpacity(0.4),
               fontWeight: FontWeight.w600,
             ),
           ),
         ),
-        Expanded(
-          flex: 3,
-          child: Text(
-            value,
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppColors.deepBlue1,
-              fontWeight: FontWeight.bold,
-            ),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 14,
+            color: Colors.white,
+            fontWeight: FontWeight.w900,
           ),
         ),
       ],
     );
   }
+
 
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';

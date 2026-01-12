@@ -22,6 +22,8 @@ class HelpfulTextField extends StatefulWidget {
   final bool obscureText;
   final int? maxLines;
 
+  final bool useGlass;
+
   const HelpfulTextField({
     super.key,
     required this.label,
@@ -39,7 +41,9 @@ class HelpfulTextField extends StatefulWidget {
     this.hintText,
     this.obscureText = false,
     this.maxLines = 1,
+    this.useGlass = false,
   });
+
 
   @override
   State<HelpfulTextField> createState() => _HelpfulTextFieldState();
@@ -51,6 +55,15 @@ class _HelpfulTextFieldState extends State<HelpfulTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final baseColor = widget.useGlass ? Colors.white : AppColors.deepBlue1;
+    final labelColor = widget.useGlass ? Colors.white.withOpacity(0.9) : Colors.grey[600];
+    final fillColor = widget.useGlass 
+        ? (_isFocused ? Colors.white.withOpacity(0.15) : Colors.white.withOpacity(0.08))
+        : (_isFocused ? AppColors.deepBlue1.withOpacity(0.03) : Colors.grey[50]);
+    final borderColor = widget.useGlass
+        ? (Colors.white.withOpacity(0.3))
+        : (Colors.grey[200]!);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -62,7 +75,7 @@ class _HelpfulTextFieldState extends State<HelpfulTextField> {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color: Colors.grey[600],
+                color: labelColor,
               ),
             ),
             if (widget.tooltipMessage != null) ...[
@@ -92,6 +105,10 @@ class _HelpfulTextFieldState extends State<HelpfulTextField> {
             maxLength: widget.maxLength,
             inputFormatters: widget.inputFormatters,
             validator: widget.validator,
+            style: TextStyle(
+              color: widget.useGlass ? Colors.white : AppColors.deepBlue1,
+              fontWeight: FontWeight.w500,
+            ),
             onChanged: (value) {
               // Clear error on change
               if (_errorText != null) {
@@ -102,7 +119,7 @@ class _HelpfulTextFieldState extends State<HelpfulTextField> {
               isDense: true,
               hintText: widget.hintText,
               hintStyle: TextStyle(
-                color: Colors.grey[400],
+                color: widget.useGlass ? Colors.white.withOpacity(0.4) : Colors.grey[400],
                 fontSize: 14,
               ),
               prefixIcon: widget.icon != null
@@ -110,44 +127,47 @@ class _HelpfulTextFieldState extends State<HelpfulTextField> {
                       widget.icon,
                       size: 20,
                       color: _isFocused
-                          ? AppColors.deepBlue1
-                          : Colors.grey[400],
+                          ? (widget.useGlass ? Colors.white : AppColors.deepBlue1)
+                          : (widget.useGlass ? Colors.white.withOpacity(0.5) : Colors.grey[400]),
                     )
                   : null,
               prefixText: widget.prefixText,
+              prefixStyle: TextStyle(color: widget.useGlass ? Colors.white : AppColors.deepBlue1),
               suffixText: widget.suffixText,
+              suffixStyle: TextStyle(color: widget.useGlass ? Colors.white : AppColors.deepBlue1),
               filled: true,
-              fillColor: _isFocused
-                  ? AppColors.deepBlue1.withOpacity(0.03)
-                  : Colors.grey[50],
+              fillColor: fillColor,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey[200]!),
+                borderSide: BorderSide(color: borderColor),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey[200]!),
+                borderSide: BorderSide(color: borderColor),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(
-                  color: AppColors.deepBlue1,
+                borderSide: BorderSide(
+                  color: widget.useGlass ? Colors.white : AppColors.deepBlue1,
                   width: 2,
                 ),
               ),
               errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Colors.red, width: 1.5),
+                borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
               ),
               focusedErrorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Colors.red, width: 2),
+                borderSide: const BorderSide(color: Colors.redAccent, width: 2),
               ),
               errorText: _errorText,
+              errorStyle: const TextStyle(color: Colors.redAccent),
               counterText: widget.showCharacterCount ? null : '',
+              counterStyle: TextStyle(color: widget.useGlass ? Colors.white70 : Colors.grey),
             ),
           ),
         ),
+
 
         // Help text
         if (widget.helpText != null) ...[

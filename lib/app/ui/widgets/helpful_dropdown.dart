@@ -13,6 +13,8 @@ class HelpfulDropdown<T> extends StatelessWidget {
   final String? helpText;
   final IconData? icon;
 
+  final bool useGlass;
+
   const HelpfulDropdown({
     super.key,
     required this.label,
@@ -23,10 +25,16 @@ class HelpfulDropdown<T> extends StatelessWidget {
     this.tooltipMessage,
     this.helpText,
     this.icon,
+    this.useGlass = false,
   });
+
 
   @override
   Widget build(BuildContext context) {
+    final labelColor = useGlass ? Colors.white.withOpacity(0.9) : Colors.grey[600];
+    final fillColor = useGlass ? Colors.white.withOpacity(0.08) : Colors.grey[50];
+    final borderColor = useGlass ? Colors.white.withOpacity(0.3) : Colors.grey[200]!;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -34,15 +42,14 @@ class HelpfulDropdown<T> extends StatelessWidget {
         Row(
           children: [
             if (icon != null) ...[
-              Icon(icon, size: 16, color: Colors.grey[600]),
+              Icon(icon, size: 16, color: labelColor),
               const SizedBox(width: 6),
             ],
-            Text(
-              label,
+            Text(label,
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color: Colors.grey[600],
+                color: labelColor,
               ),
             ),
             if (tooltipMessage != null) ...[
@@ -57,34 +64,40 @@ class HelpfulDropdown<T> extends StatelessWidget {
         DropdownButtonFormField<T>(
           value: value,
           onChanged: onChanged,
+          dropdownColor: useGlass ? AppColors.deepBlue2 : Colors.white,
+          style: TextStyle(
+            color: useGlass ? Colors.white : AppColors.deepBlue1,
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          ),
           items: items.map((e) {
             return DropdownMenuItem<T>(
               value: e,
               child: Text(
                 labelMapper?.call(e) ?? e.toString(),
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+                style: TextStyle(
+                  color: useGlass ? Colors.white : AppColors.deepBlue1,
                 ),
               ),
             );
           }).toList(),
+          iconEnabledColor: useGlass ? Colors.white : AppColors.deepBlue1,
           decoration: InputDecoration(
             isDense: true,
             filled: true,
-            fillColor: Colors.grey[50],
+            fillColor: fillColor,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[200]!),
+              borderSide: BorderSide(color: borderColor),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[200]!),
+              borderSide: BorderSide(color: borderColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: AppColors.deepBlue1,
+              borderSide: BorderSide(
+                color: useGlass ? Colors.white : AppColors.deepBlue1,
                 width: 2,
               ),
             ),
@@ -99,7 +112,7 @@ class HelpfulDropdown<T> extends StatelessWidget {
               Icon(
                 Icons.lightbulb_outline_rounded,
                 size: 14,
-                color: Colors.grey[500],
+                color: useGlass ? Colors.white.withOpacity(0.5) : Colors.grey[500],
               ),
               const SizedBox(width: 4),
               Expanded(
@@ -107,7 +120,7 @@ class HelpfulDropdown<T> extends StatelessWidget {
                   helpText!,
                   style: TextStyle(
                     fontSize: 11,
-                    color: Colors.grey[600],
+                    color: useGlass ? Colors.white.withOpacity(0.6) : Colors.grey[600],
                     fontStyle: FontStyle.italic,
                   ),
                 ),
@@ -118,4 +131,5 @@ class HelpfulDropdown<T> extends StatelessWidget {
       ],
     );
   }
+
 }

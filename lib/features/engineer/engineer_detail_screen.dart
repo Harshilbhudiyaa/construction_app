@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_spacing.dart';
 import '../../app/theme/professional_theme.dart';
 import '../../app/ui/widgets/professional_page.dart';
+import '../../app/ui/widgets/status_chip.dart';
 import 'models/engineer_model.dart';
 import 'engineer_form_screen.dart';
 
@@ -13,221 +14,156 @@ class EngineerDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ProfessionalPage(
-      title: 'Personnel Details',
+      title: 'Personnel Profile',
       actions: [
         IconButton(
           onPressed: () => _editEngineer(context),
-          icon: const Icon(Icons.edit_rounded, color: Colors.white),
+          icon: const Icon(Icons.edit_note_rounded, color: Colors.white, size: 28),
           tooltip: 'Edit Personnel',
         ),
       ],
       children: [
         Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
+          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Profile Card
-              Container(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: AppColors.gradientColors),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
+              // Hero Profile Card
+              ProfessionalCard(
+                useGlass: true,
+                padding: const EdgeInsets.all(24),
+                child: Row(
                   children: [
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
+                    Hero(
+                      tag: 'personnel_icon_${engineer.id}',
+                      child: Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Colors.white.withOpacity(0.2),
+                              Colors.white.withOpacity(0.05),
+                            ],
+                          ),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white.withOpacity(0.3), width: 1.5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 15,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Text(
+                            engineer.name.substring(0, 1).toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 32,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 24),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            engineer.name,
+                            style: const TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                              letterSpacing: -1,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              engineer.role.displayName.toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 10,
+                                letterSpacing: 1,
+                              ),
+                            ),
                           ),
                         ],
                       ),
-                      child: Center(
-                        child: Text(
-                          engineer.name.substring(0, 1).toUpperCase(),
-                          style: const TextStyle(
-                            color: AppColors.deepBlue1,
-                            fontSize: 36,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
                     ),
-                    const SizedBox(height: AppSpacing.md),
-                    Text(
-                      engineer.name,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        engineer.role.displayName,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 10,
-                          height: 10,
-                          decoration: BoxDecoration(
-                            color: engineer.isActive ? Colors.greenAccent : Colors.grey,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          engineer.isActive ? 'Active' : 'Inactive',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
+                    StatusChip(
+                      status: engineer.isActive ? UiStatus.ok : UiStatus.pending,
+                      labelOverride: engineer.isActive ? 'ACTIVE' : 'INACTIVE',
                     ),
                   ],
                 ),
               ),
 
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: 12),
+
+              // KPI Section for Personnel
+              _buildProfessionalGrid([
+                _MetricTile(
+                  label: 'LAST LOGIN',
+                  value: engineer.lastLogin != null ? _formatDateTime(engineer.lastLogin!) : 'NEVER',
+                  icon: Icons.login_rounded,
+                  color: Colors.blueAccent,
+                ),
+                _MetricTile(
+                  label: 'JOINED',
+                  value: _formatDate(engineer.createdAt),
+                  icon: Icons.calendar_today_rounded,
+                  color: Colors.orangeAccent,
+                ),
+              ]),
+
+              const SizedBox(height: 12),
 
               // Contact Information
-              _buildSectionHeader('Contact Information'),
-              const SizedBox(height: AppSpacing.sm),
               ProfessionalCard(
+                useGlass: true,
+                padding: const EdgeInsets.all(24),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (engineer.email != null)
-                      _buildInfoRow(
-                        Icons.email_rounded,
-                        'Email',
-                        engineer.email!,
-                      ),
-                    if (engineer.email != null && engineer.phone != null)
-                      const Divider(height: 24),
-                    if (engineer.phone != null)
-                      _buildInfoRow(
-                        Icons.phone_rounded,
-                        'Phone',
-                        engineer.phone!,
-                      ),
-                    if (engineer.email == null && engineer.phone == null)
-                      Padding(
-                        padding: const EdgeInsets.all(AppSpacing.md),
-                        child: Text(
-                          'No contact information available',
-                          style: TextStyle(
-                            color: Colors.grey[500],
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
-                      ),
+                    _sectionLabel('CONTACT INFORMATION'),
+                    const SizedBox(height: 24),
+                    _kv('Work Email', engineer.email ?? 'Not provided', icon: Icons.email_rounded),
+                    _kv('Primary Phone', engineer.phone ?? 'Not provided', icon: Icons.phone_android_rounded),
                   ],
                 ),
               ),
 
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: 12),
 
               // Permissions
-              _buildSectionHeader('Access Permissions'),
-              const SizedBox(height: AppSpacing.sm),
               ProfessionalCard(
+                useGlass: true,
+                padding: const EdgeInsets.all(24),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildPermissionItem(
-                      'Site Management',
-                      Icons.location_city_rounded,
-                      engineer.permissions.siteManagement,
-                    ),
-                    _buildPermissionItem(
-                      'Worker Management',
-                      Icons.groups_rounded,
-                      engineer.permissions.workerManagement,
-                    ),
-                    _buildPermissionItem(
-                      'Inventory Management',
-                      Icons.inventory_2_rounded,
-                      engineer.permissions.inventoryManagement,
-                    ),
-                    _buildPermissionItem(
-                      'Tool & Machine Management',
-                      Icons.precision_manufacturing_rounded,
-                      engineer.permissions.toolMachineManagement,
-                    ),
-                    _buildPermissionItem(
-                      'Report Viewing',
-                      Icons.analytics_rounded,
-                      engineer.permissions.reportViewing,
-                    ),
-                    _buildPermissionItem(
-                      'Approval & Verification',
-                      Icons.verified_rounded,
-                      engineer.permissions.approvalVerification,
-                    ),
-                    _buildPermissionItem(
-                      'Create Site',
-                      Icons.add_location_rounded,
-                      engineer.permissions.createSite,
-                    ),
-                    _buildPermissionItem(
-                      'Edit Site',
-                      Icons.edit_location_rounded,
-                      engineer.permissions.editSite,
-                      showDivider: false,
-                    ),
+                    _sectionLabel('ACCESS PERMISSIONS'),
+                    const SizedBox(height: 24),
+                    _buildPermissionGrid(engineer.permissions),
                   ],
                 ),
               ),
 
-              const SizedBox(height: AppSpacing.lg),
-
-              // Account Information
-              _buildSectionHeader('Account Information'),
-              const SizedBox(height: AppSpacing.sm),
-              ProfessionalCard(
-                child: Column(
-                  children: [
-                    _buildInfoRow(
-                      Icons.calendar_today_rounded,
-                      'Member Since',
-                      _formatDate(engineer.createdAt),
-                    ),
-                    if (engineer.lastLogin != null) ...[
-                      const Divider(height: 24),
-                      _buildInfoRow(
-                        Icons.login_rounded,
-                        'Last Login',
-                        _formatDateTime(engineer.lastLogin!),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 100),
+              const SizedBox(height: 80),
             ],
           ),
         ),
@@ -235,53 +171,62 @@ class EngineerDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildProfessionalGrid(List<Widget> children) {
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 2,
+      childAspectRatio: 1.8,
+      mainAxisSpacing: 12,
+      crossAxisSpacing: 12,
+      children: children,
+    );
+  }
+
+  Widget _sectionLabel(String label) {
     return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 18,
+      label,
+      style: TextStyle(
+        fontSize: 11,
         fontWeight: FontWeight.w900,
-        color: AppColors.deepBlue1,
+        color: Colors.white.withOpacity(0.4),
+        letterSpacing: 1.5,
       ),
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
+  Widget _kv(String k, String v, {IconData? icon}) {
     return Padding(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.only(bottom: 24),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppColors.deepBlue1.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
+          if (icon != null) ...[
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.05),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 18, color: Colors.white70),
             ),
-            child: Icon(icon, color: AppColors.deepBlue1, size: 20),
+            const SizedBox(width: 16),
+          ],
+          Text(
+            k,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.6),
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    color: AppColors.deepBlue1,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+          const Spacer(),
+          Text(
+            v,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              fontSize: 16,
+              letterSpacing: -0.5,
             ),
           ),
         ],
@@ -289,47 +234,53 @@ class EngineerDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPermissionItem(
-    String label,
-    IconData icon,
-    bool enabled, {
-    bool showDivider = true,
-  }) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
+  Widget _buildPermissionGrid(PermissionSet permissions) {
+    final permissionItems = [
+      ('Site Management', permissions.siteManagement, Icons.location_city_rounded),
+      ('Worker Management', permissions.workerManagement, Icons.groups_rounded),
+      ('Inventory Management', permissions.inventoryManagement, Icons.inventory_2_rounded),
+      ('Machine Management', permissions.toolMachineManagement, Icons.precision_manufacturing_rounded),
+      ('Report Viewing', permissions.reportViewing, Icons.analytics_rounded),
+      ('Approval & Verification', permissions.approvalVerification, Icons.verified_rounded),
+      ('Create Site', permissions.createSite, Icons.add_location_rounded),
+      ('Edit Site', permissions.editSite, Icons.edit_location_rounded),
+    ];
+
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: permissionItems.map((item) {
+        final (label, enabled, icon) = item;
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: enabled ? Colors.greenAccent.withOpacity(0.08) : Colors.white.withOpacity(0.04),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: enabled ? Colors.greenAccent.withOpacity(0.2) : Colors.white.withOpacity(0.08),
+            ),
           ),
           child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                icon,
-                color: enabled ? Colors.green : Colors.grey[400],
-                size: 20,
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: enabled ? AppColors.deepBlue1 : Colors.grey[500],
-                  ),
-                ),
-              ),
-              Icon(
                 enabled ? Icons.check_circle_rounded : Icons.cancel_rounded,
-                color: enabled ? Colors.green : Colors.grey[400],
-                size: 20,
+                size: 16,
+                color: enabled ? Colors.greenAccent : Colors.white24,
+              ),
+              const SizedBox(width: 12),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: enabled ? Colors.white : Colors.white.withOpacity(0.35),
+                ),
               ),
             ],
           ),
-        ),
-        if (showDivider) const Divider(height: 1),
-      ],
+        );
+      }).toList(),
     );
   }
 
@@ -365,3 +316,55 @@ class EngineerDetailScreen extends StatelessWidget {
     }
   }
 }
+
+class _MetricTile extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  const _MetricTile({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ProfessionalCard(
+      useGlass: true,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 14, color: color.withOpacity(0.7)),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white.withOpacity(0.4),
+                  letterSpacing: 1,
+                ),
+              ),
+            ],
+          ),
+          const Spacer(),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+

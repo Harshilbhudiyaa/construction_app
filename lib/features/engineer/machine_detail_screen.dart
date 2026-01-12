@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_spacing.dart';
 import '../../app/theme/professional_theme.dart';
 import '../../app/ui/widgets/professional_page.dart';
+import '../../app/ui/widgets/status_chip.dart';
 import 'models/machine_model.dart';
 import 'package:intl/intl.dart';
 import 'machine_form_screen.dart';
@@ -14,42 +15,41 @@ class MachineDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ProfessionalPage(
-      title: 'Machine Details',
+      title: 'Machine Logistics',
       actions: [
         IconButton(
           onPressed: () => _editMachine(context),
-          icon: const Icon(Icons.edit_rounded, color: Colors.white),
+          icon: const Icon(Icons.edit_note_rounded, color: Colors.white),
         ),
       ],
       children: [
         Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Card
+              // Hero Profile Card
               ProfessionalCard(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                gradient: const LinearGradient(
-                  colors: [AppColors.deepBlue1, AppColors.deepBlue2],
-                ),
+                useGlass: true,
+                padding: const EdgeInsets.all(24),
                 child: Row(
                   children: [
                     Container(
-                      width: 70,
-                      height: 70,
+                      width: 80,
+                      height: 80,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(15),
+                        color: Colors.white.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.white.withOpacity(0.12)),
                       ),
                       child: Center(
                         child: Text(
                           machine.type.icon,
-                          style: const TextStyle(fontSize: 35),
+                          style: const TextStyle(fontSize: 40),
                         ),
                       ),
                     ),
-                    const SizedBox(width: AppSpacing.md),
+                    const SizedBox(width: 20),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,19 +58,32 @@ class MachineDetailScreen extends StatelessWidget {
                             machine.name,
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 22,
+                              fontSize: 24,
                               fontWeight: FontWeight.w900,
+                              letterSpacing: -0.5,
                             ),
                           ),
+                          const SizedBox(height: 4),
                           Text(
-                            machine.type.displayName,
+                            machine.type.displayName.toUpperCase(),
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.8),
-                              fontSize: 14,
+                              color: Colors.white.withOpacity(0.4),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1,
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          _buildStatusBadge(machine.status),
+                          const SizedBox(height: 12),
+                          StatusChip(
+                            status: machine.status == MachineStatus.available 
+                              ? UiStatus.ok 
+                              : machine.status == MachineStatus.maintenance 
+                                ? UiStatus.alert 
+                                : machine.status == MachineStatus.breakdown 
+                                  ? UiStatus.stop 
+                                  : UiStatus.pending,
+                            labelOverride: machine.status.displayName.toUpperCase(),
+                          ),
                         ],
                       ),
                     ),
@@ -78,57 +91,87 @@ class MachineDetailScreen extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: AppSpacing.lg),
-              _buildSectionHeader('Operational Overview'),
+              const SizedBox(height: 24),
+              const ProfessionalSectionHeader(
+                title: 'Tactical Deployment',
+                subtitle: 'Site assignment and operational role',
+              ),
+              
               ProfessionalCard(
+                useGlass: true,
+                padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
-                    _buildInfoRow(Icons.location_on_rounded, 'Current Site', machine.assignedSiteName ?? 'Not Assigned'),
-                    const Divider(height: 20),
-                    _buildInfoRow(Icons.person_rounded, 'Operator', machine.operatorName ?? 'Not Assigned'),
-                    const Divider(height: 20),
-                    _buildInfoRow(Icons.work_rounded, 'Work Nature', machine.natureOfWork?.displayName ?? 'Not Specified'),
+                    _buildInfoRow(Icons.location_on_rounded, 'CURRENT SITE', machine.assignedSiteName ?? 'UNASSIGNED'),
+                    _buildDivider(),
+                    _buildInfoRow(Icons.person_rounded, 'OPERATOR', machine.operatorName ?? 'NOT ASSIGNED'),
+                    _buildDivider(),
+                    _buildInfoRow(Icons.work_rounded, 'NATURE OF WORK', machine.natureOfWork?.displayName.toUpperCase() ?? 'NOT SPECIFIED'),
                   ],
                 ),
               ),
 
-              const SizedBox(height: AppSpacing.lg),
-              _buildSectionHeader('Maintenance Log'),
+              const SizedBox(height: 24),
+              const ProfessionalSectionHeader(
+                title: 'Technical Lifecycle',
+                subtitle: 'Maintenance schedule and health logs',
+              ),
+              
               ProfessionalCard(
+                useGlass: true,
+                padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
                     _buildInfoRow(
                       Icons.history_rounded,
-                      'Last Serviced',
-                      DateFormat('MMM dd, yyyy').format(machine.lastMaintenanceDate),
+                      'LAST SERVICED',
+                      DateFormat('MMM dd, yyyy').format(machine.lastMaintenanceDate).toUpperCase(),
                     ),
-                    const Divider(height: 20),
+                    _buildDivider(),
                     _buildInfoRow(
                       Icons.event_note_rounded,
-                      'Next Due',
+                      'NEXT DUE DATE',
                       machine.nextMaintenanceDate != null
-                          ? DateFormat('MMM dd, yyyy').format(machine.nextMaintenanceDate!)
-                          : 'Not Scheduled',
+                          ? DateFormat('MMM dd, yyyy').format(machine.nextMaintenanceDate!).toUpperCase()
+                          : 'NOT SCHEDULED',
                       color: machine.nextMaintenanceDate != null &&
                               machine.nextMaintenanceDate!.isBefore(DateTime.now())
-                          ? Colors.red
+                          ? Colors.redAccent
                           : null,
                     ),
                   ],
                 ),
               ),
 
-              const SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: 32),
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () => _editMachine(context),
-                  icon: const Icon(Icons.edit_rounded),
-                  label: const Text('Edit Configuration'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: AppColors.deepBlue1,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                child: InkWell(
+                  onTap: () => _editMachine(context),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'EDIT CONFIGURATION',
+                        style: TextStyle(
+                          color: AppColors.deepBlue1,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 14,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -140,51 +183,11 @@ class MachineDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(
-        title,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatusBadge(MachineStatus status) {
-    Color color;
-    switch (status) {
-      case MachineStatus.available: color = Colors.greenAccent; break;
-      case MachineStatus.inUse: color = Colors.blueAccent; break;
-      case MachineStatus.maintenance: color = Colors.orangeAccent; break;
-      case MachineStatus.breakdown: color = Colors.redAccent; break;
-      case MachineStatus.reserved: color = Colors.purpleAccent; break;
-    }
+  Widget _buildDivider() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.5)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 8,
-            height: 8,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            status.displayName,
-            style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
+      height: 1,
+      color: Colors.white.withOpacity(0.08),
+      margin: const EdgeInsets.symmetric(vertical: 16),
     );
   }
 
@@ -192,28 +195,35 @@ class MachineDetailScreen extends StatelessWidget {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppColors.deepBlue1.withOpacity(0.05),
-            borderRadius: BorderRadius.circular(10),
+            color: Colors.white.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withOpacity(0.08)),
           ),
-          child: Icon(icon, color: AppColors.deepBlue1, size: 20),
+          child: Icon(icon, color: Colors.white.withOpacity(0.5), size: 18),
         ),
-        const SizedBox(width: AppSpacing.md),
+        const SizedBox(width: 16),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 label,
-                style: TextStyle(fontSize: 12, color: Colors.grey[600], fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Colors.white.withOpacity(0.3),
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.5,
+                ),
               ),
+              const SizedBox(height: 2),
               Text(
                 value,
                 style: TextStyle(
                   fontSize: 15,
-                  color: color ?? AppColors.deepBlue1,
-                  fontWeight: FontWeight.bold,
+                  color: color ?? Colors.white.withOpacity(0.9),
+                  fontWeight: FontWeight.w900,
                 ),
               ),
             ],

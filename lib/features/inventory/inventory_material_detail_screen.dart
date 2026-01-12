@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_spacing.dart';
 import '../../app/theme/professional_theme.dart';
 import '../../app/ui/widgets/professional_page.dart';
+import '../../app/ui/widgets/status_chip.dart';
 import 'models/inventory_detail_model.dart';
 import 'package:intl/intl.dart';
 import 'inventory_form_screen.dart';
@@ -62,12 +63,13 @@ class InventoryMaterialDetailScreen extends StatelessWidget {
                               fontWeight: FontWeight.w900,
                             ),
                           ),
-                          Text(
-                            material.category.displayName,
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.8),
-                              fontSize: 14,
-                            ),
+                          StatusChip(
+                            status: material.stockStatus == StockStatus.adequate
+                              ? UiStatus.ok
+                              : material.stockStatus == StockStatus.warning
+                                ? UiStatus.alert
+                                : UiStatus.stop,
+                            labelOverride: material.stockStatus.displayName.toUpperCase(),
                           ),
                           const SizedBox(height: 8),
                           _buildStockStatusBadge(material.stockStatus),

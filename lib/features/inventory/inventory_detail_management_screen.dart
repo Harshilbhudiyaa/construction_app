@@ -5,6 +5,7 @@ import '../../app/ui/widgets/professional_page.dart';
 import '../../app/ui/widgets/staggered_animation.dart';
 import '../../app/ui/widgets/app_search_field.dart';
 import '../../app/ui/widgets/empty_state.dart';
+import '../../app/ui/widgets/status_chip.dart';
 import '../../app/utils/feedback_helper.dart';
 import 'models/inventory_detail_model.dart';
 import 'inventory_form_screen.dart';
@@ -211,33 +212,33 @@ class _InventoryDetailManagementScreenState extends State<InventoryDetailManagem
 
         // Summary Stats
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             children: [
               Expanded(
                 child: _buildStatCard(
-                  'Materials',
+                  'MATERIALS',
                   '${_materials.length}',
                   Icons.category_rounded,
-                  Colors.blue,
+                  Colors.blueAccent,
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: _buildStatCard(
-                  'Low Stock',
+                  'LOW STOCK',
                   '${_materials.where((m) => m.isLowStock).length}',
                   Icons.warning_amber_rounded,
-                  Colors.red,
+                  Colors.orangeAccent,
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: _buildStatCard(
-                  'Stock Value',
+                  'STOCK VALUE',
                   '₹${(totalValue / 100000).toStringAsFixed(1)}L',
                   Icons.currency_rupee_rounded,
-                  Colors.green,
+                  Colors.greenAccent,
                 ),
               ),
             ],
@@ -266,13 +267,15 @@ class _InventoryDetailManagementScreenState extends State<InventoryDetailManagem
             return StaggeredAnimation(
               index: index,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 child: ProfessionalCard(
+                  useGlass: true,
+                  padding: EdgeInsets.zero,
                   child: InkWell(
                     onTap: () => _showMaterialDetails(context, material),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                     child: Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -280,13 +283,12 @@ class _InventoryDetailManagementScreenState extends State<InventoryDetailManagem
                             children: [
                               // Material Icon
                               Container(
-                                width: 60,
-                                height: 60,
+                                width: 56,
+                                height: 56,
                                 decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: _getStatusGradient(material.stockStatus),
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
+                                  color: _getStatusColor(material.stockStatus).withOpacity(0.12),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(color: _getStatusColor(material.stockStatus).withOpacity(0.2)),
                                 ),
                                 child: Center(
                                   child: Text(
@@ -295,7 +297,7 @@ class _InventoryDetailManagementScreenState extends State<InventoryDetailManagem
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 16),
                               // Material Info
                               Expanded(
                                 child: Column(
@@ -305,74 +307,32 @@ class _InventoryDetailManagementScreenState extends State<InventoryDetailManagem
                                       material.materialName,
                                       style: const TextStyle(
                                         fontWeight: FontWeight.w900,
-                                        fontSize: 16,
-                                        color: AppColors.deepBlue1,
+                                        fontSize: 17,
+                                        color: Colors.white,
+                                        letterSpacing: -0.5,
                                       ),
                                     ),
                                     const SizedBox(height: 4),
-                                    Row(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                          decoration: BoxDecoration(
-                                            color: AppColors.deepBlue1.withOpacity(0.1),
-                                            borderRadius: BorderRadius.circular(4),
-                                          ),
-                                          child: Text(
-                                            material.category.displayName,
-                                            style: const TextStyle(
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.bold,
-                                              color: AppColors.deepBlue1,
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          material.unit,
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey[600],
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
+                                    Text(
+                                      material.category.displayName.toUpperCase(),
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Colors.white.withOpacity(0.4),
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 0.5,
+                                      ),
                                     ),
                                   ],
                                 ),
                               ),
                               // Status Badge
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: _getStatusColor(material.stockStatus).withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: _getStatusColor(material.stockStatus).withOpacity(0.3),
-                                  ),
-                                ),
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      material.stockStatus.icon,
-                                      style: const TextStyle(fontSize: 14),
-                                    ),
-                                    Text(
-                                      material.stockStatus == StockStatus.adequate 
-                                          ? 'OK'
-                                          : material.stockStatus == StockStatus.warning
-                                              ? 'Warn'
-                                              : material.stockStatus == StockStatus.lowStock
-                                                  ? 'Low'
-                                                  : 'Out',
-                                      style: TextStyle(
-                                        fontSize: 9,
-                                        fontWeight: FontWeight.bold,
-                                        color: _getStatusColor(material.stockStatus),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                              StatusChip(
+                                status: material.stockStatus == StockStatus.adequate 
+                                  ? UiStatus.ok 
+                                  : material.stockStatus == StockStatus.warning 
+                                    ? UiStatus.alert 
+                                    : UiStatus.stop,
+                                labelOverride: material.stockStatus.displayName.toUpperCase(),
                               ),
                             ],
                           ),
@@ -380,36 +340,46 @@ class _InventoryDetailManagementScreenState extends State<InventoryDetailManagem
                           const SizedBox(height: 16),
                           
                           // Quantity Display
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildQuantityDisplay(
-                                  'Total',
-                                  material.totalQuantity,
-                                  material.unit,
-                                  Colors.blue,
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.04),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.white.withOpacity(0.08)),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: _buildQuantityDisplay(
+                                    'TOTAL',
+                                    material.totalQuantity,
+                                    material.unit,
+                                    Colors.blueAccent,
+                                  ),
                                 ),
-                              ),
-                              Expanded(
-                                child: _buildQuantityDisplay(
-                                  'Consumed',
-                                  material.consumedQuantity,
-                                  material.unit,
-                                  Colors.orange,
+                                Container(height: 24, width: 1, color: Colors.white.withOpacity(0.1), margin: const EdgeInsets.symmetric(horizontal: 8)),
+                                Expanded(
+                                  child: _buildQuantityDisplay(
+                                    'CONSUMED',
+                                    material.consumedQuantity,
+                                    material.unit,
+                                    Colors.orangeAccent,
+                                  ),
                                 ),
-                              ),
-                              Expanded(
-                                child: _buildQuantityDisplay(
-                                  'Remaining',
-                                  material.remainingStock,
-                                  material.unit,
-                                  Colors.green,
+                                Container(height: 24, width: 1, color: Colors.white.withOpacity(0.1), margin: const EdgeInsets.symmetric(horizontal: 8)),
+                                Expanded(
+                                  child: _buildQuantityDisplay(
+                                    'STOCK',
+                                    material.remainingStock,
+                                    material.unit,
+                                    Colors.greenAccent,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                           
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 16),
                           
                           // Consumption Progress Bar
                           Column(
@@ -419,95 +389,47 @@ class _InventoryDetailManagementScreenState extends State<InventoryDetailManagem
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    'Consumption',
+                                    'CONSUMPTION RATE',
                                     style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey[600],
-                                      fontWeight: FontWeight.w600,
+                                      fontSize: 10,
+                                      color: Colors.white.withOpacity(0.3),
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.5,
                                     ),
                                   ),
                                   Text(
                                     '${material.consumptionPercentage.toStringAsFixed(1)}%',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.deepBlue1,
-                                      fontWeight: FontWeight.bold,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: material.consumptionPercentage > 80 ? Colors.orangeAccent : Colors.blueAccent,
+                                      fontWeight: FontWeight.w900,
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 6),
+                              const SizedBox(height: 8),
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(4),
                                 child: LinearProgressIndicator(
                                   value: material.consumptionPercentage / 100,
-                                  backgroundColor: Colors.grey[200],
+                                  backgroundColor: Colors.white.withOpacity(0.05),
                                   valueColor: AlwaysStoppedAnimation(
-                                    _getStatusColor(material.stockStatus),
+                                    material.consumptionPercentage > 80 ? Colors.orangeAccent : Colors.blueAccent,
                                   ),
-                                  minHeight: 8,
+                                  minHeight: 6,
                                 ),
                               ),
                             ],
                           ),
                           
-                          const SizedBox(height: 12),
-                          const Divider(height: 1),
-                          const SizedBox(height: 12),
-                          
-                          // Additional Details
+                          const SizedBox(height: 16),
                           Row(
                             children: [
-                              Expanded(
-                                child: _buildInfoItem(
-                                  'Updated',
-                                  _formatDate(material.lastUpdatedDate),
-                                ),
-                              ),
-                              if (material.costPerUnit != null)
-                                Expanded(
-                                  child: _buildInfoItem(
-                                    'Unit Cost',
-                                    '₹${material.costPerUnit!.toStringAsFixed(0)}',
-                                  ),
-                                ),
+                              _buildDetailLabel(Icons.warehouse_rounded, 'LOCATION', material.storageLocation ?? 'N/A'),
+                              const SizedBox(width: 16),
+                              _buildDetailLabel(Icons.update_rounded, 'UPDATED', _formatDate(material.lastUpdatedDate)),
                             ],
                           ),
-                          
-                          if (material.storageLocation != null) ...[
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Icon(Icons.warehouse_rounded, size: 14, color: Colors.grey[500]),
-                                const SizedBox(width: 6),
-                                Text(
-                                  material.storageLocation!,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[600],
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                          
-                          if (material.lastUpdatedBy != null) ...[
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                Icon(Icons.person_outline_rounded, size: 14, color: Colors.grey[500]),
-                                const SizedBox(width: 6),
-                                Text(
-                                  'By: ${material.lastUpdatedBy}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
                         ],
                       ),
                     ),
@@ -524,25 +446,35 @@ class _InventoryDetailManagementScreenState extends State<InventoryDetailManagem
 
   Widget _buildStatCard(String label, String value, IconData icon, Color color) {
     return ProfessionalCard(
-      padding: const EdgeInsets.all(12),
+      useGlass: true,
+      padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(height: 12),
           Text(
             value,
             style: const TextStyle(
-              fontSize: 18,
+              fontSize: 22,
               fontWeight: FontWeight.w900,
-              color: AppColors.deepBlue1,
+              color: Colors.white,
+              letterSpacing: -1,
             ),
           ),
           Text(
             label,
             style: TextStyle(
-              fontSize: 10,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w600,
+              fontSize: 9,
+              color: Colors.white.withOpacity(0.4),
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.5,
             ),
             textAlign: TextAlign.center,
           ),
@@ -554,19 +486,21 @@ class _InventoryDetailManagementScreenState extends State<InventoryDetailManagem
   Widget _buildFilterChip(String label, bool isSelected, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.deepBlue1 : Colors.grey[200],
-          borderRadius: BorderRadius.circular(20),
+          color: isSelected ? Colors.white : Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: isSelected ? Colors.white : Colors.white.withOpacity(0.1)),
         ),
         child: Text(
-          label,
+          label.toUpperCase(),
           style: TextStyle(
-            color: isSelected ? Colors.white : Colors.grey[700],
-            fontWeight: FontWeight.bold,
-            fontSize: 12,
+            color: isSelected ? AppColors.deepBlue1 : Colors.white70,
+            fontWeight: FontWeight.w900,
+            fontSize: 10,
+            letterSpacing: 0.5,
           ),
         ),
       ),
@@ -582,36 +516,43 @@ class _InventoryDetailManagementScreenState extends State<InventoryDetailManagem
             fontSize: 18,
             fontWeight: FontWeight.w900,
             color: color,
+            letterSpacing: -0.5,
           ),
         ),
         Text(
           label,
           style: TextStyle(
-            fontSize: 10,
-            color: Colors.grey[600],
-            fontWeight: FontWeight.w600,
+            fontSize: 8,
+            color: Colors.white.withOpacity(0.3),
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.5,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildInfoItem(String label, String value) {
+  Widget _buildDetailLabel(IconData icon, String label, String value) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
+        Icon(icon, size: 14, color: Colors.white.withOpacity(0.3)),
+        const SizedBox(width: 6),
         Text(
           '$label: ',
           style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
+            fontSize: 10,
+            color: Colors.white.withOpacity(0.3),
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.5,
           ),
         ),
         Text(
-          value,
-          style: const TextStyle(
-            fontSize: 12,
-            color: AppColors.deepBlue1,
-            fontWeight: FontWeight.bold,
+          value.toUpperCase(),
+          style: TextStyle(
+            fontSize: 11,
+            color: Colors.white.withOpacity(0.6),
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],

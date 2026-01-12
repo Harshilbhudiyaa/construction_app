@@ -5,6 +5,7 @@ import '../../app/ui/widgets/professional_page.dart';
 import '../../app/ui/widgets/staggered_animation.dart';
 import '../../app/ui/widgets/app_search_field.dart';
 import '../../app/ui/widgets/empty_state.dart';
+import '../../app/ui/widgets/status_chip.dart';
 import '../../app/utils/feedback_helper.dart';
 import 'models/machine_model.dart';
 import 'machine_form_screen.dart';
@@ -133,33 +134,33 @@ class _MachineManagementScreenState extends State<MachineManagementScreen> {
 
         // Stats Cards
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             children: [
               Expanded(
                 child: _buildStatCard(
-                  'Total Machines',
+                  'TOTAL',
                   '${_machines.length}',
                   Icons.precision_manufacturing_rounded,
-                  Colors.blue,
+                  Colors.blueAccent,
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: _buildStatCard(
-                  'In Use',
+                  'IN USE',
                   '${_machines.where((m) => m.status == MachineStatus.inUse).length}',
                   Icons.construction_rounded,
-                  Colors.green,
+                  Colors.greenAccent,
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: _buildStatCard(
-                  'Maintenance',
+                  'SERVICE',
                   '${_machines.where((m) => m.status == MachineStatus.maintenance).length}',
                   Icons.build_rounded,
-                  Colors.orange,
+                  Colors.orangeAccent,
                 ),
               ),
             ],
@@ -187,13 +188,15 @@ class _MachineManagementScreenState extends State<MachineManagementScreen> {
             return StaggeredAnimation(
               index: index,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 child: ProfessionalCard(
+                  useGlass: true,
+                  padding: EdgeInsets.zero,
                   child: InkWell(
                     onTap: () => _showMachineDetails(context, machine),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                     child: Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -201,13 +204,12 @@ class _MachineManagementScreenState extends State<MachineManagementScreen> {
                             children: [
                               // Machine Icon
                               Container(
-                                width: 60,
-                                height: 60,
+                                width: 56,
+                                height: 56,
                                 decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: _getStatusGradient(machine.status),
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
+                                  color: _getStatusColor(machine.status).withOpacity(0.12),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(color: _getStatusColor(machine.status).withOpacity(0.2)),
                                 ),
                                 child: Center(
                                   child: Text(
@@ -216,7 +218,7 @@ class _MachineManagementScreenState extends State<MachineManagementScreen> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 16),
                               // Machine Info
                               Expanded(
                                 child: Column(
@@ -226,99 +228,81 @@ class _MachineManagementScreenState extends State<MachineManagementScreen> {
                                       machine.name,
                                       style: const TextStyle(
                                         fontWeight: FontWeight.w900,
-                                        fontSize: 16,
-                                        color: AppColors.deepBlue1,
+                                        fontSize: 17,
+                                        color: Colors.white,
+                                        letterSpacing: -0.5,
                                       ),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      machine.type.displayName,
+                                      machine.type.displayName.toUpperCase(),
                                       style: TextStyle(
-                                        fontSize: 13,
-                                        color: Colors.grey[600],
-                                        fontWeight: FontWeight.w600,
+                                        fontSize: 10,
+                                        color: Colors.white.withOpacity(0.4),
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 0.5,
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
                               // Status Badge
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: _getStatusColor(machine.status).withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: _getStatusColor(machine.status).withOpacity(0.3),
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      machine.status.icon,
-                                      style: const TextStyle(fontSize: 12),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      machine.status.displayName,
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        color: _getStatusColor(machine.status),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                              StatusChip(
+                                status: machine.status == MachineStatus.available 
+                                  ? UiStatus.ok 
+                                  : machine.status == MachineStatus.maintenance 
+                                    ? UiStatus.alert 
+                                    : machine.status == MachineStatus.breakdown 
+                                      ? UiStatus.stop 
+                                      : UiStatus.pending,
+                                labelOverride: machine.status.displayName.toUpperCase(),
                               ),
                             ],
                           ),
                           
                           if (machine.assignedSiteName != null || machine.natureOfWork != null) ...[
-                            const SizedBox(height: 12),
-                            const Divider(height: 1),
-                            const SizedBox(height: 12),
-                            Row(
-                              children: [
-                                if (machine.assignedSiteName != null) ...[
-                                  Expanded(
-                                    child: _buildDetailItem(
-                                      Icons.location_on_rounded,
-                                      'Site',
-                                      machine.assignedSiteName!,
+                            const SizedBox(height: 16),
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.04),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.white.withOpacity(0.08)),
+                              ),
+                              child: Row(
+                                children: [
+                                  if (machine.assignedSiteName != null) ...[
+                                    Expanded(
+                                      child: _buildDetailItem(
+                                        Icons.location_on_rounded,
+                                        'SITE',
+                                        machine.assignedSiteName!,
+                                      ),
                                     ),
-                                  ),
-                                ],
-                                if (machine.natureOfWork != null) ...[
-                                  if (machine.assignedSiteName != null) const SizedBox(width: 12),
-                                  Expanded(
-                                    child: _buildDetailItem(
-                                      Icons.work_rounded,
-                                      'Work Type',
-                                      machine.natureOfWork!.displayName,
+                                  ],
+                                  if (machine.natureOfWork != null) ...[
+                                    if (machine.assignedSiteName != null) 
+                                      Container(height: 24, width: 1, color: Colors.white.withOpacity(0.1), margin: const EdgeInsets.symmetric(horizontal: 12)),
+                                    Expanded(
+                                      child: _buildDetailItem(
+                                        Icons.work_rounded,
+                                        'WORK',
+                                        machine.natureOfWork!.displayName,
+                                      ),
                                     ),
-                                  ),
+                                  ],
                                 ],
-                              ],
+                              ),
                             ),
                           ],
                           
-                          if (machine.operatorName != null) ...[
-                            const SizedBox(height: 8),
-                            _buildDetailItem(
-                              Icons.person_rounded,
-                              'Operator',
-                              machine.operatorName!,
-                            ),
-                          ],
-                          
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 16),
                           Row(
                             children: [
                               Expanded(
                                 child: _buildDetailItem(
                                   Icons.build_circle_rounded,
-                                  'Last Service',
+                                  'PREV SERVICE',
                                   _formatDate(machine.lastMaintenanceDate),
                                 ),
                               ),
@@ -327,8 +311,9 @@ class _MachineManagementScreenState extends State<MachineManagementScreen> {
                                 Expanded(
                                   child: _buildDetailItem(
                                     Icons.schedule_rounded,
-                                    'Next Service',
+                                    'NEXT DUE',
                                     _formatDate(machine.nextMaintenanceDate!),
+                                    color: machine.nextMaintenanceDate!.isBefore(DateTime.now()) ? Colors.redAccent : null,
                                   ),
                                 ),
                               ],
@@ -350,25 +335,35 @@ class _MachineManagementScreenState extends State<MachineManagementScreen> {
 
   Widget _buildStatCard(String label, String value, IconData icon, Color color) {
     return ProfessionalCard(
-      padding: const EdgeInsets.all(12),
+      useGlass: true,
+      padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(height: 12),
           Text(
             value,
             style: const TextStyle(
-              fontSize: 20,
+              fontSize: 22,
               fontWeight: FontWeight.w900,
-              color: AppColors.deepBlue1,
+              color: Colors.white,
+              letterSpacing: -1,
             ),
           ),
           Text(
             label,
             style: TextStyle(
-              fontSize: 11,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w600,
+              fontSize: 9,
+              color: Colors.white.withOpacity(0.4),
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.5,
             ),
             textAlign: TextAlign.center,
           ),
@@ -380,30 +375,32 @@ class _MachineManagementScreenState extends State<MachineManagementScreen> {
   Widget _buildFilterChip(String label, bool isSelected, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.deepBlue1 : Colors.grey[200],
-          borderRadius: BorderRadius.circular(20),
+          color: isSelected ? Colors.white : Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: isSelected ? Colors.white : Colors.white.withOpacity(0.1)),
         ),
         child: Text(
-          label,
+          label.toUpperCase(),
           style: TextStyle(
-            color: isSelected ? Colors.white : Colors.grey[700],
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
+            color: isSelected ? AppColors.deepBlue1 : Colors.white70,
+            fontWeight: FontWeight.w900,
+            fontSize: 10,
+            letterSpacing: 0.5,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildDetailItem(IconData icon, String label, String value) {
+  Widget _buildDetailItem(IconData icon, String label, String value, {Color? color}) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: Colors.grey[500]),
-        const SizedBox(width: 6),
+        Icon(icon, size: 14, color: Colors.white.withOpacity(0.3)),
+        const SizedBox(width: 8),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -411,16 +408,17 @@ class _MachineManagementScreenState extends State<MachineManagementScreen> {
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 11,
-                  color: Colors.grey[500],
-                  fontWeight: FontWeight.w600,
+                  fontSize: 9,
+                  color: Colors.white.withOpacity(0.3),
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.5,
                 ),
               ),
               Text(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
-                  color: AppColors.deepBlue1,
+                  color: color ?? Colors.white.withOpacity(0.9),
                   fontWeight: FontWeight.bold,
                 ),
                 maxLines: 1,

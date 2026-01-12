@@ -160,213 +160,286 @@ class _WorkerFormScreenState extends State<WorkerFormScreen> {
     return ProfessionalPage(
       title: isEdit ? 'Update Profile' : 'Register Workforce',
       children: [
-        const ProfessionalSectionHeader(
-          title: 'Core Identity',
-          subtitle: 'Legal name, contact and primary skill',
-        ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: ProfessionalCard(
-            padding: const EdgeInsets.all(20),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  HelpfulTextField(
-                    label: 'Full Name',
-                    controller: _nameCtrl,
-                    icon: Icons.person_outline_rounded,
-                    hintText: 'e.g., Ramesh Kumar',
-                    tooltipMessage: 'Enter the worker\'s full legal name as per official documents',
-                    helpText: 'First name and surname',
-                    inputFormatters: [NameFormatter()],
-                    validator: (v) => (v ?? '').trim().isEmpty ? 'Name is required' : null,
+          child: Column(
+            children: [
+              ProfessionalCard(
+                useGlass: true,
+                padding: const EdgeInsets.all(24),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _sectionTitle('Core Identity', Icons.person_search_rounded),
+                      const SizedBox(height: 24),
+                      HelpfulTextField(
+                        label: 'Full Name',
+                        controller: _nameCtrl,
+                        icon: Icons.person_rounded,
+                        useGlass: true,
+                        hintText: 'e.g., Ramesh Kumar',
+                        tooltipMessage: 'Enter the worker\'s full legal name as per official documents',
+                        helpText: 'First name and surname',
+                        inputFormatters: [NameFormatter()],
+                        validator: (v) => (v ?? '').trim().isEmpty ? 'Name is required' : null,
+                      ),
+                      const SizedBox(height: 20),
+                      HelpfulTextField(
+                        label: 'Phone Number',
+                        controller: _phoneCtrl,
+                        icon: Icons.phone_android_rounded,
+                        useGlass: true,
+                        hintText: 'e.g., 9876543210',
+                        keyboardType: TextInputType.phone,
+                        tooltipMessage: 'Primary contact number for work notifications and payments',
+                        helpText: '10-digit mobile number',
+                        inputFormatters: [PhoneNumberFormatter()],
+                        validator: (v) {
+                          final t = (v ?? '').trim();
+                          if (t.isEmpty) return 'Phone number is required';
+                          final digits = t.replaceAll(RegExp(r'\D'), '');
+                          if (digits.length < 10) return 'Enter a valid 10-digit phone number';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      HelpfulDropdown<String>(
+                        label: 'Primary Skill',
+                        value: _skill,
+                        useGlass: true,
+                        items: kSkills,
+                        icon: Icons.engineering_rounded,
+                        tooltipMessage: 'Main area of expertise and work specialization',
+                        helpText: 'Select the worker\'s primary skill set',
+                        onChanged: (v) => setState(() => _skill = v!),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 20),
-                  HelpfulTextField(
-                    label: 'Phone Number',
-                    controller: _phoneCtrl,
-                    icon: Icons.phone_android_rounded,
-                    hintText: 'e.g., 9876543210',
-                    keyboardType: TextInputType.phone,
-                    tooltipMessage: 'Primary contact number for work notifications and payments',
-                    helpText: '10-digit mobile number',
-                    inputFormatters: [PhoneNumberFormatter()],
-                    validator: (v) {
-                      final t = (v ?? '').trim();
-                      if (t.isEmpty) return 'Phone number is required';
-                      final digits = t.replaceAll(RegExp(r'\D'), '');
-                      if (digits.length < 10) return 'Enter a valid 10-digit phone number';
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  HelpfulDropdown<String>(
-                    label: 'Primary Skill',
-                    value: _skill,
-                    items: kSkills,
-                    icon: Icons.engineering_rounded,
-                    tooltipMessage: 'Main area of expertise and work specialization',
-                    helpText: 'Select the worker\'s primary skill set',
-                    onChanged: (v) => setState(() => _skill = v!),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        const ProfessionalSectionHeader(
-          title: 'Employment & Pay',
-          subtitle: 'Operational shift and payout structure',
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: ProfessionalCard(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              children: [
-                HelpfulDropdown<WorkerShift>(
-                  label: 'Assigned Shift',
-                  value: _shift,
-                  items: WorkerShift.values,
-                  labelMapper: shiftLabel,
-                  icon: Icons.access_time_rounded,
-                  tooltipMessage: 'Work shift timing - affects scheduling and availability',
-                  helpText: 'Day shift: 6 AM - 6 PM, Night shift: 6 PM - 6 AM',
-                  onChanged: (v) => setState(() => _shift = v!),
                 ),
-                const SizedBox(height: 20),
-                Row(
+              ),
+              const SizedBox(height: 12),
+              ProfessionalCard(
+                useGlass: true,
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      flex: 3,
-                      child: HelpfulDropdown<PayRateType>(
-                        label: 'Rate Type',
-                        value: _rateType,
-                        items: PayRateType.values,
-                        labelMapper: rateTypeLabel,
-                        icon: Icons.payments_rounded,
-                        tooltipMessage: 'Payment calculation basis',
-                        helpText: 'How the worker will be compensated',
-                        onChanged: (v) => setState(() => _rateType = v!),
-                      ),
+                    _sectionTitle('Employment & Pay', Icons.payments_rounded),
+                    const SizedBox(height: 24),
+                    HelpfulDropdown<WorkerShift>(
+                      label: 'Assigned Shift',
+                      value: _shift,
+                      useGlass: true,
+                      items: WorkerShift.values,
+                      labelMapper: shiftLabel,
+                      icon: Icons.access_time_rounded,
+                      tooltipMessage: 'Work shift timing - affects scheduling and availability',
+                      helpText: 'Day shift: 6 AM - 6 PM, Night shift: 6 PM - 6 AM',
+                      onChanged: (v) => setState(() => _shift = v!),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      flex: 2,
-                      child: HelpfulTextField(
-                        label: 'Amount (₹)',
-                        controller: _rateCtrl,
-                        icon: Icons.currency_rupee_rounded,
-                        hintText: '800',
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        tooltipMessage: 'Pay rate amount in Indian Rupees',
-                        helpText: 'Standard rate for this skill',
-                        inputFormatters: [CurrencyFormatter()],
-                      ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: HelpfulDropdown<PayRateType>(
+                            label: 'Rate Type',
+                            value: _rateType,
+                            useGlass: true,
+                            items: PayRateType.values,
+                            labelMapper: rateTypeLabel,
+                            icon: Icons.speed_rounded,
+                            tooltipMessage: 'Payment calculation basis',
+                            helpText: 'How compensation is calculated',
+                            onChanged: (v) => setState(() => _rateType = v!),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          flex: 2,
+                          child: HelpfulTextField(
+                            label: 'Amount (₹)',
+                            controller: _rateCtrl,
+                            icon: Icons.currency_rupee_rounded,
+                            useGlass: true,
+                            hintText: '800',
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            tooltipMessage: 'Pay rate amount in Indian Rupees',
+                            helpText: 'Standard rate',
+                            inputFormatters: [CurrencyFormatter()],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    HelpfulDropdown<WorkerStatus>(
+                      label: 'System Status',
+                      value: _status,
+                      useGlass: true,
+                      items: WorkerStatus.values,
+                      labelMapper: statusLabel,
+                      icon: Icons.verified_user_rounded,
+                      tooltipMessage: 'Current availability in the system',
+                      onChanged: (v) => setState(() => _status = v!),
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
-                HelpfulDropdown<WorkerStatus>(
-                  label: 'Current Status',
-                  value: _status,
-                  items: WorkerStatus.values,
-                  labelMapper: statusLabel,
-                  icon: Icons.toggle_on_rounded,
-                  tooltipMessage: 'Worker availability status in the system',
-                  helpText: 'Active workers can be assigned to tasks',
-                  onChanged: (v) => setState(() => _status = v!),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const ProfessionalSectionHeader(
-          title: 'Competencies',
-          subtitle: 'Specific task categories authorized',
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: ProfessionalCard(
-            padding: const EdgeInsets.all(20),
-            child: Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: kWorkTypes.map((wt) {
-                final selected = _workTypes.contains(wt);
-                return GestureDetector(
-                  onTap: () => _toggleWorkType(wt),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: selected ? AppColors.deepBlue1 : AppColors.deepBlue1.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: selected ? AppColors.deepBlue1 : AppColors.deepBlue1.withOpacity(0.1),
-                      ),
-                    ),
-                    child: Text(
-                      wt,
+              ),
+              const SizedBox(height: 12),
+              ProfessionalCard(
+                useGlass: true,
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _sectionTitle('Competencies', Icons.fact_check_rounded),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Select assigned task categories for this worker',
                       style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: selected ? Colors.white : AppColors.deepBlue1,
+                        fontSize: 12,
+                        color: Colors.white.withOpacity(0.5),
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: kWorkTypes.map((wt) {
+                        final selected = _workTypes.contains(wt);
+                        return GestureDetector(
+                          onTap: () => _toggleWorkType(wt),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: selected ? Colors.white : Colors.white.withOpacity(0.05),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: selected ? Colors.white : Colors.white.withOpacity(0.1),
+                                width: 1.5,
+                              ),
+                              boxShadow: selected ? [
+                                BoxShadow(
+                                  color: Colors.white.withOpacity(0.2),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ] : null,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  selected ? Icons.check_circle_rounded : Icons.add_circle_outline_rounded,
+                                  size: 16,
+                                  color: selected ? AppColors.deepBlue1 : Colors.white70,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  wt,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w900,
+                                    color: selected ? AppColors.deepBlue1 : Colors.white70,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 48),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _handleBack,
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        side: BorderSide(color: Colors.white.withOpacity(0.3)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Text(
+                        'Discard',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
                       ),
                     ),
                   ),
-                );
-              }).toList(),
-            ),
-          ),
-        ),
-        const SizedBox(height: 32),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _handleBack,
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    side: BorderSide(color: Colors.grey[300]!),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    flex: 2,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Colors.blueAccent, AppColors.deepBlue3],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.blueAccent.withOpacity(0.3),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: _save,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                        child: Text(
+                          isEdit ? 'Update Details' : 'Finalize Registration',
+                          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.white),
+                        ),
+                      ),
                     ),
                   ),
-                  icon: Icon(Icons.close_rounded, size: 20, color: Colors.grey[700]),
-                  label: Text(
-                    'Cancel',
-                    style: TextStyle(color: Colors.grey[700], fontWeight: FontWeight.bold),
-                  ),
-                ),
+                ],
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                flex: 2,
-                child: ElevatedButton.icon(
-                  onPressed: _save,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.deepBlue1,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    elevation: 0,
-                  ),
-                  icon: const Icon(Icons.check_circle_outline_rounded, size: 20),
-                  label: const Text(
-                    'Save Record',
-                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
-                  ),
-                ),
-              ),
+              const SizedBox(height: 100),
             ],
           ),
         ),
-        const SizedBox(height: 100),
       ],
     );
   }
+
+  Widget _sectionTitle(String title, IconData icon) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: Colors.white, size: 18),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          title.toUpperCase(),
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w900,
+            color: Colors.white,
+            letterSpacing: 1.2,
+          ),
+        ),
+      ],
+    );
+  }
+
 }

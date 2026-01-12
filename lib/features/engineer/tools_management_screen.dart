@@ -5,6 +5,7 @@ import '../../app/ui/widgets/professional_page.dart';
 import '../../app/ui/widgets/staggered_animation.dart';
 import '../../app/ui/widgets/app_search_field.dart';
 import '../../app/ui/widgets/empty_state.dart';
+import '../../app/ui/widgets/status_chip.dart';
 import '../../app/utils/feedback_helper.dart';
 import 'models/tool_model.dart';
 import 'tool_form_screen.dart';
@@ -156,33 +157,33 @@ class _ToolsManagementScreenState extends State<ToolsManagementScreen> {
 
         // Stats Cards
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             children: [
               Expanded(
                 child: _buildStatCard(
-                  'Total Tools',
+                  'TOTAL TOOLS',
                   '${_tools.length}',
                   Icons.build_rounded,
-                  Colors.blue,
+                  Colors.blueAccent,
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: _buildStatCard(
-                  'Total Units',
+                  'TOTAL UNITS',
                   '${_tools.fold<int>(0, (sum, tool) => sum + tool.quantity)}',
                   Icons.inventory_rounded,
-                  Colors.green,
+                  Colors.greenAccent,
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: _buildStatCard(
-                  'In Use',
+                  'IN USE',
                   '${_tools.fold<int>(0, (sum, tool) => sum + tool.inUseQuantity)}',
                   Icons.handyman_rounded,
-                  Colors.orange,
+                  Colors.orangeAccent,
                 ),
               ),
             ],
@@ -212,13 +213,15 @@ class _ToolsManagementScreenState extends State<ToolsManagementScreen> {
             return StaggeredAnimation(
               index: index,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 child: ProfessionalCard(
+                  useGlass: true,
+                  padding: EdgeInsets.zero,
                   child: InkWell(
                     onTap: () => _showToolDetails(context, tool),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                     child: Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -226,13 +229,12 @@ class _ToolsManagementScreenState extends State<ToolsManagementScreen> {
                             children: [
                               // Tool Icon
                               Container(
-                                width: 60,
-                                height: 60,
+                                width: 56,
+                                height: 56,
                                 decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: _getConditionGradient(tool.condition),
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
+                                  color: _getConditionColor(tool.condition).withOpacity(0.12),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(color: _getConditionColor(tool.condition).withOpacity(0.2)),
                                 ),
                                 child: Center(
                                   child: Text(
@@ -241,7 +243,7 @@ class _ToolsManagementScreenState extends State<ToolsManagementScreen> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 16),
                               // Tool Info
                               Expanded(
                                 child: Column(
@@ -251,96 +253,86 @@ class _ToolsManagementScreenState extends State<ToolsManagementScreen> {
                                       tool.name,
                                       style: const TextStyle(
                                         fontWeight: FontWeight.w900,
-                                        fontSize: 16,
-                                        color: AppColors.deepBlue1,
+                                        fontSize: 17,
+                                        color: Colors.white,
+                                        letterSpacing: -0.5,
                                       ),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      tool.type.displayName,
+                                      tool.type.displayName.toUpperCase(),
                                       style: TextStyle(
-                                        fontSize: 13,
-                                        color: Colors.grey[600],
-                                        fontWeight: FontWeight.w600,
+                                        fontSize: 10,
+                                        color: Colors.white.withOpacity(0.4),
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 0.5,
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
                               // Condition Badge
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: _getConditionColor(tool.condition).withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: _getConditionColor(tool.condition).withOpacity(0.3),
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      tool.condition.icon,
-                                      style: const TextStyle(fontSize: 12),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      tool.condition.displayName,
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        color: _getConditionColor(tool.condition),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                              StatusChip(
+                                status: tool.condition == ToolCondition.excellent || tool.condition == ToolCondition.good 
+                                  ? UiStatus.ok 
+                                  : tool.condition == ToolCondition.fair 
+                                    ? UiStatus.alert 
+                                    : UiStatus.stop,
+                                labelOverride: tool.condition.displayName.toUpperCase(),
                               ),
                             ],
                           ),
                           
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 16),
                           Text(
                             tool.usagePurpose,
                             style: TextStyle(
                               fontSize: 13,
-                              color: Colors.grey[600],
-                              fontStyle: FontStyle.italic,
+                              color: Colors.white.withOpacity(0.6),
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                           
-                          const SizedBox(height: 12),
-                          const Divider(height: 1),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 16),
                           
                           // Quantity Information
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildQuantityInfo(
-                                  'Total',
-                                  tool.quantity.toString(),
-                                  Colors.blue,
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.04),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.white.withOpacity(0.08)),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: _buildQuantityInfo(
+                                    'TOTAL',
+                                    tool.quantity.toString(),
+                                    Colors.blueAccent,
+                                  ),
                                 ),
-                              ),
-                              Expanded(
-                                child: _buildQuantityInfo(
-                                  'Available',
-                                  tool.availableQuantity.toString(),
-                                  Colors.green,
+                                Container(height: 24, width: 1, color: Colors.white.withOpacity(0.1), margin: const EdgeInsets.symmetric(horizontal: 8)),
+                                Expanded(
+                                  child: _buildQuantityInfo(
+                                    'AVAIL',
+                                    tool.availableQuantity.toString(),
+                                    Colors.greenAccent,
+                                  ),
                                 ),
-                              ),
-                              Expanded(
-                                child: _buildQuantityInfo(
-                                  'In Use',
-                                  tool.inUseQuantity.toString(),
-                                  Colors.orange,
+                                Container(height: 24, width: 1, color: Colors.white.withOpacity(0.1), margin: const EdgeInsets.symmetric(horizontal: 8)),
+                                Expanded(
+                                  child: _buildQuantityInfo(
+                                    'IN USE',
+                                    tool.inUseQuantity.toString(),
+                                    Colors.orangeAccent,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                           
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 16),
                           
                           // Utilization Bar
                           Column(
@@ -350,62 +342,61 @@ class _ToolsManagementScreenState extends State<ToolsManagementScreen> {
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    'Utilization',
+                                    'UTILIZATION',
                                     style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey[600],
-                                      fontWeight: FontWeight.w600,
+                                      fontSize: 10,
+                                      color: Colors.white.withOpacity(0.3),
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.5,
                                     ),
                                   ),
                                   Text(
                                     '$utilizationPercent%',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.deepBlue1,
-                                      fontWeight: FontWeight.bold,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: utilizationPercent > 80 ? Colors.orangeAccent : Colors.blueAccent,
+                                      fontWeight: FontWeight.w900,
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 6),
+                              const SizedBox(height: 8),
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(4),
                                 child: LinearProgressIndicator(
                                   value: utilizationPercent / 100,
-                                  backgroundColor: Colors.grey[200],
+                                  backgroundColor: Colors.white.withOpacity(0.05),
                                   valueColor: AlwaysStoppedAnimation(
-                                    utilizationPercent > 80 ? Colors.orange : Colors.blue,
+                                    utilizationPercent > 80 ? Colors.orangeAccent : Colors.blueAccent,
                                   ),
-                                  minHeight: 8,
+                                  minHeight: 6,
                                 ),
                               ),
                             ],
                           ),
                           
                           if (tool.assignedSiteName != null || tool.assignedEngineerName != null) ...[
-                            const SizedBox(height: 12),
-                            const Divider(height: 1),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 16),
                             if (tool.assignedSiteName != null)
                               _buildDetailItem(
                                 Icons.location_on_rounded,
-                                'Assigned Site',
+                                'SITE',
                                 tool.assignedSiteName!,
                               ),
                             if (tool.assignedEngineerName != null) ...[
                               const SizedBox(height: 8),
                               _buildDetailItem(
                                 Icons.person_rounded,
-                                'Assigned To',
+                                'ASSIGNED TO',
                                 tool.assignedEngineerName!,
                               ),
                             ],
                           ],
                           
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 12),
                           _buildDetailItem(
                             Icons.verified_rounded,
-                            'Last Inspection',
+                            'LAST INSPECT',
                             _formatDate(tool.lastInspectionDate),
                           ),
                         ],
@@ -424,25 +415,35 @@ class _ToolsManagementScreenState extends State<ToolsManagementScreen> {
 
   Widget _buildStatCard(String label, String value, IconData icon, Color color) {
     return ProfessionalCard(
-      padding: const EdgeInsets.all(12),
+      useGlass: true,
+      padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(height: 12),
           Text(
             value,
             style: const TextStyle(
-              fontSize: 20,
+              fontSize: 22,
               fontWeight: FontWeight.w900,
-              color: AppColors.deepBlue1,
+              color: Colors.white,
+              letterSpacing: -1,
             ),
           ),
           Text(
             label,
             style: TextStyle(
-              fontSize: 11,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w600,
+              fontSize: 9,
+              color: Colors.white.withOpacity(0.4),
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.5,
             ),
             textAlign: TextAlign.center,
           ),
@@ -454,19 +455,21 @@ class _ToolsManagementScreenState extends State<ToolsManagementScreen> {
   Widget _buildFilterChip(String label, bool isSelected, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.deepBlue1 : Colors.grey[200],
-          borderRadius: BorderRadius.circular(20),
+          color: isSelected ? Colors.white : Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: isSelected ? Colors.white : Colors.white.withOpacity(0.1)),
         ),
         child: Text(
-          label,
+          label.toUpperCase(),
           style: TextStyle(
-            color: isSelected ? Colors.white : Colors.grey[700],
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
+            color: isSelected ? AppColors.deepBlue1 : Colors.white70,
+            fontWeight: FontWeight.w900,
+            fontSize: 10,
+            letterSpacing: 0.5,
           ),
         ),
       ),
@@ -479,17 +482,19 @@ class _ToolsManagementScreenState extends State<ToolsManagementScreen> {
         Text(
           value,
           style: TextStyle(
-            fontSize: 20,
+            fontSize: 18,
             fontWeight: FontWeight.w900,
             color: color,
+            letterSpacing: -0.5,
           ),
         ),
         Text(
           label,
           style: TextStyle(
-            fontSize: 11,
-            color: Colors.grey[600],
-            fontWeight: FontWeight.w600,
+            fontSize: 8,
+            color: Colors.white.withOpacity(0.3),
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.5,
           ),
         ),
       ],
@@ -499,22 +504,23 @@ class _ToolsManagementScreenState extends State<ToolsManagementScreen> {
   Widget _buildDetailItem(IconData icon, String label, String value) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: Colors.grey[500]),
-        const SizedBox(width: 6),
+        Icon(icon, size: 14, color: Colors.white.withOpacity(0.3)),
+        const SizedBox(width: 8),
         Text(
           '$label: ',
           style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
-            fontWeight: FontWeight.w600,
+            fontSize: 10,
+            color: Colors.white.withOpacity(0.3),
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.5,
           ),
         ),
         Expanded(
           child: Text(
-            value,
-            style: const TextStyle(
+            value.toUpperCase(),
+            style: TextStyle(
               fontSize: 12,
-              color: AppColors.deepBlue1,
+              color: Colors.white.withOpacity(0.9),
               fontWeight: FontWeight.bold,
             ),
           ),
