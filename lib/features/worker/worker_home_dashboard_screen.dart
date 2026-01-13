@@ -133,7 +133,7 @@ class _WorkerHomeDashboardScreenState extends State<WorkerHomeDashboardScreen> {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         crossAxisCount: 2,
-        childAspectRatio: 1.3,
+        childAspectRatio: 1.1,
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
         children: const [
@@ -177,7 +177,7 @@ class _WorkerHomeDashboardScreenState extends State<WorkerHomeDashboardScreen> {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         crossAxisCount: 2,
-        childAspectRatio: 1.25,
+        childAspectRatio: 1.2,
         mainAxisSpacing: 8,
         crossAxisSpacing: 8,
         children: [
@@ -315,15 +315,15 @@ class _WorkerKpiTile extends StatelessWidget {
             ],
           ),
           const Spacer(),
-          Text(
-            value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -1,
+            Text(
+              value,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -1,
+              ),
             ),
-          ),
           const SizedBox(height: 2),
           Text(
             title.toUpperCase(),
@@ -361,8 +361,8 @@ class _WorkerKpiTile extends StatelessWidget {
                         ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),

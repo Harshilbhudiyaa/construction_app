@@ -23,6 +23,7 @@ class HelpfulTextField extends StatefulWidget {
   final int? maxLines;
 
   final bool useGlass;
+  final bool readOnly;
 
   const HelpfulTextField({
     super.key,
@@ -42,6 +43,7 @@ class HelpfulTextField extends StatefulWidget {
     this.obscureText = false,
     this.maxLines = 1,
     this.useGlass = false,
+    this.readOnly = false,
   });
 
 
@@ -98,6 +100,7 @@ class _HelpfulTextFieldState extends State<HelpfulTextField> {
             }
           },
           child: TextFormField(
+            readOnly: widget.readOnly,
             controller: widget.controller,
             keyboardType: widget.keyboardType,
             obscureText: widget.obscureText,
@@ -107,7 +110,7 @@ class _HelpfulTextFieldState extends State<HelpfulTextField> {
             validator: widget.validator,
             style: TextStyle(
               color: widget.useGlass ? Colors.white : AppColors.deepBlue1,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600, // Changed from w500 to w600
             ),
             onChanged: (value) {
               // Clear error on change

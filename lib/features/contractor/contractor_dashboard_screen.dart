@@ -11,6 +11,8 @@ import '../../../../app/ui/widgets/professional_page.dart';
 import '../../../../core/utils/navigation_utils.dart';
 import '../worker/worker_form_screen.dart';
 import '../engineer/engineer_form_screen.dart';
+import '../engineer/engineer_detail_screen.dart';
+import '../engineer/models/engineer_model.dart';
 import '../engineer/machine_form_screen.dart';
 import '../inventory/inventory_form_screen.dart';
 
@@ -68,7 +70,7 @@ class _ContractorDashboardScreenState extends State<ContractorDashboardScreen> w
         title: 'Contractor Hub',
         actions: [
           IconButton(
-            onPressed: () => widget.onNavigateTo(7),
+            onPressed: () => widget.onNavigateTo(9),
             icon: const Icon(Icons.notifications_rounded, color: Colors.white),
           ),
           IconButton(
@@ -82,90 +84,87 @@ class _ContractorDashboardScreenState extends State<ContractorDashboardScreen> w
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: ProfessionalCard(
-              padding: const EdgeInsets.all(16),
-              gradient: LinearGradient(
-                colors: [
-                  Colors.white.withOpacity(0.15),
-                  Colors.white.withOpacity(0.05),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 58,
-                    height: 58,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: Colors.white.withOpacity(0.2)),
+              useGlass: true,
+            child: InkWell(
+              onTap: () => widget.onNavigateTo(9),
+              borderRadius: BorderRadius.circular(16),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 58,
+                      height: 58,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: Colors.white.withOpacity(0.2)),
+                      ),
+                      child: const Icon(
+                        Icons.admin_panel_settings_rounded,
+                        color: Colors.white,
+                        size: 30,
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.admin_panel_settings_rounded,
-                      color: Colors.white,
-                      size: 30,
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Operations Center',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w900,
-                            fontSize: 20,
-                            color: Colors.white,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            Container(
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: Colors.greenAccent,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.greenAccent.withOpacity(0.5),
-                                    blurRadius: 5,
-                                  ),
-                                ],
-                              ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Operations Center',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 20,
+                              color: Colors.white,
+                              letterSpacing: -0.5,
                             ),
-                            const SizedBox(width: 8),
-                            const Flexible(
-                              child: Text(
-                                'System Fully Operational',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 13,
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: Colors.greenAccent,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.greenAccent.withOpacity(0.5),
+                                      blurRadius: 5,
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
+                              const SizedBox(width: 8),
+                              const Flexible(
+                                child: Text(
+                                  'System Fully Operational',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const Flexible(
-                    child: StatusChip(
+                    const StatusChip(
                       status: UiStatus.ok,
                       labelOverride: 'LIVE',
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+            ),
             ),
           ),
 
@@ -183,7 +182,7 @@ class _ContractorDashboardScreenState extends State<ContractorDashboardScreen> w
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 crossAxisCount: 2,
-                childAspectRatio: 1.4,
+                childAspectRatio: 1.1,
                 mainAxisSpacing: 12,
                 crossAxisSpacing: 12,
                 children: [
@@ -194,14 +193,7 @@ class _ContractorDashboardScreenState extends State<ContractorDashboardScreen> w
                     color: Colors.blue,
                     trend: '+5%',
                     isPositive: true,
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Workforce Overview: 60 Active | 8 Inactive | 52 Day | 16 Night'),
-                          duration: Duration(seconds: 3),
-                        ),
-                      );
-                    },
+                    onTap: () => widget.onNavigateTo(1),
                   ),
                 _KpiTile(
                     title: 'Engineers',
@@ -210,6 +202,7 @@ class _ContractorDashboardScreenState extends State<ContractorDashboardScreen> w
                     color: Colors.orange,
                     trend: 'Stable',
                     isPositive: true,
+                    onTap: () => widget.onNavigateTo(2),
                   ),
                   _KpiTile(
                     title: 'Active Assets',
@@ -218,6 +211,7 @@ class _ContractorDashboardScreenState extends State<ContractorDashboardScreen> w
                     color: Colors.purple,
                     trend: '100%',
                     isPositive: true,
+                    onTap: () => widget.onNavigateTo(3),
                   ),
                   _KpiTile(
                     title: 'Low Stock',
@@ -227,6 +221,7 @@ class _ContractorDashboardScreenState extends State<ContractorDashboardScreen> w
                     trend: '-2 items',
                     isPositive: false,
                     shouldPulse: true,
+                    onTap: () => widget.onNavigateTo(4),
                   ),
                   _KpiTile(
                     title: 'Pending Pay',
@@ -235,6 +230,7 @@ class _ContractorDashboardScreenState extends State<ContractorDashboardScreen> w
                     color: Colors.green,
                     trend: '₹140k',
                     isPositive: true,
+                    onTap: () => widget.onNavigateTo(6),
                   ),
                   _KpiTile(
                     title: 'System Alerts',
@@ -244,6 +240,7 @@ class _ContractorDashboardScreenState extends State<ContractorDashboardScreen> w
                     trend: 'Critical',
                     isPositive: false,
                     shouldPulse: true,
+                    onTap: () => widget.onNavigateTo(9),
                   ),
                 ],
               ),
@@ -354,28 +351,34 @@ class _ContractorDashboardScreenState extends State<ContractorDashboardScreen> w
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
       child: Row(
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '$greeting, Admin',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.5,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$greeting, Admin',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.5,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                DateFormat('EEEE, MMMM d').format(DateTime.now()),
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.7),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                const SizedBox(height: 4),
+                Text(
+                  DateFormat('EEEE, MMMM d').format(DateTime.now()),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.7),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           const Spacer(),
           Container(
@@ -394,9 +397,9 @@ class _ContractorDashboardScreenState extends State<ContractorDashboardScreen> w
 
   Widget _buildRecentActivity() {
     final activities = [
-      {'title': 'Worker Entry', 'time': '5 mins ago', 'desc': 'Ramesh Kumar checked in at Site A', 'icon': Icons.login_rounded, 'color': Colors.blueAccent},
-      {'title': 'Material Alert', 'time': '12 mins ago', 'desc': 'Cement stock dropped below 10%', 'icon': Icons.warning_rounded, 'color': Colors.redAccent},
-      {'title': 'Shift Started', 'time': '40 mins ago', 'desc': 'Night shift deployment completed', 'icon': Icons.history_rounded, 'color': Colors.greenAccent},
+      {'title': 'Worker Entry', 'time': '5 mins ago', 'desc': 'Ramesh Kumar checked in at Site A', 'icon': Icons.login_rounded, 'color': Colors.blueAccent, 'tab': 1},
+      {'title': 'Material Alert', 'time': '12 mins ago', 'desc': 'Cement stock dropped below 10%', 'icon': Icons.warning_rounded, 'color': Colors.redAccent, 'tab': 4},
+      {'title': 'Shift Started', 'time': '40 mins ago', 'desc': 'Night shift deployment completed', 'icon': Icons.history_rounded, 'color': Colors.greenAccent, 'tab': 9},
     ];
 
     return Column(
@@ -409,56 +412,63 @@ class _ContractorDashboardScreenState extends State<ContractorDashboardScreen> w
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: ProfessionalCard(
               useGlass: true,
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: (act['color'] as Color).withOpacity(0.15),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(act['icon'] as IconData, size: 20, color: act['color'] as Color),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              padding: EdgeInsets.zero,
+              child: InkWell(
+                onTap: () => widget.onNavigateTo(act['tab'] as int),
+                borderRadius: BorderRadius.circular(16),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: (act['color'] as Color).withOpacity(0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(act['icon'] as IconData, size: 20, color: act['color'] as Color),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              act['title'] as String,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white,
-                                fontSize: 15,
-                              ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  act['title'] as String,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                                Text(
+                                  act['time'] as String,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.white.withOpacity(0.4),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
+                            const SizedBox(height: 4),
                             Text(
-                              act['time'] as String,
+                              act['desc'] as String,
                               style: TextStyle(
-                                fontSize: 11,
-                                color: Colors.white.withOpacity(0.4),
-                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                color: Colors.white.withOpacity(0.6),
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          act['desc'] as String,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.white.withOpacity(0.6),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -532,7 +542,7 @@ class _KpiTileState extends State<_KpiTile> with SingleTickerProviderStateMixin 
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: Colors.white.withOpacity(0.1)),
                 ),
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(12),
                 child: Column(
                   children: [
                     Row(
@@ -581,7 +591,7 @@ class _KpiTileState extends State<_KpiTile> with SingleTickerProviderStateMixin 
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
-                                  fontSize: 28,
+                                  fontSize: 24,
                                   fontWeight: FontWeight.w900,
                                   color: Colors.white,
                                   letterSpacing: -1,
@@ -739,6 +749,33 @@ class _QuickAddFab extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         if (isExpanded) ...[
+          _buildFabOption(
+            context,
+            icon: Icons.person_add_alt_1_rounded,
+            label: 'Add Site Engineer',
+            onTap: () async {
+              onToggle();
+              final newEngineer = await Navigator.push<EngineerModel>(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const EngineerFormScreen(
+                    initialRole: EngineerRole.siteEngineer,
+                  ),
+                ),
+              );
+
+              if (newEngineer != null && context.mounted) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => EngineerDetailScreen(engineer: newEngineer),
+                  ),
+                );
+              }
+            },
+            index: 4,
+          ),
+          const SizedBox(height: 12),
           _buildFabOption(
             context,
             icon: Icons.person_add_rounded,

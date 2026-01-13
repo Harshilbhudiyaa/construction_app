@@ -81,54 +81,79 @@ class _ApprovalsQueueScreenState extends State<ApprovalsQueueScreen> {
   Widget build(BuildContext context) {
     return ProfessionalPage(
       title: 'Verification Queue',
+      actions: [
+        IconButton(
+          onPressed: () {},
+          icon: const Icon(Icons.history_rounded, color: Colors.white),
+        ),
+      ],
       children: [
-        AppSearchField(
-          hint: 'Search by UID, worker or task...',
-          onChanged: (v) => setState(() => _query = v),
+        // 1. Search Section
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: AppSearchField(
+            hint: 'Search by UID, worker or task...',
+            useGlass: true,
+            onChanged: (v) => setState(() => _query = v),
+          ),
         ),
         
+        // 2. Filter Section
         const ProfessionalSectionHeader(
           title: 'Classification',
           subtitle: 'Filter requests by lifecycle state',
         ),
         
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: ProfessionalCard(
-            padding: const EdgeInsets.all(12),
-            child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: SizedBox(
+            height: 44,
+            child: ListView(
               scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _FilterBtn(
-                    label: 'All Activity',
-                    isSelected: _filter == null,
-                    onTap: () => setState(() => _filter = null),
-                  ),
-                  const SizedBox(width: 8),
-                  _FilterBtn(
-                    label: 'Pending',
-                    isSelected: _filter == ApprovalStatus.pending,
-                    onTap: () => setState(() => _filter = ApprovalStatus.pending),
-                  ),
-                  const SizedBox(width: 8),
-                  _FilterBtn(
-                    label: 'Approved',
-                    isSelected: _filter == ApprovalStatus.approved,
-                    onTap: () => setState(() => _filter = ApprovalStatus.approved),
-                  ),
-                  const SizedBox(width: 8),
-                  _FilterBtn(
-                    label: 'Rejected',
-                    isSelected: _filter == ApprovalStatus.rejected,
-                    onTap: () => setState(() => _filter = ApprovalStatus.rejected),
-                  ),
-                ],
-              ),
+              children: [
+                _FilterBtn(
+                  label: 'All Activity',
+                  isSelected: _filter == null,
+                  onTap: () => setState(() => _filter = null),
+                ),
+                const SizedBox(width: 8),
+                _FilterBtn(
+                  label: 'Pending',
+                  isSelected: _filter == ApprovalStatus.pending,
+                  onTap: () => setState(() => _filter = ApprovalStatus.pending),
+                ),
+                const SizedBox(width: 8),
+                _FilterBtn(
+                  label: 'Approved',
+                  isSelected: _filter == ApprovalStatus.approved,
+                  onTap: () => setState(() => _filter = ApprovalStatus.approved),
+                ),
+                const SizedBox(width: 8),
+                _FilterBtn(
+                  label: 'Rejected',
+                  isSelected: _filter == ApprovalStatus.rejected,
+                  onTap: () => setState(() => _filter = ApprovalStatus.rejected),
+                ),
+              ],
             ),
           ),
         ),
         
+        // 3. Stats Summary (Inline mini-stats)
+        const SizedBox(height: 24),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              _buildMiniStat('TOTAL', _items.length.toString(), Colors.blueAccent),
+              const SizedBox(width: 12),
+              _buildMiniStat('PENDING', _items.where((e) => e.status == ApprovalStatus.pending).length.toString(), Colors.orangeAccent),
+              const SizedBox(width: 12),
+              _buildMiniStat('TODAY', '12', Colors.greenAccent),
+            ],
+          ),
+        ),
+
         const ProfessionalSectionHeader(
           title: 'Active Sessions',
           subtitle: 'Worklogs awaiting engineering sign-off',
@@ -136,11 +161,12 @@ class _ApprovalsQueueScreenState extends State<ApprovalsQueueScreen> {
         
         if (_filtered.isEmpty)
           const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.symmetric(horizontal: 32, vertical: 48),
             child: EmptyState(
               icon: Icons.fact_check_rounded,
               title: 'No pending logs',
               message: 'Database is current. All logs processed.',
+              useGlass: true,
             ),
           )
         else
@@ -153,67 +179,126 @@ class _ApprovalsQueueScreenState extends State<ApprovalsQueueScreen> {
               return StaggeredAnimation(
                 index: index,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  child: ProfessionalCard(
-                    padding: EdgeInsets.zero,
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      title: Text(
-                        '${a.workerName} • ${a.workType}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 15,
-                          color: AppColors.deepBlue1,
-                        ),
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 4),
-                          Text(
-                            '${a.workerRole} • ${a.site}',
-                            style: TextStyle(color: Colors.grey[600], fontSize: 13, fontWeight: FontWeight.w600),
-                          ),
-                          const SizedBox(height: 2),
-                          Row(
-                            children: [
-                              Icon(Icons.schedule_rounded, size: 12, color: Colors.grey[400]),
-                              const SizedBox(width: 4),
-                              Text(
-                                '${a.startTime} – ${a.endTime} (${a.duration}h)',
-                                style: TextStyle(color: Colors.grey[500], fontSize: 12),
-                              ),
-                              const Spacer(),
-                              Text(
-                                a.id,
-                                style: TextStyle(color: Colors.grey[400], fontSize: 11, fontStyle: FontStyle.italic),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      trailing: StatusChip(status: _toUi(a.status)),
-                      onTap: () async {
-                        final updated = await Navigator.push<ApprovalItem?>(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ApprovalDetailScreen(item: a),
-                          ),
-                        );
-                        if (updated != null) {
-                          setState(() {
-                            final idx = _items.indexWhere((x) => x.id == updated.id);
-                            if (idx != -1) _items[idx] = updated;
-                          });
-                        }
-                      },
-                    ),
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  child: _buildApprovalTile(a),
                 ),
               );
             },
           ),
         const SizedBox(height: 100),
+      ],
+    );
+  }
+
+  Widget _buildMiniStat(String label, String value, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withOpacity(0.08)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
+            const SizedBox(height: 4),
+            Text(value, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildApprovalTile(ApprovalItem a) {
+    final statusColor = a.status == ApprovalStatus.pending 
+        ? Colors.orangeAccent 
+        : (a.status == ApprovalStatus.approved ? Colors.greenAccent : Colors.redAccent);
+
+    return ProfessionalCard(
+      useGlass: true,
+      padding: EdgeInsets.zero,
+      child: InkWell(
+        onTap: () async {
+          final updated = await Navigator.push<ApprovalItem?>(
+            context,
+            MaterialPageRoute(builder: (_) => ApprovalDetailScreen(item: a)),
+          );
+          if (updated != null) {
+            setState(() {
+              final idx = _items.indexWhere((x) => x.id == updated.id);
+              if (idx != -1) _items[idx] = updated;
+            });
+          }
+        },
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: statusColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(Icons.person_rounded, color: statusColor, size: 20),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          a.workerName,
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16),
+                        ),
+                        Text(
+                          a.workType.toUpperCase(),
+                          style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 0.5),
+                        ),
+                      ],
+                    ),
+                  ),
+                  StatusChip(status: _toUi(a.status)),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    _buildTileDetail(Icons.location_on_rounded, a.site),
+                    const SizedBox(width: 16),
+                    _buildTileDetail(Icons.schedule_rounded, '${a.startTime} (${a.duration}h)'),
+                    const Spacer(),
+                    Text(a.id, style: TextStyle(color: Colors.white.withOpacity(0.2), fontSize: 10, fontStyle: FontStyle.italic)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTileDetail(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, size: 12, color: Colors.white.withOpacity(0.4)),
+        const SizedBox(width: 4),
+        Text(
+          text,
+          style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 11, fontWeight: FontWeight.w600),
+        ),
       ],
     );
   }
@@ -228,24 +313,28 @@ class _FilterBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.deepBlue1 : AppColors.deepBlue1.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? AppColors.deepBlue1 : AppColors.deepBlue1.withOpacity(0.1),
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected ? Colors.blueAccent : Colors.white.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected ? Colors.blueAccent : Colors.white.withOpacity(0.1),
+            ),
           ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
-            color: isSelected ? Colors.white : AppColors.deepBlue1,
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              color: isSelected ? Colors.white : Colors.white.withOpacity(0.5),
+            ),
           ),
         ),
       ),

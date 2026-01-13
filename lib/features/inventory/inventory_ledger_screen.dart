@@ -117,14 +117,20 @@ class _InventoryLedgerScreenState extends State<InventoryLedgerScreen> {
                     selected: selected,
                     onSelected: (_) => setState(() => _range = r),
                     backgroundColor: Colors.white.withOpacity(0.05),
-                    selectedColor: Colors.blueAccent,
+                    selectedColor: Colors.blueAccent.withOpacity(0.3),
                     labelStyle: TextStyle(
-                      color: selected ? Colors.white : Colors.white70,
-                      fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+                      color: selected ? Colors.white : Colors.white60,
+                      fontWeight: selected ? FontWeight.w900 : FontWeight.w500,
                       fontSize: 12,
                     ),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                    side: BorderSide(color: Colors.white.withOpacity(0.1)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      side: BorderSide(
+                        color: selected ? Colors.blueAccent.withOpacity(0.5) : Colors.white.withOpacity(0.1),
+                      ),
+                    ),
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
                 );
               }).toList(),
@@ -204,6 +210,7 @@ class _InventoryLedgerScreenState extends State<InventoryLedgerScreen> {
           child: Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: ProfessionalCard(
+              useGlass: true,
               padding: const EdgeInsets.all(16),
               gradient: LinearGradient(
                 colors: [

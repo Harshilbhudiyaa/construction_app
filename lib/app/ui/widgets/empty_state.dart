@@ -8,6 +8,7 @@ class EmptyState extends StatelessWidget {
   final String message;
   final String? actionText;
   final VoidCallback? onAction;
+  final bool useGlass;
 
   const EmptyState({
     super.key,
@@ -16,6 +17,7 @@ class EmptyState extends StatelessWidget {
     required this.message,
     this.actionText,
     this.onAction,
+    this.useGlass = false,
   });
 
   @override
@@ -23,7 +25,7 @@ class EmptyState extends StatelessWidget {
 
     return Card(
       elevation: 0,
-      color: AppColors.deepBlue1.withOpacity(0.02),
+      color: useGlass ? Colors.white.withOpacity(0.05) : AppColors.deepBlue1.withOpacity(0.02),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(color: AppColors.deepBlue1.withOpacity(0.1)),

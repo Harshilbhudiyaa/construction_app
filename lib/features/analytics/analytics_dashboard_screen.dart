@@ -104,7 +104,7 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         crossAxisCount: 2,
-        childAspectRatio: 1.3,
+        childAspectRatio: 1.1,
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
         children: [
@@ -430,7 +430,7 @@ class _AnalyticsKpiTile extends StatelessWidget {
               value,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 22,
+                fontSize: 20,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -0.5,
               ),

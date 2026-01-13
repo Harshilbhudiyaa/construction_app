@@ -49,54 +49,82 @@ class _AuditLogListScreenState extends State<AuditLogListScreen> {
           (entry) {
             final index = entry.key;
             final x = entry.value;
+            final isAlert = x.$4 == UiStatus.alert;
+            
             return StaggeredAnimation(
               index: index,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 child: ProfessionalCard(
-                  child: ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: AppColors.deepBlue1.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                      ),
-                      child: Icon(
-                        x.$4 == UiStatus.alert ? Icons.error_outline_rounded : Icons.shield_rounded,
-                        color: x.$4 == UiStatus.alert ? Colors.red : AppColors.deepBlue1,
-                        size: 24,
-                      ),
-                    ),
-                    title: Text(
-                      x.$1,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.deepBlue1,
-                        fontSize: 15,
-                      ),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 4),
-                        Text(
-                          '${x.$3} • by ${x.$5}',
-                          style: TextStyle(color: Colors.grey[600], fontSize: 13, fontWeight: FontWeight.w500),
-                        ),
-                        Text(
-                          'Reference: ${x.$2}',
-                          style: TextStyle(color: Colors.grey[400], fontSize: 12),
-                        ),
-                      ],
-                    ),
-                    isThreeLine: true,
-                    trailing: StatusChip(status: x.$4),
+                  useGlass: true,
+                  padding: const EdgeInsets.all(16),
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.white.withOpacity(isAlert ? 0.15 : 0.08),
+                      Colors.white.withOpacity(0.02),
+                    ],
+                  ),
+                  child: InkWell(
                     onTap: () => ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text('Verifying Event Integrity: ${x.$2}...'),
+                        backgroundColor: AppColors.deepBlue1,
                       ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: (isAlert ? Colors.redAccent : Colors.blueAccent).withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: (isAlert ? Colors.redAccent : Colors.blueAccent).withOpacity(0.2),
+                            ),
+                          ),
+                          child: Icon(
+                            isAlert ? Icons.error_outline_rounded : Icons.shield_rounded,
+                            color: isAlert ? Colors.redAccent : Colors.blueAccent,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                x.$1,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${x.$3} • by ${x.$5}',
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.6),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              Text(
+                                'REF: ${x.$2}',
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.35),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        StatusChip(status: x.$4),
+                      ],
                     ),
                   ),
                 ),

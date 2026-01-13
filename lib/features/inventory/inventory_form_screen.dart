@@ -27,8 +27,19 @@ class _InventoryFormScreenState extends State<InventoryFormScreen> {
   late final TextEditingController _reorderController;
   late final TextEditingController _supplierController;
   late final TextEditingController _locationController;
+  late final TextEditingController _steelSizeController;
+  late final TextEditingController _brickTypeController;
+  late final TextEditingController _aggregateSizeController;
+  late final TextEditingController _paintFinishController;
+  late final TextEditingController _customCategoryController;
 
   late MaterialCategory _selectedCategory;
+
+  // Multi-add support
+  final List<InventoryDetailModel> _pendingMaterials = [];
+  
+  // Custom properties support
+  final List<({TextEditingController key, TextEditingController value})> _customProperties = [];
 
   @override
   void initState() {
@@ -37,16 +48,65 @@ class _InventoryFormScreenState extends State<InventoryFormScreen> {
     _nameController = TextEditingController(text: m?.materialName ?? '');
     _totalQtyController = TextEditingController(text: m?.totalQuantity.toString() ?? '');
     _consumedQtyController = TextEditingController(text: m?.consumedQuantity.toString() ?? '0');
-    _unitController = TextEditingController(text: m?.unit ?? 'kg');
-    _reorderController = TextEditingController(text: m?.reorderLevel?.toString() ?? '');
     _supplierController = TextEditingController(text: m?.supplierName ?? '');
     _locationController = TextEditingController(text: m?.storageLocation ?? '');
 
     _selectedCategory = m?.category ?? MaterialCategory.cement;
+
+    _reorderController = TextEditingController(text: m?.reorderLevel?.toString() ?? '');
+
+    // Unit initialization
+    String unit = m?.unit ?? 'kg';
+    if (m == null) {
+      if (_selectedCategory == MaterialCategory.cement) unit = 'kg';
+      if (_selectedCategory == MaterialCategory.sand) unit = 'tone';
+    }
+    _unitController = TextEditingController(text: unit);
+
+    // Sub-category fields (metadata)
+    _steelSizeController = TextEditingController(text: m?.metadata?['steelSize']?.toString() ?? '');
+    _brickTypeController = TextEditingController(text: m?.metadata?['brickType']?.toString() ?? '');
+    _aggregateSizeController = TextEditingController(text: m?.metadata?['aggregateSize']?.toString() ?? '');
+    _paintFinishController = TextEditingController(text: m?.metadata?['paintFinish']?.toString() ?? '');
+    _customCategoryController = TextEditingController(text: m?.metadata?['customCategory']?.toString() ?? '');
+
+    // Initialize custom properties from metadata if they don't match standard keys
+    if (m?.metadata != null) {
+      final standardKeys = ['steelSize', 'brickType', 'aggregateSize', 'paintFinish', 'customCategory'];
+      m!.metadata!.forEach((key, value) {
+        if (!standardKeys.contains(key)) {
+          _customProperties.add((
+            key: TextEditingController(text: key),
+            value: TextEditingController(text: value?.toString() ?? ''),
+          ));
+        }
+      });
+    }
+  }
+
+  void _addProperty() {
+    setState(() {
+      _customProperties.add((
+        key: TextEditingController(),
+        value: TextEditingController(),
+      ));
+    });
+  }
+
+  void _removeProperty(int index) {
+    setState(() {
+      _customProperties[index].key.dispose();
+      _customProperties[index].value.dispose();
+      _customProperties.removeAt(index);
+    });
   }
 
   @override
   void dispose() {
+    for (var prop in _customProperties) {
+      prop.key.dispose();
+      prop.value.dispose();
+    }
     _nameController.dispose();
     _totalQtyController.dispose();
     _consumedQtyController.dispose();
@@ -54,6 +114,11 @@ class _InventoryFormScreenState extends State<InventoryFormScreen> {
     _reorderController.dispose();
     _supplierController.dispose();
     _locationController.dispose();
+    _steelSizeController.dispose();
+    _brickTypeController.dispose();
+    _aggregateSizeController.dispose();
+    _paintFinishController.dispose();
+    _customCategoryController.dispose();
     super.dispose();
   }
 
@@ -121,12 +186,62 @@ class _InventoryFormScreenState extends State<InventoryFormScreen> {
                         labelMapper: (c) => c.displayName,
                         icon: Icons.category_rounded,
                         useGlass: true,
-                        onChanged: (v) => setState(() => _selectedCategory = v!),
+                        onChanged: (v) {
+                          if (v != null) {
+                            setState(() {
+                              _selectedCategory = v;
+                              // Update unit based on category
+                              if (v == MaterialCategory.cement) _unitController.text = 'kg';
+                              else if (v == MaterialCategory.sand) _unitController.text = 'tone';
+                              else if (v == MaterialCategory.steel) _unitController.text = 'kg';
+                              else if (v == MaterialCategory.aggregate) _unitController.text = 'tone';
+                              else if (v == MaterialCategory.bricks) _unitController.text = 'units';
+                              else if (v == MaterialCategory.paint) _unitController.text = 'liter';
+                            });
+                          }
+                        },
                       ),
+                      _buildDynamicFields(),
+                      
+                      const SizedBox(height: 12),
+                      if (!isEditing) ...[
+                        const Divider(color: Colors.white10),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          child: InkWell(
+                            onTap: _addAnotherVariant,
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              decoration: BoxDecoration(
+                                color: Colors.blueAccent.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: Colors.blueAccent.withOpacity(0.3)),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.add_circle_outline_rounded, color: Colors.blueAccent, size: 20),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Log this ${_selectedCategory.displayName} variant & Add next',
+                                    style: const TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
                 const SizedBox(height: 12),
+                if (!isEditing && _pendingMaterials.isNotEmpty) ...[
+                  _buildPendingList(),
+                  const SizedBox(height: 12),
+                ],
                 ProfessionalCard(
                   useGlass: true,
                   padding: const EdgeInsets.all(24),
@@ -158,6 +273,8 @@ class _InventoryFormScreenState extends State<InventoryFormScreen> {
                           ),
                         ],
                       ),
+                      const SizedBox(height: 16),
+                      _buildQuickUnits(),
                       const SizedBox(height: 20),
                       HelpfulTextField(
                         controller: _consumedQtyController,
@@ -262,28 +379,372 @@ class _InventoryFormScreenState extends State<InventoryFormScreen> {
     );
   }
 
+  void _addAnotherVariant() {
+    if (_formKey.currentState!.validate()) {
+      final material = _createMaterialFromCurrentState();
+      setState(() {
+        _pendingMaterials.add(material);
+        // Reset only variant-specific fields
+        _totalQtyController.clear();
+        _consumedQtyController.text = '0';
+        _steelSizeController.clear();
+        _brickTypeController.clear();
+        _aggregateSizeController.clear();
+        _paintFinishController.clear();
+        _customCategoryController.clear();
+        // Clear custom properties too
+        for (var prop in _customProperties) {
+          prop.key.dispose();
+          prop.value.dispose();
+        }
+        _customProperties.clear();
+      });
+      FeedbackHelper.showSuccess(context, 'Variant added to queue');
+    }
+  }
+
+  Widget _buildPendingList() {
+    if (_pendingMaterials.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionTitle('Queued Materials (${_pendingMaterials.length})', Icons.list_alt_rounded),
+        const SizedBox(height: 12),
+        ..._pendingMaterials.asMap().entries.map((entry) {
+          final index = entry.key;
+          final m = entry.value;
+          String variantInfo = '';
+          if (m.metadata != null) {
+            variantInfo = ' • ${m.metadata!.values.join(', ')}';
+          }
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white.withOpacity(0.1)),
+            ),
+            child: ListTile(
+              dense: true,
+              leading: Text(m.category.icon, style: const TextStyle(fontSize: 20)),
+              title: Text(
+                '${m.materialName}$variantInfo',
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+              subtitle: Text(
+                '${m.totalQuantity} ${m.unit}',
+                style: TextStyle(color: Colors.white.withOpacity(0.5)),
+              ),
+              trailing: IconButton(
+                icon: const Icon(Icons.remove_circle_outline_rounded, color: Colors.redAccent, size: 20),
+                onPressed: () => setState(() => _pendingMaterials.removeAt(index)),
+              ),
+            ),
+          );
+        }).toList(),
+      ],
+    );
+  }
+
+  InventoryDetailModel _createMaterialFromCurrentState() {
+    Map<String, dynamic> metadata = {};
+    if (_selectedCategory == MaterialCategory.steel) {
+      metadata['steelSize'] = _steelSizeController.text.trim();
+    } else if (_selectedCategory == MaterialCategory.bricks) {
+      metadata['brickType'] = _brickTypeController.text.trim();
+    } else if (_selectedCategory == MaterialCategory.aggregate) {
+      metadata['aggregateSize'] = _aggregateSizeController.text.trim();
+    } else if (_selectedCategory == MaterialCategory.paint) {
+      metadata['paintFinish'] = _paintFinishController.text.trim();
+    } else if (_selectedCategory == MaterialCategory.other) {
+      metadata['customCategory'] = _customCategoryController.text.trim();
+    }
+
+    // Add custom properties to metadata
+    for (var prop in _customProperties) {
+      final key = prop.key.text.trim();
+      final val = prop.value.text.trim();
+      if (key.isNotEmpty && val.isNotEmpty) {
+        metadata[key] = val;
+      }
+    }
+
+    return InventoryDetailModel(
+      id: DateTime.now().millisecondsSinceEpoch.toString() + _pendingMaterials.length.toString(),
+      materialName: _nameController.text.trim(),
+      category: _selectedCategory,
+      totalQuantity: double.tryParse(_totalQtyController.text) ?? 0,
+      consumedQuantity: double.tryParse(_consumedQtyController.text) ?? 0,
+      unit: _unitController.text.trim(),
+      reorderLevel: double.tryParse(_reorderController.text),
+      supplierName: _supplierController.text.trim().isEmpty ? null : _supplierController.text.trim(),
+      storageLocation: _locationController.text.trim().isEmpty ? null : _locationController.text.trim(),
+      lastUpdatedDate: DateTime.now(),
+      lastUpdatedBy: 'Current User',
+      metadata: metadata.isNotEmpty ? metadata : null,
+    );
+  }
+
   void _saveMaterial() {
     if (_formKey.currentState!.validate()) {
-      final material = InventoryDetailModel(
-        id: widget.material?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
-        materialName: _nameController.text.trim(),
-        category: _selectedCategory,
-        totalQuantity: double.tryParse(_totalQtyController.text) ?? 0,
-        consumedQuantity: double.tryParse(_consumedQtyController.text) ?? 0,
-        unit: _unitController.text.trim(),
-        reorderLevel: double.tryParse(_reorderController.text),
-        supplierName: _supplierController.text.trim().isEmpty ? null : _supplierController.text.trim(),
-        storageLocation: _locationController.text.trim().isEmpty ? null : _locationController.text.trim(),
-        lastUpdatedDate: DateTime.now(),
-        lastUpdatedBy: 'Current User',
-      );
+      final currentMaterial = _createMaterialFromCurrentState();
+      final allMaterials = [..._pendingMaterials, currentMaterial];
 
       FeedbackHelper.showSuccess(
         context,
-        widget.material != null ? 'Material updated' : 'Material added to inventory',
+        widget.material != null ? 'Material updated' : '${allMaterials.length} item(s) saved',
       );
-      Navigator.pop(context, material);
+      
+      // If editing, we only return the edited one. If adding, we return a list.
+      if (widget.material != null) {
+        Navigator.pop(context, currentMaterial);
+      } else {
+        Navigator.pop(context, allMaterials);
+      }
     }
+  }
+
+  Widget _buildQuickUnits() {
+    List<String> units;
+    switch (_selectedCategory) {
+      case MaterialCategory.cement:
+        units = ['kg', 'bags'];
+        break;
+      case MaterialCategory.sand:
+        units = ['tone', 'units', 'cft'];
+        break;
+      case MaterialCategory.steel:
+        units = ['kg', 'tone', 'meters'];
+        break;
+      case MaterialCategory.bricks:
+        units = ['units', 'nos'];
+        break;
+      case MaterialCategory.aggregate:
+        units = ['tone', 'cft'];
+        break;
+      case MaterialCategory.timber:
+        units = ['sqft', 'cft', 'meters'];
+        break;
+      case MaterialCategory.paint:
+        units = ['liter', 'kg', 'drums'];
+        break;
+      case MaterialCategory.tiles:
+        units = ['sqft', 'boxes', 'units'];
+        break;
+      case MaterialCategory.glass:
+        units = ['sqft', 'units'];
+        break;
+      default:
+        units = ['kg', 'tone', 'units', 'bags', 'liter'];
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.bolt_rounded, size: 14, color: Colors.blueAccent.withOpacity(0.7)),
+            const SizedBox(width: 6),
+            Text(
+              'QUICK UNIT SELECT',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w900,
+                color: Colors.white.withOpacity(0.4),
+                letterSpacing: 1.2,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: units.map((u) {
+              final isSelected = _unitController.text.trim().toLowerCase() == u.toLowerCase();
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: InkWell(
+                  onTap: () => setState(() => _unitController.text = u),
+                  borderRadius: BorderRadius.circular(12),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      gradient: isSelected 
+                        ? const LinearGradient(colors: [Colors.blueAccent, AppColors.deepBlue3])
+                        : null,
+                      color: isSelected ? null : Colors.white.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isSelected ? Colors.transparent : Colors.white.withOpacity(0.1),
+                        width: 1,
+                      ),
+                      boxShadow: isSelected ? [
+                        BoxShadow(
+                          color: Colors.blueAccent.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        )
+                      ] : null,
+                    ),
+                    child: Text(
+                      u,
+                      style: TextStyle(
+                        color: isSelected ? Colors.white : Colors.white.withOpacity(0.7),
+                        fontSize: 12,
+                        fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDynamicFields() {
+    Widget? activeField;
+
+    switch (_selectedCategory) {
+      case MaterialCategory.steel:
+        activeField = HelpfulTextField(
+          controller: _steelSizeController,
+          label: 'Bar Diameter (mm)',
+          hintText: 'e.g. 8mm, 12mm, 16mm',
+          icon: Icons.architecture_rounded,
+          useGlass: true,
+          keyboardType: TextInputType.number,
+        );
+        break;
+      case MaterialCategory.bricks:
+        activeField = HelpfulTextField(
+          controller: _brickTypeController,
+          label: 'Brick Type',
+          hintText: 'e.g. Red Clay, Fly Ash, AAC Block',
+          icon: Icons.grid_view_rounded,
+          useGlass: true,
+        );
+        break;
+      case MaterialCategory.aggregate:
+        activeField = HelpfulTextField(
+          controller: _aggregateSizeController,
+          label: 'Aggregate Size',
+          hintText: 'e.g. 10mm, 20mm, 40mm',
+          icon: Icons.grain_rounded,
+          useGlass: true,
+        );
+        break;
+      case MaterialCategory.paint:
+        activeField = HelpfulTextField(
+          controller: _paintFinishController,
+          label: 'Paint Finish',
+          hintText: 'e.g. Gloss, Matt, Satin',
+          icon: Icons.format_paint_rounded,
+          useGlass: true,
+        );
+        break;
+      case MaterialCategory.other:
+        activeField = HelpfulTextField(
+          controller: _customCategoryController,
+          label: 'Material Type Name',
+          hintText: 'e.g. Electrical Conduit, Waterproofing Chemical',
+          icon: Icons.edit_note_rounded,
+          useGlass: true,
+          validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+        );
+        break;
+      default:
+        activeField = const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (activeField is! SizedBox) ...[
+          Padding(
+            padding: const EdgeInsets.only(top: 20),
+            child: activeField,
+          ),
+        ],
+        
+        // Custom Properties Header
+        if (_customProperties.isNotEmpty) ...[
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Icon(Icons.tune_rounded, size: 14, color: Colors.white.withOpacity(0.4)),
+              const SizedBox(width: 8),
+              Text(
+                'ADDITIONAL SPECIFICATIONS',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white.withOpacity(0.4),
+                  letterSpacing: 1,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+        ],
+
+        // Custom Properties List
+        ..._customProperties.asMap().entries.map((entry) {
+          final idx = entry.key;
+          final prop = entry.value;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: HelpfulTextField(
+                    label: 'Property Name',
+                    controller: prop.key,
+                    hintText: 'e.g. Length',
+                    useGlass: true,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 3,
+                  child: HelpfulTextField(
+                    label: 'Property Value',
+                    controller: prop.value,
+                    hintText: 'e.g. 12m',
+                    useGlass: true,
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => _removeProperty(idx),
+                  icon: Icon(Icons.remove_circle_outline_rounded, color: Colors.white.withOpacity(0.3), size: 18),
+                ),
+              ],
+            ),
+          );
+        }),
+
+        const SizedBox(height: 8),
+        TextButton.icon(
+          onPressed: _addProperty,
+          icon: const Icon(Icons.add_rounded, size: 18, color: Colors.blueAccent),
+          label: const Text(
+            'Add Property (Type, Length, etc.)',
+            style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold, fontSize: 13),
+          ),
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.zero,
+            alignment: Alignment.centerLeft,
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _sectionTitle(String title, IconData icon) {

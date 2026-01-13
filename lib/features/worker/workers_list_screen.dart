@@ -209,24 +209,7 @@ class _WorkersListScreenState extends State<WorkersListScreen> {
                 child: AppSearchField(
                   hint: 'Search name, skill...',
                   onChanged: (v) => setState(() => _q = v),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(right: 16),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white.withOpacity(0.1)),
-                  ),
-                  child: IconButton(
-                    onPressed: _showFilters,
-                    icon: Badge(
-                      isLabelVisible: _shift != null || _status != null || _skill != null,
-                      backgroundColor: Colors.blueAccent,
-                      child: const Icon(Icons.tune_rounded, color: Colors.white),
-                    ),
-                  ),
+                  onFilterTap: _showFilters,
                 ),
               ),
             ],

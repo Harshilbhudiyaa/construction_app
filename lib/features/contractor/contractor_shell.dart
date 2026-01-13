@@ -13,6 +13,7 @@ import '../payments/payments_dashboard_screen.dart';
 import '../analytics/analytics_dashboard_screen.dart';
 import '../notifications/notifications_screen.dart';
 import 'audit_log_list_screen.dart';
+import 'site_access_screen.dart';
 import '../../../../core/utils/navigation_utils.dart';
 import '../../../../app/ui/widgets/app_sidebar.dart';
 import '../../../../app/ui/widgets/responsive_sidebar.dart';
@@ -30,6 +31,7 @@ class _ContractorShellState extends State<ContractorShell> {
   void _goTo(int i) => setState(() => _index = i);
 
   late final List<Widget> _pages = [
+    const SiteAccessScreen(),
     ContractorDashboardScreen(onNavigateTo: _goTo),
     const WorkersListScreen(),
     const EngineerManagementScreen(), // Updated to new engineer management
@@ -43,6 +45,10 @@ class _ContractorShellState extends State<ContractorShell> {
   ];
 
   static const _destinations = [
+    SidebarDestination(
+      icon: Icons.vpn_key_rounded,
+      label: 'Site Access',
+    ),
     SidebarDestination(
       icon: Icons.dashboard_rounded,
       label: 'Dashboard',

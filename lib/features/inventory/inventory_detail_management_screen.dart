@@ -582,7 +582,7 @@ class _InventoryDetailManagementScreenState extends State<InventoryDetailManagem
   }
 
   void _showAddMaterialDialog(BuildContext context) async {
-    final result = await Navigator.push<InventoryDetailModel>(
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => const InventoryFormScreen(),
@@ -591,7 +591,11 @@ class _InventoryDetailManagementScreenState extends State<InventoryDetailManagem
 
     if (result != null) {
       setState(() {
-        _materials.add(result);
+        if (result is List<InventoryDetailModel>) {
+          _materials.addAll(result);
+        } else if (result is InventoryDetailModel) {
+          _materials.add(result);
+        }
       });
     }
   }

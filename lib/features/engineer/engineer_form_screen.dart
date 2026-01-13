@@ -4,6 +4,8 @@ import '../../app/theme/professional_theme.dart';
 import '../../app/ui/widgets/professional_page.dart';
 import '../../app/ui/widgets/helpful_text_field.dart';
 import '../../app/ui/widgets/helpful_dropdown.dart';
+import 'package:provider/provider.dart';
+import '../../../../core/services/mock_engineer_service.dart';
 import '../../app/ui/widgets/confirm_dialog.dart';
 import '../../app/ui/widgets/staggered_animation.dart';
 import '../../app/utils/feedback_helper.dart';
@@ -12,8 +14,15 @@ import 'models/engineer_model.dart';
 
 class EngineerFormScreen extends StatefulWidget {
   final EngineerModel? engineer; // null for add, non-null for edit
+  final EngineerRole? initialRole;
+  final bool isSelfEdit;
 
-  const EngineerFormScreen({super.key, this.engineer});
+  const EngineerFormScreen({
+    super.key, 
+    this.engineer, 
+    this.initialRole,
+    this.isSelfEdit = false,
+  });
 
   @override
   State<EngineerFormScreen> createState() => _EngineerFormScreenState();
@@ -25,6 +34,7 @@ class _EngineerFormScreenState extends State<EngineerFormScreen> {
   late final TextEditingController _nameController;
   late final TextEditingController _emailController;
   late final TextEditingController _phoneController;
+  late final TextEditingController _siteController;
   
   late EngineerRole _selectedRole;
   late bool _isActive;
@@ -38,8 +48,9 @@ class _EngineerFormScreenState extends State<EngineerFormScreen> {
     _nameController = TextEditingController(text: engineer?.name ?? '');
     _emailController = TextEditingController(text: engineer?.email ?? '');
     _phoneController = TextEditingController(text: engineer?.phone ?? '');
+    _siteController = TextEditingController(text: engineer?.assignedSite ?? '');
     
-    _selectedRole = engineer?.role ?? EngineerRole.worker;
+    _selectedRole = engineer?.role ?? widget.initialRole ?? EngineerRole.worker;
     _isActive = engineer?.isActive ?? true;
     _permissions = engineer?.permissions ?? const PermissionSet();
   }
@@ -49,6 +60,7 @@ class _EngineerFormScreenState extends State<EngineerFormScreen> {
     _nameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
+    _siteController.dispose();
     super.dispose();
   }
 
@@ -83,7 +95,9 @@ class _EngineerFormScreenState extends State<EngineerFormScreen> {
     final isEditing = widget.engineer != null;
     
     return ProfessionalPage(
-      title: isEditing ? 'Edit Personnel' : 'Add Personnel',
+      title: widget.isSelfEdit 
+          ? 'My Profile' 
+          : (isEditing ? 'Edit Personnel' : 'Add Personnel'),
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -157,6 +171,7 @@ class _EngineerFormScreenState extends State<EngineerFormScreen> {
                           label: 'Role / Position',
                           icon: Icons.work_rounded,
                           useGlass: true,
+                          readOnly: widget.isSelfEdit,
                           helpText: 'Select the role for this personnel',
                           items: EngineerRole.values,
                           labelMapper: (role) => role.displayName,
@@ -212,7 +227,7 @@ class _EngineerFormScreenState extends State<EngineerFormScreen> {
                               ),
                               Switch(
                                 value: _isActive,
-                                onChanged: (value) => setState(() => _isActive = value),
+                                onChanged: widget.isSelfEdit ? null : (value) => setState(() => _isActive = value),
                                 activeColor: Colors.greenAccent,
                                 activeTrackColor: Colors.greenAccent.withOpacity(0.3),
                               ),
@@ -295,70 +310,80 @@ class _EngineerFormScreenState extends State<EngineerFormScreen> {
                     ),
                   ),
 
+                  const SizedBox(height: 20),
+                  HelpfulTextField(
+                    label: 'Assigned Site',
+                    controller: _siteController,
+                    icon: Icons.location_on_rounded,
+                    useGlass: true,
+                    readOnly: widget.isSelfEdit,
+                    hintText: 'e.g., Riverside Complex Block A',
+                  ),
                   const SizedBox(height: 32),
 
-                  // Action Buttons
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: _handleBack,
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 20),
-                              side: BorderSide(color: Colors.white.withOpacity(0.3)),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            ),
-                            child: const Text(
-                              'Discard',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          flex: 2,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Colors.blueAccent, AppColors.deepBlue3],
-                              ),
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.blueAccent.withOpacity(0.3),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: ElevatedButton(
-                              onPressed: _saveEngineer,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.transparent,
-                                shadowColor: Colors.transparent,
+                  // Action Buttons (Hidden for Self-View)
+                  if (!widget.isSelfEdit)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: _handleBack,
+                              style: OutlinedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(vertical: 20),
+                                side: BorderSide(color: Colors.white.withOpacity(0.3)),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                               ),
-                              child: Text(
-                                isEditing ? 'Update Changes' : 'Create Personnel',
-                                style: const TextStyle(
+                              child: const Text(
+                                'Discard',
+                                style: TextStyle(
                                   color: Colors.white,
-                                  fontWeight: FontWeight.w900,
+                                  fontWeight: FontWeight.bold,
                                   fontSize: 16,
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 16),
+                          Expanded(
+                            flex: 2,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Colors.blueAccent, AppColors.deepBlue3],
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.blueAccent.withOpacity(0.3),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: ElevatedButton(
+                                onPressed: _saveEngineer,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                  padding: const EdgeInsets.symmetric(vertical: 20),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                ),
+                                child: Text(
+                                  isEditing ? 'Update Changes' : 'Create Personnel',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
                   const SizedBox(height: 100),
                 ],
               ),
@@ -379,7 +404,7 @@ class _EngineerFormScreenState extends State<EngineerFormScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: InkWell(
-        onTap: () => onChanged(!value),
+        onTap: widget.isSelfEdit ? null : () => onChanged(!value),
         borderRadius: BorderRadius.circular(16),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
@@ -420,7 +445,7 @@ class _EngineerFormScreenState extends State<EngineerFormScreen> {
                 ),
                 Switch.adaptive(
                   value: value,
-                  onChanged: onChanged,
+                  onChanged: widget.isSelfEdit ? null : onChanged,
                   activeColor: Colors.white,
                   activeTrackColor: Colors.blueAccent.withOpacity(0.5),
                 ),
@@ -438,16 +463,19 @@ class _EngineerFormScreenState extends State<EngineerFormScreen> {
       final engineer = EngineerModel(
         id: widget.engineer?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
         name: _nameController.text.trim(),
-        role: _selectedRole,
-        permissions: _permissions,
-        isActive: _isActive,
+        role: widget.isSelfEdit ? widget.engineer!.role : _selectedRole,
+        permissions: widget.isSelfEdit ? widget.engineer!.permissions : _permissions,
+        isActive: widget.isSelfEdit ? widget.engineer!.isActive : _isActive,
         email: _emailController.text.trim().isEmpty ? null : _emailController.text.trim(),
         phone: _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
+        assignedSite: _siteController.text.trim().isEmpty ? null : _siteController.text.trim(),
         createdAt: widget.engineer?.createdAt ?? DateTime.now(),
         lastLogin: widget.engineer?.lastLogin,
       );
 
       // In a real app, save to database here
+      context.read<MockEngineerService>().addEngineer(engineer);
+
       FeedbackHelper.showSuccess(
         context,
         widget.engineer != null

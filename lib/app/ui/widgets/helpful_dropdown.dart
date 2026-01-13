@@ -14,6 +14,7 @@ class HelpfulDropdown<T> extends StatelessWidget {
   final IconData? icon;
 
   final bool useGlass;
+  final bool readOnly;
 
   const HelpfulDropdown({
     super.key,
@@ -26,6 +27,7 @@ class HelpfulDropdown<T> extends StatelessWidget {
     this.helpText,
     this.icon,
     this.useGlass = false,
+    this.readOnly = false,
   });
 
 
@@ -63,7 +65,7 @@ class HelpfulDropdown<T> extends StatelessWidget {
         // Dropdown
         DropdownButtonFormField<T>(
           value: value,
-          onChanged: onChanged,
+          onChanged: readOnly ? null : onChanged,
           dropdownColor: useGlass ? AppColors.deepBlue2 : Colors.white,
           style: TextStyle(
             color: useGlass ? Colors.white : AppColors.deepBlue1,

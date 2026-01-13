@@ -13,6 +13,7 @@ class InventoryDetailModel {
   final String? supplierId;
   final String? supplierName;
   final String? storageLocation;
+  final Map<String, dynamic>? metadata;
 
   const InventoryDetailModel({
     required this.id,
@@ -28,6 +29,7 @@ class InventoryDetailModel {
     this.supplierId,
     this.supplierName,
     this.storageLocation,
+    this.metadata,
   });
 
   double get remainingStock => totalQuantity - consumedQuantity;
@@ -61,6 +63,7 @@ class InventoryDetailModel {
     String? supplierId,
     String? supplierName,
     String? storageLocation,
+    Map<String, dynamic>? metadata,
   }) {
     return InventoryDetailModel(
       id: id ?? this.id,
@@ -76,6 +79,7 @@ class InventoryDetailModel {
       supplierId: supplierId ?? this.supplierId,
       supplierName: supplierName ?? this.supplierName,
       storageLocation: storageLocation ?? this.storageLocation,
+      metadata: metadata ?? this.metadata,
     );
   }
 }

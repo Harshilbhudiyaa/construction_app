@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import '../../core/services/mock_engineer_service.dart';
+import '../../features/engineer/engineer_shell.dart';
 import '../contractor/contractor_shell.dart';
 import '../../../app/theme/professional_theme.dart';
 
@@ -125,12 +128,55 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     if (mounted) {
       setState(() => _loading = false);
       
-      // Navigate to Contractor Dashboard
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const ContractorShell()),
-        (_) => false,
-      );
+      // Login Logic
+      try {
+        // 1. Check for Admin Login (Mock check)
+        if (_phoneCtrl.text == '9999999999') {
+           Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const ContractorShell()),
+            (_) => false,
+          );
+          return;
+        }
+
+        // 2. Check for Engineer Login
+        final engineerService = context.read<MockEngineerService>();
+        final engineer = engineerService.findByPhone(_phoneCtrl.text);
+
+        if (engineer != null) {
+          if (!engineer.isActive) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Account is inactive. Contact Administrator.'),
+                backgroundColor: Colors.redAccent,
+              ),
+            );
+            return;
+          }
+
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (_) => EngineerShell(
+                engineerId: engineer.id,
+              ),
+            ),
+            (_) => false,
+          );
+          return;
+        }
+
+        // 3. Fallback / Not Found
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No user found with this phone number. Try 9999999999 for Admin.'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      } catch (e) {
+        debugPrint('Login Error: $e');
+      }
     }
   }
 
@@ -213,11 +259,12 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                         parent: _slideController,
                         curve: Curves.easeOutCubic,
                       )),
-                      child: ProfessionalCard(
-                        margin: EdgeInsets.zero,
-                        padding: const EdgeInsets.all(32),
-                        width: 440,
-                        child: Form(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 440),
+                        child: ProfessionalCard(
+                          margin: EdgeInsets.zero,
+                          padding: const EdgeInsets.all(24),
+                          child: Form(
                           key: _formKey,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -298,43 +345,46 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: List.generate(6, (index) {
-                                    return SizedBox(
-                                      width: 50,
-                                      child: TextFormField(
-                                        controller: _otpControllers[index],
-                                        focusNode: _otpFocusNodes[index],
-                                        keyboardType: TextInputType.number,
-                                        textAlign: TextAlign.center,
-                                        maxLength: 1,
-                                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                                        style: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        decoration: InputDecoration(
-                                          counterText: '',
-                                          border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12),
+                                    return Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 2),
+                                        child: TextFormField(
+                                          controller: _otpControllers[index],
+                                          focusNode: _otpFocusNodes[index],
+                                          keyboardType: TextInputType.number,
+                                          textAlign: TextAlign.center,
+                                          maxLength: 1,
+                                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
                                           ),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12),
-                                            borderSide: BorderSide(color: Colors.grey[300]!),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12),
-                                            borderSide: const BorderSide(
-                                              color: AppColors.deepBlue1,
-                                              width: 2,
+                                          decoration: InputDecoration(
+                                            contentPadding: EdgeInsets.zero,
+                                            counterText: '',
+                                            border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(10),
+                                            ),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(10),
+                                              borderSide: BorderSide(color: Colors.grey[300]!),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(10),
+                                              borderSide: const BorderSide(
+                                                color: AppColors.deepBlue1,
+                                                width: 2,
+                                              ),
                                             ),
                                           ),
+                                          onChanged: (value) {
+                                            if (value.isNotEmpty && index < 5) {
+                                              _otpFocusNodes[index + 1].requestFocus();
+                                            } else if (value.isEmpty && index > 0) {
+                                              _otpFocusNodes[index - 1].requestFocus();
+                                            }
+                                          },
                                         ),
-                                        onChanged: (value) {
-                                          if (value.isNotEmpty && index < 5) {
-                                            _otpFocusNodes[index + 1].requestFocus();
-                                          } else if (value.isEmpty && index > 0) {
-                                            _otpFocusNodes[index - 1].requestFocus();
-                                          }
-                                        },
                                       ),
                                     );
                                   }),
@@ -448,6 +498,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                         ),
                       ),
                     ),
+                  ),
                     
                     const SizedBox(height: 48),
                     

@@ -103,6 +103,32 @@ class InventoryMaterialDetailScreen extends StatelessWidget {
                 ),
               ),
 
+              if (material.metadata != null && material.metadata!.isNotEmpty) ...[
+                const SizedBox(height: 24),
+                _sectionTitle('Specific Specifications', Icons.tune_rounded),
+                const SizedBox(height: 16),
+                ProfessionalCard(
+                  useGlass: true,
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: material.metadata!.entries.map((e) {
+                      String label = e.key;
+                      // Format key to printable label
+                      if (label == 'steelSize') label = 'Bar Diameter';
+                      if (label == 'brickType') label = 'Brick/Block Type';
+                      if (label == 'aggregateSize') label = 'Aggregate Size';
+                      if (label == 'paintFinish') label = 'Paint Finish';
+                      if (label == 'customCategory') label = 'Specific Type';
+
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: e.key == material.metadata!.keys.last ? 0 : 20),
+                        child: _buildInfoRow(Icons.label_important_rounded, label, e.value.toString()),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+
               const SizedBox(height: 48),
               Container(
                 width: double.infinity,

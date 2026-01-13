@@ -5,6 +5,7 @@ import '../../app/ui/widgets/professional_page.dart';
 import '../../app/ui/widgets/status_chip.dart';
 import 'models/engineer_model.dart';
 import 'engineer_form_screen.dart';
+import 'engineer_shell.dart';
 
 class EngineerDetailScreen extends StatelessWidget {
   final EngineerModel engineer;
@@ -20,6 +21,11 @@ class EngineerDetailScreen extends StatelessWidget {
           onPressed: () => _editEngineer(context),
           icon: const Icon(Icons.edit_note_rounded, color: Colors.white, size: 28),
           tooltip: 'Edit Personnel',
+        ),
+        IconButton(
+          onPressed: () => _simulateLogin(context),
+          icon: const Icon(Icons.login_rounded, color: Colors.white, size: 28),
+          tooltip: 'Login as ${engineer.name}',
         ),
       ],
       children: [
@@ -314,6 +320,17 @@ class EngineerDetailScreen extends StatelessWidget {
     if (result != null && context.mounted) {
       Navigator.pop(context, result);
     }
+  }
+
+  void _simulateLogin(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => EngineerShell(
+          engineerId: engineer.id,
+        ),
+      ),
+    );
   }
 }
 
