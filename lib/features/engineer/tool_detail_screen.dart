@@ -23,33 +23,32 @@ class ToolDetailScreen extends StatelessWidget {
       ],
       children: [
         Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header Card
               ProfessionalCard(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                gradient: const LinearGradient(
-                  colors: [AppColors.deepBlue2, AppColors.deepBlue3],
-                ),
+                useGlass: true,
+                padding: const EdgeInsets.all(24),
                 child: Row(
                   children: [
                     Container(
-                      width: 65,
-                      height: 65,
+                      width: 70,
+                      height: 70,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(15),
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.white.withOpacity(0.2)),
                       ),
                       child: Center(
                         child: Text(
                           tool.type.icon,
-                          style: const TextStyle(fontSize: 32),
+                          style: const TextStyle(fontSize: 36),
                         ),
                       ),
                     ),
-                    const SizedBox(width: AppSpacing.md),
+                    const SizedBox(width: AppSpacing.lg),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,18 +57,20 @@ class ToolDetailScreen extends StatelessWidget {
                             tool.name,
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 20,
+                              fontSize: 22,
                               fontWeight: FontWeight.w900,
+                              letterSpacing: -0.5,
                             ),
                           ),
                           Text(
                             tool.type.displayName,
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.8),
+                              color: Colors.white.withOpacity(0.6),
                               fontSize: 14,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 12),
                           _buildConditionBadge(tool.condition),
                         ],
                       ),
@@ -78,47 +79,73 @@ class ToolDetailScreen extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: AppSpacing.lg),
-              _buildSectionHeader('Stock & Allocation'),
+              const SizedBox(height: 24),
+              _sectionTitle('Inventory & Allocation', Icons.inventory_2_rounded),
+              const SizedBox(height: 16),
+              _buildStockRow(tool),
+
+              const SizedBox(height: 24),
+              _sectionTitle('Deployment Details', Icons.location_on_rounded),
+              const SizedBox(height: 16),
               ProfessionalCard(
+                useGlass: true,
+                padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
-                    _buildStockRow(tool),
-                    const Divider(height: 30),
-                    _buildInfoRow(Icons.location_on_rounded, 'Site Assignment', tool.assignedSiteName ?? 'Warehouse'),
-                    const Divider(height: 20),
-                    _buildInfoRow(Icons.engineering_rounded, 'Assigned Engineer', tool.assignedEngineerName ?? 'Generic Pool'),
+                    _buildInfoRow(Icons.location_on_rounded, 'Site Assignment', tool.assignedSiteName ?? 'Central Warehouse'),
+                    const SizedBox(height: 20),
+                    _buildInfoRow(Icons.engineering_rounded, 'Assigned Personnel', tool.assignedEngineerName ?? 'Unassigned / Pool'),
                   ],
                 ),
               ),
 
-              const SizedBox(height: AppSpacing.lg),
-              _buildSectionHeader('Technical Specifications'),
+              const SizedBox(height: 24),
+              _sectionTitle('Technical Specs & Maintenance', Icons.settings_suggest_rounded),
+              const SizedBox(height: 16),
               ProfessionalCard(
+                useGlass: true,
+                padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
-                    _buildInfoRow(Icons.description_rounded, 'Purpose', tool.usagePurpose),
-                    const Divider(height: 20),
+                    _buildInfoRow(Icons.description_rounded, 'Usage Purpose', tool.usagePurpose),
+                    const SizedBox(height: 20),
                     _buildInfoRow(
                       Icons.verified_user_rounded,
-                      'Last Inspection',
-                      DateFormat('MMM dd, yyyy').format(tool.lastInspectionDate),
+                      'Last Safety Inspection',
+                      DateFormat('MMM dd, yyyy • hh:mm a').format(tool.lastInspectionDate),
                     ),
                   ],
                 ),
               ),
 
-              const SizedBox(height: AppSpacing.xl),
-              SizedBox(
+              const SizedBox(height: 48),
+              Container(
                 width: double.infinity,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Colors.blueAccent, AppColors.deepBlue3],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.blueAccent.withOpacity(0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
                 child: ElevatedButton.icon(
                   onPressed: () => _editTool(context),
-                  icon: const Icon(Icons.edit_rounded),
-                  label: const Text('Update Repository'),
+                  icon: const Icon(Icons.edit_rounded, color: Colors.white),
+                  label: const Text(
+                    'Update Repository Data',
+                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.white),
+                  ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: AppColors.deepBlue1,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
                 ),
               ),
@@ -130,16 +157,30 @@ class ToolDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _sectionTitle(String title, IconData icon) {
     return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(
-        title,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 15,
-          fontWeight: FontWeight.bold,
-        ),
+      padding: const EdgeInsets.only(left: 4),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: Colors.white, size: 18),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            title.toUpperCase(),
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+              letterSpacing: 1.2,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -169,64 +210,107 @@ class ToolDetailScreen extends StatelessWidget {
 
   Widget _buildStockRow(ToolModel tool) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        _buildStockItem('Total', tool.quantity.toString(), Colors.blue),
-        _buildStockItem('Available', tool.availableQuantity.toString(), Colors.green),
-        _buildStockItem('In Use', tool.inUseQuantity.toString(), Colors.orange),
+        Expanded(
+          child: _buildMetricTile(
+            'Total',
+            tool.quantity.toString(),
+            Colors.blueAccent,
+            Icons.inventory_2_rounded,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildMetricTile(
+            'Available',
+            tool.availableQuantity.toString(),
+            Colors.greenAccent,
+            Icons.check_circle_rounded,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildMetricTile(
+            'In Use',
+            tool.inUseQuantity.toString(),
+            Colors.orangeAccent,
+            Icons.outbox_rounded,
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildStockItem(String label, String value, Color color) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: TextStyle(
-            color: color,
-            fontSize: 24,
-            fontWeight: FontWeight.w900,
+  Widget _buildMetricTile(String label, String value, Color color, IconData icon) {
+    return ProfessionalCard(
+      useGlass: true,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 16),
           ),
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.grey[600],
-            fontSize: 11,
-            fontWeight: FontWeight.bold,
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -0.5,
+            ),
           ),
-        ),
-      ],
+          Text(
+            label.toUpperCase(),
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.5),
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
     );
   }
+
+
 
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppColors.deepBlue1.withOpacity(0.05),
-            borderRadius: BorderRadius.circular(10),
+            color: Colors.white.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withOpacity(0.1)),
           ),
-          child: Icon(icon, color: AppColors.deepBlue1, size: 20),
+          child: Icon(icon, color: Colors.white, size: 20),
         ),
-        const SizedBox(width: AppSpacing.md),
+        const SizedBox(width: 16),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                label,
-                style: TextStyle(fontSize: 11, color: Colors.grey[600], fontWeight: FontWeight.w600),
+                label.toUpperCase(),
+                style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.4), fontWeight: FontWeight.bold, letterSpacing: 0.5),
               ),
+              const SizedBox(height: 2),
               Text(
                 value,
                 style: const TextStyle(
-                  fontSize: 14,
-                  color: AppColors.deepBlue1,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.2,
                 ),
               ),
             ],
