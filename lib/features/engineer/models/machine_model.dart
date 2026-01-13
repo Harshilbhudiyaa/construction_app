@@ -69,7 +69,9 @@ enum MachineType {
   grader('Grader', '⚙️'),
   compactor('Compactor', '💪'),
   pumpTruck('Pump Truck', '🚚'),
+  blockMachine('Block Machine', '🧱'),
   other('Other', '🔧');
+
 
   final String displayName;
   final String icon;
@@ -85,7 +87,9 @@ enum NatureOfWork {
   compaction('Compaction', '💪'),
   transportation('Transportation', '🚚'),
   demolition('Demolition', '💥'),
+  blockProduction('Block Production', '🧱'),
   other('Other', '🔧');
+
 
   final String displayName;
   final String icon;

@@ -87,14 +87,15 @@ class _EngineerDashboardScreenState extends State<EngineerDashboardScreen> with 
                 crossAxisSpacing: 12,
                 children: [
                   _KpiTile(
-                    title: 'Daily Yield',
-                    value: '142',
-                    icon: Icons.foundation_rounded,
+                    title: 'Block Yield',
+                    value: '1,240',
+                    icon: Icons.grid_view_rounded,
                     color: Colors.blue,
-                    trend: '+12%',
+                    trend: '+8%',
                     isPositive: true,
                     onTap: () => widget.onNavigateToTab(2),
                   ),
+
                   _KpiTile(
                     title: 'Workforce',
                     value: '45',
@@ -378,7 +379,8 @@ class _EngineerDashboardScreenState extends State<EngineerDashboardScreen> with 
   Widget _buildRecentActivity() {
     final activities = [
       {'title': 'Material Request', 'time': '10 mins ago', 'desc': 'Cement delivery approved for Site A', 'icon': Icons.check_circle_rounded, 'color': Colors.greenAccent, 'tab': 3},
-      {'title': 'Production Update', 'time': '25 mins ago', 'desc': 'Block B-12 completed inspection', 'icon': Icons.grid_view_rounded, 'color': Colors.blueAccent, 'tab': 2},
+      {'title': 'Production Update', 'time': '25 mins ago', 'desc': 'Block production batch #402 completed', 'icon': Icons.grid_view_rounded, 'color': Colors.blueAccent, 'tab': 2},
+
       {'title': 'Approval Pending', 'time': '1 hour ago', 'desc': 'Worker overtime request awaiting review', 'icon': Icons.pending_actions_rounded, 'color': Colors.orangeAccent, 'tab': 1},
     ];
 

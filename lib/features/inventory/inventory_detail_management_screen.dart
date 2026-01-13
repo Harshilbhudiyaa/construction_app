@@ -10,6 +10,8 @@ import '../../app/utils/feedback_helper.dart';
 import 'models/inventory_detail_model.dart';
 import 'inventory_form_screen.dart';
 import 'inventory_material_detail_screen.dart';
+import 'inward_management_dashboard_screen.dart';
+import 'inward_entry_form_screen.dart';
 
 class InventoryDetailManagementScreen extends StatefulWidget {
   const InventoryDetailManagementScreen({super.key});
@@ -155,6 +157,16 @@ class _InventoryDetailManagementScreenState extends State<InventoryDetailManagem
         icon: const Icon(Icons.add_rounded, color: Colors.white),
         label: const Text('Add Material', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
+      actions: [
+        IconButton(
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const InwardManagementDashboardScreen()),
+          ),
+          icon: const Icon(Icons.local_shipping_rounded, color: Colors.white),
+          tooltip: 'Inward Management',
+        ),
+      ],
       children: [
         AppSearchField(
           hint: 'Search by material, category, or location...',

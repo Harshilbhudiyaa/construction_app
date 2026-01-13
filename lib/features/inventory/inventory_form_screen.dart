@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+ import 'package:flutter/material.dart';
 import '../../app/theme/app_spacing.dart';
 import '../../app/theme/professional_theme.dart';
 import '../../app/ui/widgets/professional_page.dart';
@@ -7,6 +7,10 @@ import '../../app/ui/widgets/helpful_dropdown.dart';
 import '../../app/ui/widgets/confirm_dialog.dart';
 import '../../app/utils/feedback_helper.dart';
 import 'models/inventory_detail_model.dart';
+import 'inward_entry_form_screen.dart';
+import 'inward_bill_view_screen.dart';
+import 'models/inward_movement_model.dart';
+import 'package:intl/intl.dart';
 
 class InventoryFormScreen extends StatefulWidget {
   final InventoryDetailModel? material;
@@ -32,6 +36,9 @@ class _InventoryFormScreenState extends State<InventoryFormScreen> {
   late final TextEditingController _aggregateSizeController;
   late final TextEditingController _paintFinishController;
   late final TextEditingController _customCategoryController;
+  late final TextEditingController _truckNoController;
+  late final TextEditingController _driverNameController;
+  late final TextEditingController _transporterController;
 
   late MaterialCategory _selectedCategory;
 
@@ -69,6 +76,9 @@ class _InventoryFormScreenState extends State<InventoryFormScreen> {
     _aggregateSizeController = TextEditingController(text: m?.metadata?['aggregateSize']?.toString() ?? '');
     _paintFinishController = TextEditingController(text: m?.metadata?['paintFinish']?.toString() ?? '');
     _customCategoryController = TextEditingController(text: m?.metadata?['customCategory']?.toString() ?? '');
+    _truckNoController = TextEditingController();
+    _driverNameController = TextEditingController();
+    _transporterController = TextEditingController();
 
     // Initialize custom properties from metadata if they don't match standard keys
     if (m?.metadata != null) {
@@ -82,6 +92,11 @@ class _InventoryFormScreenState extends State<InventoryFormScreen> {
         }
       });
     }
+
+    // Listen to name changes to update logs filtering in real-time
+    _nameController.addListener(() {
+      if (mounted) setState(() {});
+    });
   }
 
   void _addProperty() {
@@ -119,6 +134,9 @@ class _InventoryFormScreenState extends State<InventoryFormScreen> {
     _aggregateSizeController.dispose();
     _paintFinishController.dispose();
     _customCategoryController.dispose();
+    _truckNoController.dispose();
+    _driverNameController.dispose();
+    _transporterController.dispose();
     super.dispose();
   }
 
@@ -322,6 +340,79 @@ class _InventoryFormScreenState extends State<InventoryFormScreen> {
                     ],
                   ),
                 ),
+                const SizedBox(height: 12),
+                ProfessionalCard(
+                  useGlass: true,
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _sectionTitle('Logistics & Truck Details', Icons.local_shipping_rounded),
+                      const SizedBox(height: 24),
+                      HelpfulTextField(
+                        controller: _truckNoController,
+                        label: 'Truck / Vehicle Number',
+                        hintText: 'e.g. GJ01-AB-1234',
+                        icon: Icons.numbers_rounded,
+                        useGlass: true,
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: HelpfulTextField(
+                              controller: _driverNameController,
+                              label: 'Driver Name',
+                              hintText: 'Full name',
+                              icon: Icons.person_rounded,
+                              useGlass: true,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: HelpfulTextField(
+                              controller: _transporterController,
+                              label: 'Transporter',
+                              hintText: 'Company name',
+                              icon: Icons.business_rounded,
+                              useGlass: true,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                if (isEditing) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.greenAccent.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.greenAccent.withOpacity(0.1)),
+                    ),
+                    child: TextButton.icon(
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => InwardEntryFormScreen(
+                            preselectedMaterial: widget.material!.materialName,
+                          ),
+                        ),
+                      ),
+                      icon: const Icon(Icons.add_shopping_cart_rounded, color: Colors.greenAccent),
+                      label: const Text(
+                        'Log Arrival for this Material',
+                        style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.greenAccent),
+                      ),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 48),
                 Row(
                   children: [
@@ -370,6 +461,10 @@ class _InventoryFormScreenState extends State<InventoryFormScreen> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 32),
+                _buildLogsHeader('Recent Inward Logs', Icons.history_rounded),
+                const SizedBox(height: 16),
+                _buildInwardLogsSection(context),
                 const SizedBox(height: 100),
               ],
             ),
@@ -769,6 +864,220 @@ class _InventoryFormScreenState extends State<InventoryFormScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildLogsHeader(String title, IconData icon) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: Colors.white, size: 18),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          title.toUpperCase(),
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w900,
+            color: Colors.white,
+            letterSpacing: 1.2,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInwardLogsSection(BuildContext context) {
+    final currentName = _nameController.text.trim();
+    if (currentName.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Text(
+            'Enter a material name to see history.',
+            style: TextStyle(color: Colors.white.withOpacity(0.2), fontSize: 12),
+          ),
+        ),
+      );
+    }
+    
+    // Simulated mock database of logs (same pool as Detail screen)
+    final List<InwardMovementModel> allLogs = [
+      InwardMovementModel(
+        id: 'LOG-7721',
+        vehicleType: 'Dumper / Truck',
+        vehicleNumber: 'GJ01-AB-1234',
+        vehicleCapacity: '12 Tons',
+        transporterName: 'ABC Logistics',
+        driverName: 'Rajesh Kumar',
+        driverMobile: '+91 98765 43210',
+        driverLicense: 'GJ01-2023-0001',
+        materialName: 'Sand',
+        category: MaterialCategory.sand,
+        quantity: 120.0,
+        unit: 'tons',
+        photoProofs: [], 
+        ratePerUnit: 450.0,
+        transportCharges: 5000.0,
+        taxPercentage: 18.0,
+        totalAmount: 69620.0,
+        status: InwardStatus.approved,
+        createdAt: DateTime.now().subtract(const Duration(days: 2)),
+      ),
+      InwardMovementModel(
+        id: 'LOG-7689',
+        vehicleType: 'Tractor',
+        vehicleNumber: 'GJ01-XY-5678',
+        vehicleCapacity: '8 Tons',
+        transporterName: 'Self Owned',
+        driverName: 'Amit Shah',
+        driverMobile: '+91 99887 76655',
+        driverLicense: 'GJ01-2022-0456',
+        materialName: 'Portland Cement (OPC 53)',
+        category: MaterialCategory.cement,
+        quantity: 500.0,
+        unit: 'bags',
+        photoProofs: [], 
+        ratePerUnit: 380.0,
+        transportCharges: 2000.0,
+        taxPercentage: 18.0,
+        totalAmount: 226560.0,
+        status: InwardStatus.approved,
+        createdAt: DateTime.now().subtract(const Duration(days: 5)),
+      ),
+      InwardMovementModel(
+        id: 'LOG-8012',
+        vehicleType: 'Truck',
+        vehicleNumber: 'MH04-KT-9012',
+        vehicleCapacity: '15 Tons',
+        transporterName: 'Express Cargo',
+        driverName: 'Suresh Raina',
+        driverMobile: '+91 91234 56789',
+        driverLicense: 'MH04-2021-999',
+        materialName: 'Steel Rebars (12mm)',
+        category: MaterialCategory.steel,
+        quantity: 15.0,
+        unit: 'tons',
+        photoProofs: [], 
+        ratePerUnit: 65000.0,
+        transportCharges: 8000.0,
+        taxPercentage: 18.0,
+        totalAmount: 1159940.0,
+        status: InwardStatus.approved,
+        createdAt: DateTime.now().subtract(const Duration(days: 1)),
+      ),
+    ];
+
+    final materialLogs = allLogs.where((log) => 
+      log.materialName.toLowerCase() == currentName.toLowerCase()
+    ).toList();
+
+    if (materialLogs.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Text(
+            'No history for this material.',
+            style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 12),
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      children: materialLogs.map((log) => _buildLogCard(context, log)).toList(),
+    );
+  }
+
+  Widget _buildLogCard(BuildContext context, InwardMovementModel log) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => InwardBillViewScreen(item: log)),
+        ),
+        borderRadius: BorderRadius.circular(16),
+        child: ProfessionalCard(
+          useGlass: true,
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: Colors.blueAccent.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.local_shipping_rounded, color: Colors.blueAccent, size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          log.vehicleNumber,
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                        ),
+                        Text(
+                          'Driver: ${log.driverName}',
+                          style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 11),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '${log.quantity} ${log.unit}',
+                        style: const TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.w900, fontSize: 14),
+                      ),
+                      Text(
+                        DateFormat('MMM dd').format(log.createdAt),
+                        style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 10),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                   _photoQuickDot(),
+                   _photoQuickDot(),
+                   _photoQuickDot(),
+                   const SizedBox(width: 8),
+                   Text('VERIFIED PROOFS', style: TextStyle(color: Colors.blueAccent.withOpacity(0.7), fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                   const Spacer(),
+                   const Icon(Icons.chevron_right_rounded, color: Colors.white24, size: 18),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _photoQuickDot() {
+    return Container(
+      width: 5,
+      height: 5,
+      margin: const EdgeInsets.only(right: 3),
+      decoration: const BoxDecoration(
+        color: Colors.greenAccent,
+        shape: BoxShape.circle,
+      ),
     );
   }
 }

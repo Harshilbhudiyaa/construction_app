@@ -24,6 +24,7 @@ class HelpfulTextField extends StatefulWidget {
 
   final bool useGlass;
   final bool readOnly;
+  final ValueChanged<String>? onChanged;
 
   const HelpfulTextField({
     super.key,
@@ -44,6 +45,7 @@ class HelpfulTextField extends StatefulWidget {
     this.maxLines = 1,
     this.useGlass = false,
     this.readOnly = false,
+    this.onChanged,
   });
 
 
@@ -116,6 +118,9 @@ class _HelpfulTextFieldState extends State<HelpfulTextField> {
               // Clear error on change
               if (_errorText != null) {
                 setState(() => _errorText = null);
+              }
+              if (widget.onChanged != null) {
+                widget.onChanged!(value);
               }
             },
             decoration: InputDecoration(

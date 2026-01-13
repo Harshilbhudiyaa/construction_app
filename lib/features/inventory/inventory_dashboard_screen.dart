@@ -10,6 +10,8 @@ import '../../../../app/ui/widgets/professional_page.dart';
 import 'inventory_ledger_screen.dart';
 import 'inventory_low_stock_screen.dart';
 import 'material_issue_entry_screen.dart';
+import 'inward_management_dashboard_screen.dart';
+import 'inward_entry_form_screen.dart';
 
 class InventoryDashboardScreen extends StatefulWidget {
   const InventoryDashboardScreen({super.key});
@@ -116,6 +118,16 @@ class _InventoryDashboardScreenState extends State<InventoryDashboardScreen> wit
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const MaterialIssueEntryScreen()),
+                ),
+              ),
+              _buildActionTile(
+                title: 'Inward Management',
+                subtitle: 'Track vehicle arrival & billing',
+                icon: Icons.local_shipping_rounded,
+                color: Colors.greenAccent,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const InwardManagementDashboardScreen()),
                 ),
               ),
               _buildActionTile(

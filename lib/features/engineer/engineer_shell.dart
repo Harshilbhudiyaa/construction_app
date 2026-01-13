@@ -6,7 +6,7 @@ import 'engineer_dashboard_screen.dart';
 import '../approvals/approvals_queue_screen.dart';
 import '../block_management/block_overview_screen.dart';
 import '../inventory/inventory_dashboard_screen.dart';
-import '../trucks/truck_trips_list_screen.dart';
+import '../inventory/inward_management_dashboard_screen.dart';
 import '../../../../core/utils/navigation_utils.dart';
 import '../../../../app/ui/widgets/app_sidebar.dart';
 import '../../../../app/ui/widgets/responsive_sidebar.dart';
@@ -37,7 +37,7 @@ class _EngineerShellState extends State<EngineerShell> {
     const ApprovalsQueueScreen(),
     const BlockOverviewScreen(),
     const InventoryDashboardScreen(),
-    const TruckTripsListScreen(),
+    const InwardManagementDashboardScreen(),
   ];
 
   static const _destinations = [
@@ -61,7 +61,7 @@ class _EngineerShellState extends State<EngineerShell> {
     ),
     SidebarDestination(
       icon: Icons.local_shipping_rounded,
-      label: 'Trucks',
+      label: 'Inward Logs',
     ),
   ];
   

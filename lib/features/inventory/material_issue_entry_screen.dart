@@ -20,15 +20,21 @@ class _MaterialIssueEntryScreenState extends State<MaterialIssueEntryScreen> {
   String _workType = 'Concrete Work';
   String _material = 'Cement (Bags)';
   final _qtyCtrl = TextEditingController(text: '10');
+  final _materialDetailCtrl = TextEditingController();
+  final _machineCtrl = TextEditingController();
   String _unit = 'bags';
   String _issuedTo = 'Ramesh Kumar';
   final _noteCtrl = TextEditingController();
 
+
   @override
   void dispose() {
     _qtyCtrl.dispose();
+    _materialDetailCtrl.dispose();
+    _machineCtrl.dispose();
     _noteCtrl.dispose();
     super.dispose();
+
   }
 
   void _submit() {
@@ -94,6 +100,19 @@ class _MaterialIssueEntryScreenState extends State<MaterialIssueEntryScreen> {
                       }),
                     ),
                     const SizedBox(height: 20),
+                    _buildGlassInput(
+                      label: 'Material Detail (Spec/Size)',
+                      controller: _materialDetailCtrl,
+                      hintText: 'e.g., Grade 53, TMT 12mm',
+                    ),
+                    const SizedBox(height: 20),
+                    _buildGlassInput(
+                      label: 'Assigned Machine (Optional)',
+                      controller: _machineCtrl,
+                      hintText: 'e.g., Block Machine B-200, JCB-04',
+                    ),
+                    const SizedBox(height: 20),
+
                     Row(
                       children: [
                         Expanded(
@@ -236,6 +255,7 @@ class _MaterialIssueEntryScreenState extends State<MaterialIssueEntryScreen> {
     TextInputType? keyboardType,
     bool readOnly = false,
     int maxLines = 1,
+    String? hintText,
     String? Function(String?)? validator,
   }) {
     return Column(
@@ -257,10 +277,12 @@ class _MaterialIssueEntryScreenState extends State<MaterialIssueEntryScreen> {
           maxLines: maxLines,
           keyboardType: keyboardType,
           validator: validator,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white.withOpacity(0.05),
+            hintText: hintText,
+            hintStyle: TextStyle(color: Colors.white.withOpacity(0.2), fontWeight: FontWeight.normal),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -321,7 +343,7 @@ class _MaterialIssueEntryScreenState extends State<MaterialIssueEntryScreen> {
                       const SizedBox(width: 12),
                       Text(
                         item,
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                       ),
                     ],
                   );
@@ -344,3 +366,4 @@ class _MaterialIssueEntryScreenState extends State<MaterialIssueEntryScreen> {
     );
   }
 }
+

@@ -15,6 +15,7 @@ import '../engineer/engineer_detail_screen.dart';
 import '../engineer/models/engineer_model.dart';
 import '../engineer/machine_form_screen.dart';
 import '../inventory/inventory_form_screen.dart';
+import '../inventory/inward_management_dashboard_screen.dart';
 
 class ContractorDashboardScreen extends StatefulWidget {
   final void Function(int tabIndex) onNavigateTo;
@@ -254,60 +255,65 @@ class _ContractorDashboardScreenState extends State<ContractorDashboardScreen> w
 
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Column(
+            child: GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              childAspectRatio: 2.2,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
               children: [
-                _ActionTile(
+                _CompactActionTile(
                   icon: Icons.groups_rounded,
-                  title: 'Workforce Directory',
-                  subtitle: 'Manage workers, skills, shifts, and payout rates',
+                  title: 'Workforce',
                   onTap: () => widget.onNavigateTo(1),
                 ),
-                _ActionTile(
+                _CompactActionTile(
                   icon: Icons.engineering_rounded,
-                  title: 'Personnel Management',
-                  subtitle: 'Role-based permissions and access control',
+                  title: 'Personnel',
                   onTap: () => widget.onNavigateTo(2),
                 ),
-                _ActionTile(
+                _CompactActionTile(
                   icon: Icons.precision_manufacturing_rounded,
-                  title: 'Machine Management',
-                  subtitle: 'Heavy machinery tracking, utilization & maintenance',
+                  title: 'Machines',
                   onTap: () => widget.onNavigateTo(3),
                 ),
-                _ActionTile(
+                _CompactActionTile(
                   icon: Icons.inventory_2_rounded,
-                  title: 'Inventory Details',
-                  subtitle: 'Real-time material stock levels and consumption',
+                  title: 'Inventory',
                   onTap: () => widget.onNavigateTo(4),
                 ),
-                _ActionTile(
+                _CompactActionTile(
+                  icon: Icons.local_shipping_rounded,
+                  title: 'Inward Logistics',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const InwardManagementDashboardScreen()),
+                  ),
+                ),
+                _CompactActionTile(
                   icon: Icons.build_rounded,
-                  title: 'Tools & Equipment',
-                  subtitle: 'Asset allocation, condition monitoring & tracking',
+                  title: 'Tools',
                   onTap: () => widget.onNavigateTo(5),
                 ),
-                _ActionTile(
+                _CompactActionTile(
                   icon: Icons.payments_rounded,
-                  title: 'Financial Settlements',
-                  subtitle: 'Worker disbursals and billing cycles',
+                  title: 'Financials',
                   onTap: () => widget.onNavigateTo(6),
                 ),
-                _ActionTile(
+                _CompactActionTile(
                   icon: Icons.analytics_rounded,
-                  title: 'Insight Analytics',
-                  subtitle: 'Visual performance and trend reports',
+                  title: 'Analytics',
                   onTap: () => widget.onNavigateTo(7),
                 ),
-                _ActionTile(
+                _CompactActionTile(
                   icon: Icons.notifications_rounded,
-                  title: 'Alert Command',
-                  subtitle: 'Broadcast system-wide messages',
+                  title: 'Alerts',
                   onTap: () => widget.onNavigateTo(8),
                 ),
-                _ActionTile(
+                _CompactActionTile(
                   icon: Icons.policy_rounded,
-                  title: 'Immutable Audit Log',
-                  subtitle: 'Administrative security event timeline',
+                  title: 'Audit Log',
                   onTap: () => widget.onNavigateTo(9),
                 ),
               ],
@@ -526,18 +532,12 @@ class _KpiTileState extends State<_KpiTile> with SingleTickerProviderStateMixin 
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _pulseController,
-      builder: (context, child) {
-        final scale = 1.0 + (_pulseController.value * 0.03);
-        return GestureDetector(
-          onTap: widget.onTap,
-          child: Transform.scale(
-            scale: widget.shouldPulse ? scale : 1.0,
-            child: ProfessionalCard(
-              useGlass: true,
-              padding: EdgeInsets.zero,
-              child: Container(
+    return GestureDetector(
+      onTap: widget.onTap,
+      child: ProfessionalCard(
+        useGlass: true,
+        padding: EdgeInsets.zero,
+        child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: Colors.white.withOpacity(0.1)),
@@ -642,9 +642,6 @@ class _KpiTileState extends State<_KpiTile> with SingleTickerProviderStateMixin 
                 ),
               ),
             ),
-          ),
-        );
-      },
     );
   }
 
@@ -723,6 +720,61 @@ class _ActionTile extends StatelessWidget {
                 Icon(Icons.chevron_right_rounded, color: Colors.white.withOpacity(0.3), size: 24),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+class _CompactActionTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+
+  const _CompactActionTile({
+    required this.icon,
+    required this.title,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ProfessionalCard(
+      useGlass: true,
+      padding: EdgeInsets.zero,
+      margin: EdgeInsets.zero,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: Colors.white, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    fontSize: 14,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

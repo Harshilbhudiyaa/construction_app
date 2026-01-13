@@ -69,7 +69,18 @@ class _MachineManagementScreenState extends State<MachineManagementScreen> {
       lastMaintenanceDate: DateTime(2025, 1, 10),
       nextMaintenanceDate: DateTime(2025, 1, 17),
     ),
+    MachineModel(
+      id: '5',
+      name: 'Hydro-Static Block Machine B-200',
+      type: MachineType.blockMachine,
+      status: MachineStatus.inUse,
+      assignedSiteName: 'Metropolis Heights',
+      natureOfWork: NatureOfWork.blockProduction,
+      lastMaintenanceDate: DateTime(2025, 1, 1),
+      nextMaintenanceDate: DateTime(2025, 4, 1),
+    ),
   ];
+
 
   List<MachineModel> get _filteredMachines {
     var filtered = _machines;

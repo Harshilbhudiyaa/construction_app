@@ -102,7 +102,7 @@ class _AnimatedListItemState extends State<AnimatedListItem>
     );
 
     _scaleAnimation = Tween<double>(
-      begin: 0.8,
+      begin: 0.95,
       end: 1.0,
     ).animate(CurvedAnimation(
       parent: _controller,

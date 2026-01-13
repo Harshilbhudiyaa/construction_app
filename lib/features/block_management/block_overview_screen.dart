@@ -17,11 +17,12 @@ class _BlockOverviewScreenState extends State<BlockOverviewScreen> {
   String _query = '';
 
   final List<BlockItem> _blocks = [
-    BlockItem(id: "B-201", name: "Sector A - Foundation", progress: 0.85, status: UiStatus.ok, yield: "1.2K", machine: "JCB-04"),
-    BlockItem(id: "B-202", name: "Sector B - Columns", progress: 0.45, status: UiStatus.pending, yield: "0.8K", machine: "CRANE-01"),
-    BlockItem(id: "B-203", name: "Sector C - Slabs", progress: 0.12, status: UiStatus.stop, yield: "0.2K", machine: "MIXER-09"),
-    BlockItem(id: "B-204", name: "Parking Level 1", progress: 0.95, status: UiStatus.ok, yield: "2.1K", machine: "JCB-02"),
+    BlockItem(id: "B-201", name: "Sector A - Foundation", progress: 0.85, status: UiStatus.ok, yield: "1.2K", machine: "JCB-04", machineType: "Excavator"),
+    BlockItem(id: "B-202", name: "Sector B - Columns", progress: 0.45, status: UiStatus.pending, yield: "0.8K", machine: "CRANE-01", machineType: "Crane"),
+    BlockItem(id: "B-203", name: "Sector C - Slabs", progress: 0.12, status: UiStatus.stop, yield: "0.2K", machine: "MIXER-09", machineType: "Mixer"),
+    BlockItem(id: "B-204", name: "Parking Level 1", progress: 0.95, status: UiStatus.ok, yield: "2.1K", machine: "JCB-02", machineType: "Excavator"),
   ];
+
 
   List<BlockItem> get _filtered => _blocks
       .where((b) => b.name.toLowerCase().contains(_query.toLowerCase()) || b.id.toLowerCase().contains(_query.toLowerCase()))
@@ -33,9 +34,10 @@ class _BlockOverviewScreenState extends State<BlockOverviewScreen> {
       title: 'Production Ledger',
       actions: [
         IconButton(
-          onPressed: () {},
+          onPressed: _showAddBlockDialog,
           icon: const Icon(Icons.add_box_rounded, color: Colors.white),
         ),
+
       ],
       children: [
         Padding(
@@ -114,10 +116,11 @@ class _BlockOverviewScreenState extends State<BlockOverviewScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   _buildMetric('YIELD', block.yield, Icons.analytics_rounded),
-                  _buildMetric('MACHINE', block.machine, Icons.settings_rounded),
+                  _buildMetric('MACHINE', '${block.machine}${block.machineType != null ? " (${block.machineType})" : ""}', Icons.settings_suggest_rounded),
                   _buildMetric('COMPLETION', '${(block.progress * 100).toInt()}%', Icons.speed_rounded),
                 ],
               ),
+
               const SizedBox(height: 16),
               ClipRRect(
                 borderRadius: BorderRadius.circular(2),
@@ -135,7 +138,49 @@ class _BlockOverviewScreenState extends State<BlockOverviewScreen> {
     );
   }
 
+  void _showAddBlockDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.deepBlue2,
+        title: const Text('Add Block Record', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                decoration: InputDecoration(
+                  labelText: 'Sector/Block Name',
+                  labelStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white10)),
+                ),
+                style: const TextStyle(color: Colors.white),
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                dropdownColor: AppColors.deepBlue1,
+                items: ['Block Machine B-200', 'JCB-04', 'CRANE-01', 'MIXER-09']
+                    .map((m) => DropdownMenuItem(value: m, child: Text(m, style: const TextStyle(color: Colors.white))))
+                    .toList(),
+                onChanged: (_) {},
+                decoration: InputDecoration(
+                  labelText: 'Assign Machine',
+                  labelStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('CANCEL')),
+          ElevatedButton(onPressed: () => Navigator.pop(context), child: const Text('ADD')),
+        ],
+      ),
+    );
+  }
+
   Widget _buildMetric(String label, String value, IconData icon) {
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -160,6 +205,7 @@ class BlockItem {
   final UiStatus status;
   final String yield;
   final String machine;
+  final String? machineType;
 
   BlockItem({
     required this.id,
@@ -168,5 +214,7 @@ class BlockItem {
     required this.status,
     required this.yield,
     required this.machine,
+    this.machineType,
   });
 }
+
