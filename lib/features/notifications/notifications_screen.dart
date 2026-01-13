@@ -112,7 +112,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
                   'Unread',
                   _unreadCount.toString(),
                   Icons.mark_email_unread_rounded,
-                  Colors.orange,
+                  Colors.orangeAccent,
                 ),
               ),
               const SizedBox(width: 12),
@@ -121,53 +121,66 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
                   'Total',
                   _allNotifications.length.toString(),
                   Icons.notifications_rounded,
-                  Colors.blue,
+                  Colors.blueAccent,
                 ),
               ),
             ],
           ),
         ),
 
-        const SizedBox(height: 16),
+        const SizedBox(height: 24),
 
         // Tab Bar
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Container(
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(12),
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white.withOpacity(0.1)),
             ),
             child: TabBar(
               controller: _tabController,
+              dividerColor: Colors.transparent,
               indicator: BoxDecoration(
-                color: AppColors.deepBlue1,
+                gradient: const LinearGradient(
+                  colors: [Colors.blueAccent, AppColors.deepBlue3],
+                ),
                 borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.blueAccent.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               indicatorSize: TabBarIndicatorSize.tab,
               labelColor: Colors.white,
-              unselectedLabelColor: Colors.grey[700],
-              labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+              unselectedLabelColor: Colors.white.withOpacity(0.5),
+              labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13),
+              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
               tabs: [
                 Tab(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('Unread'),
+                      const Text('UNREAD'),
                       if (_unreadCount > 0) ...[
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 10),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
-                            color: Colors.orange,
-                            borderRadius: BorderRadius.circular(10),
+                            color: Colors.orangeAccent,
+                            borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
                             _unreadCount.toString(),
                             style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
                             ),
                           ),
                         ),
@@ -175,13 +188,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
                     ],
                   ),
                 ),
-                const Tab(text: 'All'),
+                const Tab(text: 'ALL HISTORY'),
               ],
             ),
           ),
         ),
 
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
 
         // Tab Views
         SizedBox(
@@ -200,39 +213,39 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
 
   Widget _buildSummaryCard(String label, String value, IconData icon, Color color) {
     return ProfessionalCard(
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, color: color, size: 24),
+      useGlass: true,
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              shape: BoxShape.circle,
             ),
-            const SizedBox(height: 12),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: AppColors.deepBlue1,
-              ),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+              letterSpacing: -1,
             ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-                fontWeight: FontWeight.w500,
-              ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label.toUpperCase(),
+            style: TextStyle(
+              fontSize: 10,
+              color: Colors.white.withOpacity(0.4),
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.2,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -243,17 +256,34 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.notifications_off_rounded,
-              size: 80,
-              color: Colors.grey[300],
+            Container(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.05),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.notifications_off_rounded,
+                size: 60,
+                color: Colors.white.withOpacity(0.2),
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             Text(
-              'No notifications',
+              'CLEAR HORIZON',
               style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[500],
+                fontSize: 14,
+                color: Colors.white.withOpacity(0.4),
+                fontWeight: FontWeight.w900,
+                letterSpacing: 2,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'No new alerts to process',
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.white.withOpacity(0.2),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -273,85 +303,113 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
   }
 
   Widget _buildNotificationCard(NotificationItem notification) {
+    final typeColor = _getTypeColor(notification.type).withOpacity(0.8);
+    
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 12, left: 8, right: 8),
       child: ProfessionalCard(
+        useGlass: true,
+        padding: EdgeInsets.zero,
         child: InkWell(
           onTap: () {
             setState(() {
               notification.isRead = true;
             });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Opening ${notification.title}...')),
-            );
           },
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           child: Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(16),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 48,
-                  height: 48,
+                  width: 52,
+                  height: 52,
                   decoration: BoxDecoration(
-                    color: _getTypeColor(notification.type).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    color: typeColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: typeColor.withOpacity(0.2)),
                   ),
-                  child: Icon(
-                    _getTypeIcon(notification.type),
-                    color: _getTypeColor(notification.type),
-                    size: 24,
+                  child: Center(
+                    child: Icon(
+                      _getTypeIcon(notification.type),
+                      color: typeColor,
+                      size: 26,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          if (!notification.isRead)
-                            Container(
-                              width: 8,
-                              height: 8,
-                              margin: const EdgeInsets.only(right: 8),
-                              decoration: const BoxDecoration(
-                                color: Colors.orange,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
                           Expanded(
-                            child: Text(
-                              notification.title,
-                              style: TextStyle(
-                                fontWeight: notification.isRead
-                                    ? FontWeight.w600
-                                    : FontWeight.bold,
-                                fontSize: 14,
-                                color: AppColors.deepBlue1,
-                              ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  notification.title,
+                                  style: TextStyle(
+                                    fontWeight: notification.isRead ? FontWeight.w700 : FontWeight.w900,
+                                    fontSize: 16,
+                                    color: Colors.white.withOpacity(notification.isRead ? 0.7 : 1.0),
+                                    letterSpacing: -0.2,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  _formatTimestamp(notification.timestamp),
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.white.withOpacity(0.4),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
+                          const SizedBox(width: 8),
                           _buildPriorityBadge(notification.priority),
                         ],
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 10),
                       Text(
                         notification.message,
                         style: TextStyle(
                           fontSize: 13,
-                          color: Colors.grey[700],
+                          color: Colors.white.withOpacity(notification.isRead ? 0.5 : 0.8),
+                          height: 1.4,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        _formatTimestamp(notification.timestamp),
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey[500],
+                      if (!notification.isRead) ...[
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: Colors.orangeAccent,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'NEW ALERT',
+                              style: TextStyle(
+                                color: Colors.orangeAccent,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 1,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),
@@ -369,35 +427,37 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
 
     switch (priority) {
       case NotificationPriority.high:
-        color = Colors.red;
-        label = 'HIGH';
+        color = Colors.redAccent;
+        label = 'URGENT';
         break;
       case NotificationPriority.medium:
-        color = Colors.orange;
-        label = 'MED';
+        color = Colors.orangeAccent;
+        label = 'ACTION';
         break;
       case NotificationPriority.normal:
-        color = Colors.blue;
-        label = 'NORM';
+        color = Colors.blueAccent;
+        label = 'REMARK';
         break;
       case NotificationPriority.low:
-        color = Colors.grey;
-        label = 'LOW';
+        color = Colors.white.withOpacity(0.4);
+        label = 'INFO';
         break;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(4),
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withOpacity(0.2)),
       ),
       child: Text(
         label,
         style: TextStyle(
           color: color,
-          fontSize: 9,
-          fontWeight: FontWeight.bold,
+          fontSize: 8,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 0.5,
         ),
       ),
     );
@@ -425,19 +485,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
   Color _getTypeColor(NotificationType type) {
     switch (type) {
       case NotificationType.alert:
-        return Colors.red;
+        return Colors.redAccent;
       case NotificationType.workSession:
-        return Colors.blue;
+        return Colors.blueAccent;
       case NotificationType.payment:
-        return Colors.green;
+        return Colors.greenAccent;
       case NotificationType.truck:
-        return Colors.purple;
+        return Colors.purpleAccent;
       case NotificationType.inventory:
-        return Colors.orange;
+        return Colors.orangeAccent;
       case NotificationType.approval:
-        return Colors.teal;
+        return Colors.tealAccent;
       case NotificationType.system:
-        return Colors.grey;
+        return Colors.white70;
     }
   }
 
