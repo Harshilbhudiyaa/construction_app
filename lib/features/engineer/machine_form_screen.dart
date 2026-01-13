@@ -4,6 +4,7 @@ import '../../app/theme/professional_theme.dart';
 import '../../app/ui/widgets/professional_page.dart';
 import '../../app/ui/widgets/helpful_text_field.dart';
 import '../../app/ui/widgets/helpful_dropdown.dart';
+import '../../app/ui/widgets/confirm_dialog.dart';
 import '../../app/utils/feedback_helper.dart';
 import 'models/machine_model.dart';
 import 'package:intl/intl.dart';
@@ -53,6 +54,32 @@ class _MachineFormScreenState extends State<MachineFormScreen> {
     super.dispose();
   }
 
+  Future<void> _handleBack() async {
+    final hasData = _nameController.text.trim().isNotEmpty ||
+        _siteNameController.text.trim().isNotEmpty ||
+        _operatorNameController.text.trim().isNotEmpty;
+
+    if (!hasData) {
+      Navigator.pop(context);
+      return;
+    }
+
+    final confirmed = await ConfirmDialog.show(
+      context: context,
+      title: 'Discard Changes?',
+      message: 'You have unsaved changes. Are you sure you want to go back without saving?',
+      confirmText: 'Discard',
+      cancelText: 'Keep Editing',
+      icon: Icons.warning_rounded,
+      iconColor: Colors.orange,
+      isDangerous: true,
+    );
+
+    if (confirmed && mounted) {
+      Navigator.pop(context);
+    }
+  }
+
   Future<void> _selectDate(BuildContext context, bool isLast) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -85,96 +112,141 @@ class _MachineFormScreenState extends State<MachineFormScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const ProfessionalSectionHeader(
-                  title: 'Basic Information',
-                  subtitle: 'Identify and categorize the machinery',
+                ProfessionalCard(
+                  useGlass: true,
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _sectionTitle('Basic Information', Icons.precision_manufacturing_rounded),
+                      const SizedBox(height: 24),
+                      HelpfulTextField(
+                        controller: _nameController,
+                        label: 'Machine Name',
+                        hintText: 'e.g. Caterpillar 320D',
+                        icon: Icons.precision_manufacturing_rounded,
+                        useGlass: true,
+                        validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+                      ),
+                      const SizedBox(height: 20),
+                      HelpfulDropdown<MachineType>(
+                        label: 'Machine Type',
+                        value: _selectedType,
+                        items: MachineType.values,
+                        labelMapper: (t) => t.displayName,
+                        icon: Icons.category_rounded,
+                        useGlass: true,
+                        onChanged: (v) => setState(() => _selectedType = v!),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: AppSpacing.md),
-                HelpfulTextField(
-                  controller: _nameController,
-                  label: 'Machine Name',
-                  hintText: 'e.g. Caterpillar 320D',
-                  icon: Icons.precision_manufacturing_rounded,
-                  validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+                const SizedBox(height: 12),
+                ProfessionalCard(
+                  useGlass: true,
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _sectionTitle('Deployment Details', Icons.location_on_rounded),
+                      const SizedBox(height: 24),
+                      HelpfulTextField(
+                        controller: _siteNameController,
+                        label: 'Assigned Site',
+                        hintText: 'Enter site name',
+                        icon: Icons.location_on_rounded,
+                        useGlass: true,
+                      ),
+                      const SizedBox(height: 20),
+                      HelpfulTextField(
+                        controller: _operatorNameController,
+                        label: 'Operator Name',
+                        hintText: 'Assigned personnel',
+                        icon: Icons.person_rounded,
+                        useGlass: true,
+                      ),
+                      const SizedBox(height: 20),
+                      HelpfulDropdown<NatureOfWork>(
+                        label: 'Nature of Work',
+                        value: _selectedWork ?? NatureOfWork.earthwork,
+                        items: NatureOfWork.values,
+                        labelMapper: (t) => t.displayName,
+                        icon: Icons.work_rounded,
+                        useGlass: true,
+                        onChanged: (v) => setState(() => _selectedWork = v),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: AppSpacing.md),
-                HelpfulDropdown<MachineType>(
-                  label: 'Machine Type',
-                  value: _selectedType,
-                  items: MachineType.values,
-                  labelMapper: (t) => t.displayName,
-                  icon: Icons.category_rounded,
-                  onChanged: (v) => setState(() => _selectedType = v!),
+                const SizedBox(height: 12),
+                ProfessionalCard(
+                  useGlass: true,
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _sectionTitle('Status & Maintenance', Icons.settings_suggest_rounded),
+                      const SizedBox(height: 24),
+                      HelpfulDropdown<MachineStatus>(
+                        label: 'Current Status',
+                        value: _selectedStatus,
+                        items: MachineStatus.values,
+                        labelMapper: (t) => t.displayName,
+                        icon: Icons.info_rounded,
+                        useGlass: true,
+                        onChanged: (v) => setState(() => _selectedStatus = v!),
+                      ),
+                      const SizedBox(height: 20),
+                      _buildDatePickerRow('Last Maintenance', _lastMaintenance, () => _selectDate(context, true)),
+                      const SizedBox(height: 20),
+                      _buildDatePickerRow('Next Maintenance', _nextMaintenance, () => _selectDate(context, false), isOptional: true),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: AppSpacing.lg),
-                const ProfessionalSectionHeader(
-                  title: 'Deployment Details',
-                  subtitle: 'Where and who is using the machine',
-                ),
-                const SizedBox(height: AppSpacing.md),
-                HelpfulTextField(
-                  controller: _siteNameController,
-                  label: 'Assigned Site',
-                  hintText: 'Enter site name',
-                  icon: Icons.location_on_rounded,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                HelpfulTextField(
-                  controller: _operatorNameController,
-                  label: 'Operator Name',
-                  hintText: 'Assigned personnel',
-                  icon: Icons.person_rounded,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                HelpfulDropdown<NatureOfWork>(
-                  label: 'Nature of Work',
-                  value: _selectedWork ?? NatureOfWork.earthwork,
-                  items: NatureOfWork.values,
-                  labelMapper: (t) => t.displayName,
-                  icon: Icons.work_rounded,
-                  onChanged: (v) => setState(() => _selectedWork = v),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                const ProfessionalSectionHeader(
-                  title: 'Status & Maintenance',
-                  subtitle: 'Current condition and service record',
-                ),
-                const SizedBox(height: AppSpacing.md),
-                HelpfulDropdown<MachineStatus>(
-                  label: 'Current Status',
-                  value: _selectedStatus,
-                  items: MachineStatus.values,
-                  labelMapper: (t) => t.displayName,
-                  icon: Icons.info_rounded,
-                  onChanged: (v) => setState(() => _selectedStatus = v!),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                _buildDatePickerRow('Last Maintenance', _lastMaintenance, () => _selectDate(context, true)),
-                const SizedBox(height: AppSpacing.md),
-                _buildDatePickerRow('Next Maintenance', _nextMaintenance, () => _selectDate(context, false), isOptional: true),
-                const SizedBox(height: AppSpacing.xl),
+                const SizedBox(height: 48),
                 Row(
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: _handleBack,
                         style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          side: const BorderSide(color: Colors.white70),
+                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          side: BorderSide(color: Colors.white.withOpacity(0.3)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
-                        child: const Text('Cancel', style: TextStyle(color: Colors.white)),
+                        child: const Text('Discard', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
                       ),
                     ),
-                    const SizedBox(width: AppSpacing.md),
+                    const SizedBox(width: 16),
                     Expanded(
-                      child: ElevatedButton(
-                        onPressed: _saveMachine,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: AppColors.deepBlue1,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                      flex: 2,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Colors.blueAccent, AppColors.deepBlue3],
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.blueAccent.withOpacity(0.3),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
-                        child: Text(isEditing ? 'Update Machine' : 'Register Machine'),
+                        child: ElevatedButton(
+                          onPressed: _saveMachine,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shadowColor: Colors.transparent,
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          ),
+                          child: Text(
+                            isEditing ? 'Update Machine' : 'Register Machine',
+                            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.white),
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -241,5 +313,30 @@ class _MachineFormScreenState extends State<MachineFormScreen> {
       );
       Navigator.pop(context, machine);
     }
+  }
+
+  Widget _sectionTitle(String title, IconData icon) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: Colors.white, size: 18),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          title.toUpperCase(),
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w900,
+            color: Colors.white,
+            letterSpacing: 1.2,
+          ),
+        ),
+      ],
+    );
   }
 }

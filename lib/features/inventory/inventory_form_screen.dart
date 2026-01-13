@@ -4,6 +4,7 @@ import '../../app/theme/professional_theme.dart';
 import '../../app/ui/widgets/professional_page.dart';
 import '../../app/ui/widgets/helpful_text_field.dart';
 import '../../app/ui/widgets/helpful_dropdown.dart';
+import '../../app/ui/widgets/confirm_dialog.dart';
 import '../../app/utils/feedback_helper.dart';
 import 'models/inventory_detail_model.dart';
 
@@ -56,6 +57,32 @@ class _InventoryFormScreenState extends State<InventoryFormScreen> {
     super.dispose();
   }
 
+  Future<void> _handleBack() async {
+    final hasData = _nameController.text.trim().isNotEmpty ||
+        _totalQtyController.text.trim().isNotEmpty ||
+        _supplierController.text.trim().isNotEmpty;
+
+    if (!hasData) {
+      Navigator.pop(context);
+      return;
+    }
+
+    final confirmed = await ConfirmDialog.show(
+      context: context,
+      title: 'Discard Changes?',
+      message: 'You have unsaved changes. Are you sure you want to go back without saving?',
+      confirmText: 'Discard',
+      cancelText: 'Keep Editing',
+      icon: Icons.warning_rounded,
+      iconColor: Colors.orange,
+      isDangerous: true,
+    );
+
+    if (confirmed && mounted) {
+      Navigator.pop(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.material != null;
@@ -70,111 +97,158 @@ class _InventoryFormScreenState extends State<InventoryFormScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const ProfessionalSectionHeader(
-                  title: 'Material Info',
-                  subtitle: 'Item identification and group',
-                ),
-                const SizedBox(height: AppSpacing.md),
-                HelpfulTextField(
-                  controller: _nameController,
-                  label: 'Material Name',
-                  hintText: 'e.g. Portland Cement 53 Grade',
-                  icon: Icons.inventory_2_rounded,
-                  validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                HelpfulDropdown<MaterialCategory>(
-                  label: 'Category',
-                  value: _selectedCategory,
-                  items: MaterialCategory.values,
-                  labelMapper: (c) => c.displayName,
-                  icon: Icons.category_rounded,
-                  onChanged: (v) => setState(() => _selectedCategory = v!),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                const ProfessionalSectionHeader(
-                  title: 'Inventory Metrics',
-                  subtitle: 'Quantities and usage tracking',
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Row(
-                  children: [
-                    Expanded(
-                      child: HelpfulTextField(
-                        controller: _totalQtyController,
-                        label: 'Total Qty',
-                        hintText: 'Quantity',
-                        keyboardType: TextInputType.number,
+                ProfessionalCard(
+                  useGlass: true,
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _sectionTitle('Material Information', Icons.inventory_2_rounded),
+                      const SizedBox(height: 24),
+                      HelpfulTextField(
+                        controller: _nameController,
+                        label: 'Material Name',
+                        hintText: 'e.g. Portland Cement 53 Grade',
+                        icon: Icons.inventory_2_rounded,
+                        useGlass: true,
                         validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
                       ),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: HelpfulTextField(
-                        controller: _unitController,
-                        label: 'Unit',
-                        hintText: 'e.g. bags, kg',
+                      const SizedBox(height: 20),
+                      HelpfulDropdown<MaterialCategory>(
+                        label: 'Category',
+                        value: _selectedCategory,
+                        items: MaterialCategory.values,
+                        labelMapper: (c) => c.displayName,
+                        icon: Icons.category_rounded,
+                        useGlass: true,
+                        onChanged: (v) => setState(() => _selectedCategory = v!),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                const SizedBox(height: AppSpacing.md),
-                HelpfulTextField(
-                  controller: _consumedQtyController,
-                  label: 'Consumed Quantity',
-                  hintText: 'Current usage',
-                  keyboardType: TextInputType.number,
+                const SizedBox(height: 12),
+                ProfessionalCard(
+                  useGlass: true,
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _sectionTitle('Inventory Metrics', Icons.analytics_rounded),
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: HelpfulTextField(
+                              controller: _totalQtyController,
+                              label: 'Total Quantity',
+                              hintText: 'Quantity',
+                              keyboardType: TextInputType.number,
+                              useGlass: true,
+                              validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: HelpfulTextField(
+                              controller: _unitController,
+                              label: 'Unit',
+                              hintText: 'e.g. bags, kg',
+                              useGlass: true,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      HelpfulTextField(
+                        controller: _consumedQtyController,
+                        label: 'Consumed Quantity',
+                        hintText: 'Current usage',
+                        keyboardType: TextInputType.number,
+                        useGlass: true,
+                      ),
+                      const SizedBox(height: 20),
+                      HelpfulTextField(
+                        controller: _reorderController,
+                        label: 'Reorder Level',
+                        hintText: 'Alert threshold',
+                        keyboardType: TextInputType.number,
+                        icon: Icons.warning_amber_rounded,
+                        useGlass: true,
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: AppSpacing.md),
-                HelpfulTextField(
-                  controller: _reorderController,
-                  label: 'Reorder Level',
-                  hintText: 'Alert threshold',
-                  keyboardType: TextInputType.number,
-                  icon: Icons.warning_amber_rounded,
+                const SizedBox(height: 12),
+                ProfessionalCard(
+                  useGlass: true,
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _sectionTitle('Sourcing & Storage', Icons.business_rounded),
+                      const SizedBox(height: 24),
+                      HelpfulTextField(
+                        controller: _supplierController,
+                        label: 'Supplier Name',
+                        hintText: 'Main supplier',
+                        icon: Icons.business_rounded,
+                        useGlass: true,
+                      ),
+                      const SizedBox(height: 20),
+                      HelpfulTextField(
+                        controller: _locationController,
+                        label: 'Storage Location',
+                        hintText: 'Warehouse/Section',
+                        icon: Icons.warehouse_rounded,
+                        useGlass: true,
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: AppSpacing.lg),
-                const ProfessionalSectionHeader(
-                  title: 'Sourcing & Storage',
-                  subtitle: 'Supplier and location details',
-                ),
-                const SizedBox(height: AppSpacing.md),
-                HelpfulTextField(
-                  controller: _supplierController,
-                  label: 'Supplier Name',
-                  hintText: 'Main supplier',
-                  icon: Icons.business_rounded,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                HelpfulTextField(
-                  controller: _locationController,
-                  label: 'Storage Location',
-                  hintText: 'Wharehouse/Section',
-                  icon: Icons.warehouse_rounded,
-                ),
-                const SizedBox(height: AppSpacing.xl),
+                const SizedBox(height: 48),
                 Row(
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: _handleBack,
                         style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          side: const BorderSide(color: Colors.white70),
+                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          side: BorderSide(color: Colors.white.withOpacity(0.3)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
-                        child: const Text('Cancel', style: TextStyle(color: Colors.white)),
+                        child: const Text('Discard', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
                       ),
                     ),
-                    const SizedBox(width: AppSpacing.md),
+                    const SizedBox(width: 16),
                     Expanded(
-                      child: ElevatedButton(
-                        onPressed: _saveMaterial,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: AppColors.deepBlue1,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                      flex: 2,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Colors.blueAccent, AppColors.deepBlue3],
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.blueAccent.withOpacity(0.3),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
-                        child: Text(isEditing ? 'Update Material' : 'Add Material'),
+                        child: ElevatedButton(
+                          onPressed: _saveMaterial,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shadowColor: Colors.transparent,
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          ),
+                          child: Text(
+                            isEditing ? 'Update Material' : 'Add Material',
+                            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.white),
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -210,5 +284,30 @@ class _InventoryFormScreenState extends State<InventoryFormScreen> {
       );
       Navigator.pop(context, material);
     }
+  }
+
+  Widget _sectionTitle(String title, IconData icon) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: Colors.white, size: 18),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          title.toUpperCase(),
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w900,
+            color: Colors.white,
+            letterSpacing: 1.2,
+          ),
+        ),
+      ],
+    );
   }
 }

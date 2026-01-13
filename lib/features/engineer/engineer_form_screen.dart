@@ -4,6 +4,7 @@ import '../../app/theme/professional_theme.dart';
 import '../../app/ui/widgets/professional_page.dart';
 import '../../app/ui/widgets/helpful_text_field.dart';
 import '../../app/ui/widgets/helpful_dropdown.dart';
+import '../../app/ui/widgets/confirm_dialog.dart';
 import '../../app/ui/widgets/staggered_animation.dart';
 import '../../app/utils/feedback_helper.dart';
 import 'models/engineer_model.dart';
@@ -51,6 +52,32 @@ class _EngineerFormScreenState extends State<EngineerFormScreen> {
     super.dispose();
   }
 
+  Future<void> _handleBack() async {
+    final hasData = _nameController.text.trim().isNotEmpty ||
+        _emailController.text.trim().isNotEmpty ||
+        _phoneController.text.trim().isNotEmpty;
+
+    if (!hasData) {
+      Navigator.pop(context);
+      return;
+    }
+
+    final confirmed = await ConfirmDialog.show(
+      context: context,
+      title: 'Discard Changes?',
+      message: 'You have unsaved changes. Are you sure you want to go back without saving?',
+      confirmText: 'Discard',
+      cancelText: 'Keep Editing',
+      icon: Icons.warning_rounded,
+      iconColor: Colors.orange,
+      isDangerous: true,
+    );
+
+    if (confirmed && mounted) {
+      Navigator.pop(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.engineer != null;
@@ -73,28 +100,7 @@ class _EngineerFormScreenState extends State<EngineerFormScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.1),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(Icons.person_outline_rounded, color: Colors.white, size: 20),
-                            ),
-                            const SizedBox(width: 12),
-                            const Text(
-                              'Personal Information',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white,
-                                letterSpacing: -0.5,
-                              ),
-                            ),
-                          ],
-                        ),
+                        _sectionTitle('Personal Information', Icons.person_outline_rounded),
                         const SizedBox(height: 24),
                         
                         HelpfulTextField(
@@ -162,7 +168,7 @@ class _EngineerFormScreenState extends State<EngineerFormScreen> {
 
                         // Status Toggle
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.05),
                             borderRadius: BorderRadius.circular(16),
@@ -220,34 +226,13 @@ class _EngineerFormScreenState extends State<EngineerFormScreen> {
                   const SizedBox(height: 12),
 
                   // Permissions Section
-                  ProfessionalCard(
+                    ProfessionalCard(
                     useGlass: true,
                     padding: const EdgeInsets.all(24),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.1),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(Icons.security_rounded, color: Colors.white, size: 20),
-                            ),
-                            const SizedBox(width: 12),
-                            const Text(
-                              'Role-Based Permissions',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white,
-                                letterSpacing: -0.5,
-                              ),
-                            ),
-                          ],
-                        ),
+                        _sectionTitle('Role-Based Permissions', Icons.security_rounded),
                         const SizedBox(height: 8),
                         Text(
                           'Toggle permissions to control what this personnel can access',
@@ -319,14 +304,14 @@ class _EngineerFormScreenState extends State<EngineerFormScreen> {
                       children: [
                         Expanded(
                           child: OutlinedButton(
-                            onPressed: () => Navigator.pop(context),
+                            onPressed: _handleBack,
                             style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 18),
-                              side: BorderSide(color: Colors.white.withOpacity(0.5)),
+                              padding: const EdgeInsets.symmetric(vertical: 20),
+                              side: BorderSide(color: Colors.white.withOpacity(0.3)),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                             ),
                             child: const Text(
-                              'Cancel',
+                              'Discard',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -337,6 +322,7 @@ class _EngineerFormScreenState extends State<EngineerFormScreen> {
                         ),
                         const SizedBox(width: 16),
                         Expanded(
+                          flex: 2,
                           child: Container(
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
@@ -356,14 +342,14 @@ class _EngineerFormScreenState extends State<EngineerFormScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.transparent,
                                 shadowColor: Colors.transparent,
-                                padding: const EdgeInsets.symmetric(vertical: 18),
+                                padding: const EdgeInsets.symmetric(vertical: 20),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                               ),
                               child: Text(
                                 isEditing ? 'Update Changes' : 'Create Personnel',
                                 style: const TextStyle(
                                   color: Colors.white,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w900,
                                   fontSize: 16,
                                 ),
                               ),
@@ -471,5 +457,30 @@ class _EngineerFormScreenState extends State<EngineerFormScreen> {
       
       Navigator.pop(context, engineer);
     }
+  }
+
+  Widget _sectionTitle(String title, IconData icon) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: Colors.white, size: 18),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          title.toUpperCase(),
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w900,
+            color: Colors.white,
+            letterSpacing: 1.2,
+          ),
+        ),
+      ],
+    );
   }
 }
