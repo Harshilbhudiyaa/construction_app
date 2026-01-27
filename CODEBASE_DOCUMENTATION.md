@@ -1,0 +1,135 @@
+# Codebase Documentation: Smart Construction App
+
+This document provides a comprehensive audit and explanation of every file in the `lib/` directory. It is organized by module to help developers and stakeholders understand the application's architecture, data flow, and maintenance requirements.
+
+---
+
+## 🏗️ Core Architecture (Root)
+
+| File | Purpose | Usage / Flow | Type | Dependencies |
+| :--- | :--- | :--- | :--- | :--- |
+| `main.dart` | Entry point | Initializes Firebase and starts the Flutter application. | Shared | `firebase_core`, `app.dart` |
+| `app.dart` | Root Widget | Sets up global state management (`MultiProvider`), theme, and routing. | Frontend | `provider`, `routes.dart`, `theme_service.dart` |
+| `routes.dart` | Navigation Hub | Defines all available screen paths in the application. | Shared | `flutter/material.dart`, all Screen files |
+| `firebase_options.dart` | Configuration | Contains platform-specific Firebase keys (Auto-generated). | Shared | `firebase_core` |
+
+---
+
+## 🔐 Authentication Module (`lib/auth/`)
+
+| File | Purpose | Usage / Flow | Type | Dependencies |
+| :--- | :--- | :--- | :--- | :--- |
+| `login_screen.dart` | User Entry | Handles phone/OTP login. Determines user role and redirects accordingly. | Frontend | `auth_service.dart`, `contractor_shell.dart`, etc. |
+| `splash_screen.dart` | App Startup | Shows brand logo while checking for an existing login session. | Frontend | `auth_service.dart` |
+
+---
+
+## 📊 Dashboard & Navigation Shells (`lib/dashboard/`)
+
+These files act as the high-level containers for different user roles.
+
+| File | Purpose | Usage / Flow | Type | Dependencies |
+| :--- | :--- | :--- | :--- | :--- |
+| `contractor_shell.dart` | Admin Shell | Provides sidebar navigation for the Contractor/Owner. | Frontend | `responsive_sidebar.dart`, various management screens |
+| `contractor_dashboard_screen.dart` | Admin Overview | High-level KPIs (Total sites, active workers, financial health). | Frontend | `kpi_card.dart`, `site_service.dart` |
+| `engineer_shell.dart` | Engineer Shell | Role-based container for site-level management. | Frontend | `site_service.dart`, `engineer_model.dart` |
+| `engineer_dashboard_screen.dart` | Engineer Overview | Displays assigned sites and pending approval counts. | Frontend | `approval_service.dart` |
+| `worker_shell.dart` | Worker Shell | Simple navigation for site laborers (Check-in, History). | Frontend | `auth_service.dart` |
+| `worker_dashboard_screen.dart` | Worker Personal Hub | Shows current shift status, personal earnings, and announcements. | Frontend | `mock_worker_service.dart` |
+
+---
+
+## 🏛️ Governance Hub (`lib/governance/`)
+
+| File | Purpose | Usage / Flow | Type | Dependencies |
+| :--- | :--- | :--- | :--- | :--- |
+| `approvals/approvals_queue_screen.dart` | Action Queue | Lists resource requests (e.g., "Need 5 machines") for review. | Frontend | `approval_service.dart` |
+| `approvals/models/action_request.dart` | Request Data Model | Structure for an approval item (Requester, Item, Status). | Shared | N/A |
+| `sites/site_management_screen.dart` | Asset Control | Allows admins to create projects/sites and assign engineers. | Frontend | `site_service.dart` |
+| `sites/site_model.dart` | Site Data Model | Structure for a construction site (Name, Location, Permissions). | Shared | `engineer_model.dart` |
+
+---
+
+## 📦 Resource & Inventory Modules (`lib/modules/`)
+
+### 🛠️ Resources (Tools & Machines)
+| File | Purpose | Usage / Flow | Type | Dependencies |
+| :--- | :--- | :--- | :--- | :--- |
+| `resources/tools_management_screen.dart` | Small Asset Tracking | Inventory of power tools, PPE, and measuring equipment. | Frontend | `mock_tool_service.dart` |
+| `resources/machine_management_screen.dart` | Heavy Asset Tracking | Management of JCBs, Cranes, and Mixers. | Frontend | `mock_machine_service.dart` |
+| `resources/tool_model.dart` | Tool Data Structure | Defines tool properties (Condition, quantity, site). | Shared | N/A |
+| `resources/machine_model.dart` | Machine Data Structure | Defines machine properties (Fuel, operator, service due). | Shared | N/A |
+
+### 🧱 Inventory (Materials)
+| File | Purpose | Usage / Flow | Type | Dependencies |
+| :--- | :--- | :--- | :--- | :--- |
+| `inventory/material_list_screen.dart` | Stock Overview | Real-time tracking of cement, sand, brick quantities. | Frontend | `inventory_service.dart` |
+| `inventory/inward_management_dashboard_screen.dart` | Logistics Entry | Interface for logging new material deliveries (Inward Logs). | Frontend | `inventory_service.dart` |
+| `inventory/models/material_model.dart` | Material Data Structure | Defines material stock levels and site assignments. | Shared | N/A |
+
+### 💰 Financials (Payments)
+| File | Purpose | Usage / Flow | Type | Dependencies |
+| :--- | :--- | :--- | :--- | :--- |
+| `payments/payments_dashboard_screen.dart` | Cash Flow Hub | Main interface for processing salaries and invoices. | Frontend | `payment_service.dart` |
+| `payments/payment_model.dart` | Transaction Model | Structure for all financial entries (Worker pay, Vendor pay). | Shared | N/A |
+| `payments/tabs/all_payments_tab.dart` | Unified Ledger | Searchable/Filterable list of all historic payments. | Frontend | `payment_service.dart` |
+
+---
+
+## 👤 Personnel & Profiles (`lib/profiles/`)
+
+| File | Purpose | Usage / Flow | Type | Dependencies |
+| :--- | :--- | :--- | :--- | :--- |
+| `workers_list_screen.dart` | Workforce Directory | List of all site laborers with status and skill filters. | Frontend | `mock_worker_service.dart` |
+| `engineer_management_screen.dart`| Personnel Admin | Directory for managing site engineers and access rights. | Frontend | `mock_engineer_service.dart` |
+| `worker_types.dart` | Enums & Models | Core definitions for Worker roles, shifts, and skills. | Shared | N/A |
+| `engineer_model.dart` | Engineer Structure | Defines engineer roles (Supervisor, Storekeeper, etc). | Shared | N/A |
+
+---
+
+## ⚙️ Services & Logic (`lib/services/`)
+
+| File | Purpose | Usage / Flow | Type | Dependencies |
+| :--- | :--- | :--- | :--- | :--- |
+| `auth_service.dart` | Security Logic | Manages login state, roles, and session persistence. | Backend | `shared_preferences` |
+| `approval_service.dart` | Orchestration | Handles the logic for granting or denying requests. | Backend | Various Mock Services |
+| `site_service.dart` | Site Logic | Manages site creation and role-permission mapping. | Backend | `site_model.dart` |
+| `inventory_service.dart` | Stock Logic | Handles material inward logs and real-time stock updates. | Backend | `firebase_database` |
+| `mock_..._service.dart` | Demo Data | Provide realistic sample data for UI testing/demo. | Backend | `shared_preferences` |
+| `theme_service.dart` | UI Preferences | Persists Light/Dark mode settings. | Shared | `shared_preferences` |
+
+---
+
+## 🎨 Shared Components & Design System (`lib/shared/`)
+
+| File | Purpose | Usage / Flow | Type | Dependencies |
+| :--- | :--- | :--- | :--- | :--- |
+| `theme/professional_theme.dart` | Design Tokens | Glassmorphism, premium colors, and typography rules. | Shared | `flutter/material.dart` |
+| `widgets/professional_page.dart` | Base Screen | Consistent background, padding, and header for all pages. | Shared | `professional_theme.dart` |
+| `widgets/responsive_sidebar.dart`| Navigation UI | Sidebar that adapts to desktop/mobile screen widths. | Shared | `app_sidebar.dart` |
+| `widgets/glass_card.dart` | UI Container | Premium styled box for data presentation. | Shared | N/A |
+| `widgets/status_chip.dart` | Visual Feedback | Small badge for "Approved", "Pending", "Active" states. | Shared | N/A |
+
+---
+
+## 🛠️ Utilities (`lib/utils/`)
+
+| File | Purpose | Usage / Flow | Type | Dependencies |
+| :--- | :--- | :--- | :--- | :--- |
+| `navigation_utils.dart` | Flow Helpers | Common navigation patterns like "Push replacement" or "Logout". | Shared | `flutter/material.dart` |
+| `feedback_helper.dart` | UI Notifications | Consistent SnackBars, Tost messages, and error dialogs. | Shared | `flutter/material.dart` |
+| `validators.dart` | Input Logic | Rules for validating phone numbers, names, and amounts. | Shared | N/A |
+
+---
+
+## ⚠️ Redundancy & Maintenance Audit
+
+- **Files Safe to Remove (Unused)**:
+    - **None Identified**: Post-restructuring, all files listed are actively imported and used.
+- **Internal Dependencies**:
+    - The most critical file is `app.dart` (Dependency Injection) and `main.dart` (App Entry).
+    - UI screens strictly depend on `shared/widgets` and `services/`.
+- **Role Permissions**:
+    - Permission logic is centralized in `site_service.dart` and `engineer_model.dart`. Changes to access rights should happen there.
+- **Mock vs Firebase**:
+    - Files starting with `mock_` use local storage. `inventory_service.dart` is the only one currently using live `firebase_database`. Future expansion should move other services away from `mock_` towards `firebase_service.dart`.

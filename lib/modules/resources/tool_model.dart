@@ -1,0 +1,132 @@
+/// Tools & Equipment Management Model
+class ToolModel {
+  final String id;
+  final String name;
+  final String? photoUrl;
+  final ToolType type;
+  final String usagePurpose;
+  final String? assignedEngineerId;
+  final String? assignedEngineerName;
+  final String? assignedSiteId;
+  final String? assignedSiteName;
+  final int quantity;
+  final int availableQuantity;
+  final ToolCondition condition;
+  final DateTime lastInspectionDate;
+
+  const ToolModel({
+    required this.id,
+    required this.name,
+    this.photoUrl,
+    required this.type,
+    required this.usagePurpose,
+    this.assignedEngineerId,
+    this.assignedEngineerName,
+    this.assignedSiteId,
+    this.assignedSiteName,
+    required this.quantity,
+    required this.availableQuantity,
+    this.condition = ToolCondition.good,
+    required this.lastInspectionDate,
+  });
+
+  int get inUseQuantity => quantity - availableQuantity;
+
+  ToolModel copyWith({
+    String? id,
+    String? name,
+    String? photoUrl,
+    ToolType? type,
+    String? usagePurpose,
+    String? assignedEngineerId,
+    String? assignedEngineerName,
+    String? assignedSiteId,
+    String? assignedSiteName,
+    int? quantity,
+    int? availableQuantity,
+    ToolCondition? condition,
+    DateTime? lastInspectionDate,
+  }) {
+    return ToolModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      photoUrl: photoUrl ?? this.photoUrl,
+      type: type ?? this.type,
+      usagePurpose: usagePurpose ?? this.usagePurpose,
+      assignedEngineerId: assignedEngineerId ?? this.assignedEngineerId,
+      assignedEngineerName: assignedEngineerName ?? this.assignedEngineerName,
+      assignedSiteId: assignedSiteId ?? this.assignedSiteId,
+      assignedSiteName: assignedSiteName ?? this.assignedSiteName,
+      quantity: quantity ?? this.quantity,
+      availableQuantity: availableQuantity ?? this.availableQuantity,
+      condition: condition ?? this.condition,
+      lastInspectionDate: lastInspectionDate ?? this.lastInspectionDate,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'photoUrl': photoUrl,
+      'type': type.name,
+      'usagePurpose': usagePurpose,
+      'assignedEngineerId': assignedEngineerId,
+      'assignedEngineerName': assignedEngineerName,
+      'assignedSiteId': assignedSiteId,
+      'assignedSiteName': assignedSiteName,
+      'quantity': quantity,
+      'availableQuantity': availableQuantity,
+      'condition': condition.name,
+      'lastInspectionDate': lastInspectionDate.toIso8601String(),
+    };
+  }
+
+  factory ToolModel.fromJson(Map<String, dynamic> json) {
+    return ToolModel(
+      id: json['id'],
+      name: json['name'],
+      photoUrl: json['photoUrl'],
+      type: ToolType.values.firstWhere((e) => e.name == json['type']),
+      usagePurpose: json['usagePurpose'],
+      assignedEngineerId: json['assignedEngineerId'],
+      assignedEngineerName: json['assignedEngineerName'],
+      assignedSiteId: json['assignedSiteId'],
+      assignedSiteName: json['assignedSiteName'],
+      quantity: json['quantity'] ?? 1,
+      availableQuantity: json['availableQuantity'] ?? 1,
+      condition: ToolCondition.values.firstWhere((e) => e.name == json['condition']),
+      lastInspectionDate: DateTime.parse(json['lastInspectionDate']),
+    );
+  }
+}
+
+enum ToolType {
+  powerTool('Power Tool', '⚡'),
+  handTool('Hand Tool', '🔨'),
+  measuringTool('Measuring Tool', '📏'),
+  safetyEquipment('Safety Equipment', '🦺'),
+  ladderScaffold('Ladder & Scaffold', '🪜'),
+  cuttingTool('Cutting Tool', '✂️'),
+  weldingEquipment('Welding Equipment', '🔥'),
+  paintingTool('Painting Tool', '🎨'),
+  electricalTool('Electrical Tool', '💡'),
+  plumbingTool('Plumbing Tool', '🚰'),
+  other('Other', '🔧');
+
+  final String displayName;
+  final String icon;
+  const ToolType(this.displayName, this.icon);
+}
+
+enum ToolCondition {
+  excellent('Excellent', '⭐'),
+  good('Good', '✅'),
+  fair('Fair', '⚠️'),
+  poor('Poor', '❌'),
+  needsRepair('Needs Repair', '🔨');
+
+  final String displayName;
+  final String icon;
+  const ToolCondition(this.displayName, this.icon);
+}
