@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:construction_app/shared/theme/professional_theme.dart';
-import 'package:construction_app/shared/theme/app_theme.dart';
+import 'package:construction_app/shared/theme/design_system.dart';
 import 'package:construction_app/services/theme_service.dart';
 import 'responsive_sidebar.dart';
 import 'package:provider/provider.dart';
@@ -86,6 +86,7 @@ class ThemeToggle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<ThemeService>(
       builder: (context, themeService, _) {
+        final isDark = themeService.isDarkMode;
         return IconButton(
           onPressed: () => themeService.toggleTheme(),
           icon: AnimatedSwitcher(
@@ -95,11 +96,9 @@ class ThemeToggle extends StatelessWidget {
               child: FadeTransition(opacity: anim, child: child),
             ),
             child: Icon(
-              themeService.isDarkMode 
-                  ? Icons.wb_sunny_rounded 
-                  : Icons.nightlight_round,
-              key: ValueKey(themeService.isDarkMode),
-              color: themeService.isDarkMode ? Colors.amberAccent : const Color(0xFF1A237E),
+              isDark ? Icons.wb_sunny_rounded : Icons.nightlight_round,
+              key: ValueKey(isDark),
+              color: isDark ? DesignSystem.warning : DesignSystem.deepNavy,
             ),
           ),
           tooltip: 'Switch Theme',

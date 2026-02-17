@@ -27,7 +27,7 @@ class EmptyState extends StatelessWidget {
       elevation: 0,
       color: useGlass ? Colors.white.withOpacity(0.05) : AppColors.deepBlue1.withOpacity(0.02),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
         side: BorderSide(color: AppColors.deepBlue1.withOpacity(0.1)),
       ),
       child: Padding(
@@ -55,10 +55,12 @@ class EmptyState extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: Icon(
-                      icon,
-                      size: 40,
-                      color: AppColors.deepBlue1,
+                    child: Center(
+                      child: Icon(
+                        icon,
+                        size: 40,
+                        color: AppColors.deepBlue1,
+                      ),
                     ),
                   ),
                 );

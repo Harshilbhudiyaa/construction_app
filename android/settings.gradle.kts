@@ -1,8 +1,13 @@
+// Robust local.properties loading
 pluginManagement {
     val flutterSdkPath =
         run {
+            val propertiesFile = file("local.properties")
+            if (!propertiesFile.exists()) {
+                throw GradleException("local.properties not found in ${propertiesFile.absolutePath}")
+            }
             val properties = java.util.Properties()
-            file("local.properties").inputStream().use { properties.load(it) }
+            propertiesFile.inputStream().use { properties.load(it) }
             val flutterSdkPath = properties.getProperty("flutter.sdk")
             require(flutterSdkPath != null) { "flutter.sdk not set in local.properties" }
             flutterSdkPath

@@ -1,0 +1,367 @@
+import 'package:flutter/material.dart';
+
+import 'package:construction_app/shared/theme/professional_theme.dart';
+import 'package:construction_app/shared/widgets/professional_page.dart';
+import 'package:construction_app/shared/widgets/staggered_animation.dart';
+
+class MaterialIssueEntryScreen extends StatefulWidget {
+  const MaterialIssueEntryScreen({super.key});
+
+  @override
+  State<MaterialIssueEntryScreen> createState() =>
+      _MaterialIssueEntryScreenState();
+}
+
+class _MaterialIssueEntryScreenState extends State<MaterialIssueEntryScreen> {
+  final _formKey = GlobalKey<FormState>();
+
+  String _workType = 'Concrete Work';
+  String _material = 'Cement (Bags)';
+  final _qtyCtrl = TextEditingController(text: '10');
+  final _materialDetailCtrl = TextEditingController();
+  final _machineCtrl = TextEditingController();
+  String _unit = 'bags';
+  String _issuedTo = 'Ramesh Kumar';
+  final _noteCtrl = TextEditingController();
+
+
+  @override
+  void dispose() {
+    _qtyCtrl.dispose();
+    _materialDetailCtrl.dispose();
+    _machineCtrl.dispose();
+    _noteCtrl.dispose();
+    super.dispose();
+
+  }
+
+  void _submit() {
+    if (!_formKey.currentState!.validate()) return;
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Material issued (UI-only)')));
+    Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ProfessionalPage(
+      title: 'Issue Material',
+      children: [
+        const ProfessionalSectionHeader(
+          title: 'Inventory Command',
+          subtitle: 'Record outward tactical movement',
+        ),
+        
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: StaggeredAnimation(
+            index: 0,
+            child: ProfessionalCard(
+              padding: const EdgeInsets.all(24),
+              gradient: LinearGradient(
+                colors: [
+                  Theme.of(context).colorScheme.surface.withOpacity(0.08),
+                  Theme.of(context).colorScheme.surface.withOpacity(0.02),
+                ],
+              ),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    _buildGlassDropdown(
+                      label: 'Target Work Segment',
+                      icon: Icons.segment_rounded,
+                      value: _workType,
+                      items: const [
+                        'Concrete Work',
+                        'Brick / Block Work',
+                        'Electrical',
+                        'Plumbing'
+                      ],
+                      onChanged: (v) => setState(() => _workType = v!),
+                    ),
+                    const SizedBox(height: 20),
+                    _buildGlassDropdown(
+                      label: 'Primary Material',
+                      icon: Icons.inventory_2_rounded,
+                      value: _material,
+                      items: const [
+                        'Cement (Bags)',
+                        'Sand',
+                        'Steel Rod'
+                      ],
+                      onChanged: (v) => setState(() {
+                        _material = v!;
+                        _unit = _material == 'Sand' ? 'tons' : _material == 'Steel Rod' ? 'kg' : 'bags';
+                      }),
+                    ),
+                    const SizedBox(height: 20),
+                    _buildGlassInput(
+                      label: 'Material Detail (Spec/Size)',
+                      controller: _materialDetailCtrl,
+                      hintText: 'e.g., Grade 53, TMT 12mm',
+                    ),
+                    const SizedBox(height: 20),
+                    _buildGlassInput(
+                      label: 'Assigned Machine (Optional)',
+                      controller: _machineCtrl,
+                      hintText: 'e.g., Block Machine B-200, JCB-04',
+                    ),
+                    const SizedBox(height: 20),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: _buildGlassInput(
+                            label: 'Tactical Qty',
+                            controller: _qtyCtrl,
+                            keyboardType: TextInputType.number,
+                            validator: (v) {
+                              if (v == null || v.isEmpty) return '??';
+                              if (double.tryParse(v) == null) return '!#';
+                              return null;
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildGlassInput(
+                            label: 'Metrics',
+                            controller: TextEditingController(text: _unit),
+                            readOnly: true,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    _buildGlassDropdown(
+                      label: 'Deploy To (Engineer/Worker)',
+                      icon: Icons.person_rounded,
+                      value: _issuedTo,
+                      items: const [
+                        'Ramesh Kumar',
+                        'Suresh Patel',
+                        'Eng. Rajesh Khanna'
+                      ],
+                      onChanged: (v) => setState(() => _issuedTo = v!),
+                    ),
+                    const SizedBox(height: 20),
+                    _buildGlassInput(
+                      label: 'Strategic Remarks (optional)',
+                      controller: _noteCtrl,
+                      maxLines: 2,
+                    ),
+                    const SizedBox(height: 32),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                            ),
+                            child: const Text('CANCEL', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1)),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(colors: AppColors.gradientColors),
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.deepBlue1.withOpacity(0.3),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: ElevatedButton(
+                              onPressed: _submit,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                              ),
+                              child: const Text(
+                                'ISSUE MATERIAL',
+                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, letterSpacing: 1),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 24),
+        
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: StaggeredAnimation(
+            index: 1,
+            child: ProfessionalCard(
+              padding: const EdgeInsets.all(16),
+              gradient: LinearGradient(
+                colors: [
+                  Colors.blueAccent.withOpacity(0.1),
+                  Colors.blueAccent.withOpacity(0.05),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.blueAccent.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.info_outline_rounded, color: Colors.blueAccent, size: 20),
+                  ),
+                  const SizedBox(width: 16),
+                  const Expanded(
+                    child: Text(
+                      'All tactical issuances are logged to the digital ledger and tracked against site budgets.',
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7), fontSize: 12, fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        
+        const SizedBox(height: 100),
+      ],
+    );
+  }
+
+  Widget _buildGlassInput({
+    required String label,
+    required TextEditingController controller,
+    TextInputType? keyboardType,
+    bool readOnly = false,
+    int maxLines = 1,
+    String? hintText,
+    String? Function(String?)? validator,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+            fontSize: 10,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.5,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          readOnly: readOnly,
+          maxLines: maxLines,
+          keyboardType: keyboardType,
+          validator: validator,
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 14),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Theme.of(context).colorScheme.surface.withOpacity(0.05),
+            hintText: hintText,
+            hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2), fontWeight: FontWeight.normal),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.1)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.1)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.blueAccent, width: 1.5),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGlassDropdown({
+    required String label,
+    required IconData icon,
+    required String value,
+    required List<String> items,
+    required void Function(String?) onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+            fontSize: 10,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.5,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.1)),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: value,
+              isExpanded: true,
+              dropdownColor: AppColors.deepBlue1,
+              icon: Icon(Icons.keyboard_arrow_down_rounded, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
+              selectedItemBuilder: (context) {
+                return items.map((String item) {
+                  return Row(
+                    children: [
+                      Icon(icon, size: 18, color: Colors.blueAccent),
+                      const SizedBox(width: 12),
+                      Text(
+                        item,
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 14),
+                      ),
+                    ],
+                  );
+                }).toList();
+              },
+              items: items.map((String item) {
+                return DropdownMenuItem<String>(
+                  value: item,
+                  child: Text(
+                    item,
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14),
+                  ),
+                );
+              }).toList(),
+              onChanged: onChanged,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+

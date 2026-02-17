@@ -1,41 +1,47 @@
-import 'package:firebase_database/firebase_database.dart';
-import '../modules/inventory/models/master_material_model.dart';
-import '../modules/inventory/models/material_model.dart';
+import 'dart:async';
+import '../modules/inventory/materials/models/master_material_model.dart';
 
 class MasterMaterialService {
-  final _db = FirebaseDatabase.instance.ref();
+  static final MasterMaterialService _instance = MasterMaterialService._internal();
+  factory MasterMaterialService() => _instance;
+  MasterMaterialService._internal();
+
+  // In-memory storage
+  final List<MasterMaterial> _masterMaterials = [];
+  final StreamController<List<MasterMaterial>> _materialsController = 
+      StreamController<List<MasterMaterial>>.broadcast();
 
   Stream<List<MasterMaterial>> getMasterMaterialsStream() {
-    return _db.child('inventory').child('master_materials').onValue.map<List<MasterMaterial>>((event) {
-      final value = event.snapshot.value;
-      if (value == null) return [];
-      
-      final Map<dynamic, dynamic> data;
-      if (value is Map) {
-        data = value;
-      } else if (value is List) {
-        data = value.asMap();
-      } else {
-        return [];
-      }
+    // Emit current state immediately when someone subscribes
+    Future.microtask(() => _emitUpdate());
+    return _materialsController.stream;
+  }
 
-      return data.entries
-          .where((e) => e.value != null)
-          .map((e) => MasterMaterial.fromJson(Map<String, dynamic>.from(e.value as Map)))
-          .toList()
-        ..sort((a, b) => a.name.compareTo(b.name));
-    }).asBroadcastStream();
+  void _emitUpdate() {
+    final sortedMaterials = List<MasterMaterial>.from(_masterMaterials)
+      ..sort((a, b) => a.name.compareTo(b.name));
+    _materialsController.add(sortedMaterials);
   }
 
   Future<void> addMasterMaterial(MasterMaterial material) async {
-    await _db.child('inventory').child('master_materials').child(material.id).set(material.toJson());
+    _masterMaterials.add(material);
+    _emitUpdate();
   }
 
   Future<void> updateMasterMaterial(MasterMaterial material) async {
-    await _db.child('inventory').child('master_materials').child(material.id).update(material.toJson());
+    final index = _masterMaterials.indexWhere((m) => m.id == material.id);
+    if (index != -1) {
+      _masterMaterials[index] = material;
+      _emitUpdate();
+    }
   }
 
   Future<void> deleteMasterMaterial(String id) async {
-    await _db.child('inventory').child('master_materials').child(id).remove();
+    _masterMaterials.removeWhere((m) => m.id == id);
+    _emitUpdate();
+  }
+
+  void dispose() {
+    _materialsController.close();
   }
 }

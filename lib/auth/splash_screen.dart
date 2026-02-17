@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:construction_app/services/auth_service.dart';
-import 'package:construction_app/services/mock_engineer_service.dart';
 import 'package:construction_app/routes.dart';
-import 'package:construction_app/shared/theme/app_theme.dart';
 import 'package:construction_app/dashboard/contractor_shell.dart';
-import 'package:construction_app/dashboard/engineer_shell.dart';
+
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -60,7 +58,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     if (!mounted) return;
 
     final authService = Provider.of<AuthService>(context, listen: false);
-    await authService.ensureInitialized();
+    await authService.initialization;
 
     if (!mounted) return;
 
@@ -75,13 +73,11 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           context,
           MaterialPageRoute(builder: (_) => const ContractorShell()),
         );
-      } else if (role == 'engineer') {
+      } else {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => EngineerShell(engineerId: userId)),
+          MaterialPageRoute(builder: (_) => const ContractorShell()),
         );
-      } else {
-        Navigator.pushReplacementNamed(context, AppRoutes.login);
       }
     } else {
       Navigator.pushReplacementNamed(context, AppRoutes.login);
@@ -124,7 +120,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 height: 300,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: theme.colorScheme.primary.withOpacity(0.04),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.04),
                 ),
               ),
             ),
@@ -136,7 +132,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 height: 200,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: theme.colorScheme.primary.withOpacity(0.03),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.03),
                 ),
               ),
             ),
@@ -162,13 +158,13 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: theme.colorScheme.primary.withOpacity(0.15),
+                                      color: theme.colorScheme.primary.withValues(alpha: 0.15),
                                       blurRadius: 30,
                                       offset: const Offset(0, 10),
                                     ),
                                   ],
                                   border: Border.all(
-                                    color: theme.colorScheme.primary.withOpacity(0.1), 
+                                    color: theme.colorScheme.primary.withValues(alpha: 0.1), 
                                     width: 4,
                                   ),
                                 ),
@@ -203,7 +199,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                             'MANAGEMENT UNIFIED',
                             style: theme.textTheme.bodySmall?.copyWith(
                               fontSize: 12,
-                              color: theme.colorScheme.primary.withOpacity(0.4),
+                              color: theme.colorScheme.primary.withValues(alpha: 0.4),
                               letterSpacing: 4.0,
                               fontWeight: FontWeight.w800,
                             ),
@@ -225,7 +221,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                       'SECURE LOADING',
                       style: theme.textTheme.bodySmall?.copyWith(
                         fontSize: 10,
-                        color: theme.colorScheme.primary.withOpacity(0.3),
+                        color: theme.colorScheme.primary.withValues(alpha: 0.3),
                         letterSpacing: 2.0,
                         fontWeight: FontWeight.bold,
                       ),

@@ -75,7 +75,7 @@ class CurrencyFormatter extends TextInputFormatter {
       int count = 0;
       for (int i = remaining.length - 1; i >= 0; i--) {
         if (count == 2) {
-          formatted = ',${formatted}';
+          formatted = ',$formatted';
           count = 0;
         }
         formatted = remaining[i] + formatted;

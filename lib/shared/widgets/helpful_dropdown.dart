@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:construction_app/shared/theme/professional_theme.dart';
 import 'info_tooltip.dart';
+import 'package:construction_app/shared/theme/design_system.dart';
 
 /// Enhanced dropdown with better UX
 class HelpfulDropdown<T> extends StatelessWidget {
   final String label;
-  final T value;
+  final T? value;
   final List<T> items;
   final String Function(T)? labelMapper;
   final ValueChanged<T?> onChanged;
   final String? tooltipMessage;
   final String? helpText;
   final IconData? icon;
+  final String? Function(T?)? validator;
 
   final bool useGlass;
   final bool readOnly;
@@ -26,6 +27,7 @@ class HelpfulDropdown<T> extends StatelessWidget {
     this.tooltipMessage,
     this.helpText,
     this.icon,
+    this.validator,
     this.useGlass = false,
     this.readOnly = false,
   });
@@ -38,8 +40,9 @@ class HelpfulDropdown<T> extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     final labelColor = colorScheme.onSurface;
-    final fillColor = colorScheme.primary.withOpacity(0.05);
     final borderColor = isDark ? Colors.white12 : const Color(0xFFE0E0E0);
+    final glassBorder = DesignSystem.glassBorder(isDark);
+    final glassFill = DesignSystem.glassColor(isDark);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,6 +74,8 @@ class HelpfulDropdown<T> extends StatelessWidget {
         DropdownButtonFormField<T>(
           value: value,
           onChanged: readOnly ? null : onChanged,
+          validator: validator,
+          isExpanded: true,
           dropdownColor: isDark ? const Color(0xFF1E293B) : colorScheme.surface,
           elevation: 8,
           borderRadius: BorderRadius.circular(16),
@@ -87,6 +92,7 @@ class HelpfulDropdown<T> extends StatelessWidget {
                 style: TextStyle(
                   color: isDark ? Colors.white : colorScheme.onSurface,
                 ),
+                overflow: TextOverflow.ellipsis,
               ),
             );
           }).toList(),
@@ -96,14 +102,14 @@ class HelpfulDropdown<T> extends StatelessWidget {
               isDense: true,
               filled: true,
               fillColor: useGlass 
-                  ? (isDark ? Colors.white.withOpacity(0.04) : Colors.white)
+                  ? glassFill
                   : (isDark ? const Color(0xFF1E293B) : colorScheme.surface),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              contentPadding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
                 borderSide: BorderSide(
                   color: useGlass 
-                      ? (isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05)) 
+                      ? glassBorder
                       : borderColor
                 ),
               ),
@@ -111,14 +117,14 @@ class HelpfulDropdown<T> extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 borderSide: BorderSide(
                   color: useGlass 
-                      ? (isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05)) 
+                      ? glassBorder 
                       : borderColor
                 ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
                 borderSide: BorderSide(
-                  color: colorScheme.primary.withOpacity(0.5),
+                  color: colorScheme.primary.withValues(alpha: 0.5),
                   width: 2,
                 ),
               ),
@@ -133,7 +139,7 @@ class HelpfulDropdown<T> extends StatelessWidget {
               Icon(
                 Icons.lightbulb_outline_rounded,
                 size: 14,
-                color: useGlass ? Colors.white.withOpacity(0.5) : Colors.grey[500],
+                color: useGlass ? Colors.white.withValues(alpha: 0.5) : Colors.grey[500],
               ),
               const SizedBox(width: 4),
               Expanded(
@@ -141,7 +147,7 @@ class HelpfulDropdown<T> extends StatelessWidget {
                   helpText!,
                   style: TextStyle(
                     fontSize: 11,
-                    color: colorScheme.onSurface.withOpacity(0.6),
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
                     fontStyle: FontStyle.italic,
                   ),
                 ),

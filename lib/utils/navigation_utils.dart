@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:construction_app/routes.dart';
-import 'package:construction_app/shared/theme/app_theme.dart';
 import 'package:construction_app/services/auth_service.dart';
 
 class NavigationUtils {
@@ -68,6 +67,8 @@ class NavigationUtils {
         final authService = context.read<AuthService>();
         await authService.clearSession();
         
+        if (!context.mounted) return false;
+
         // Navigate to login
         Navigator.of(context).pushNamedAndRemoveUntil(
           AppRoutes.login,

@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 
 import 'contractor_dashboard_screen.dart';
-import 'package:construction_app/governance/sites/site_management_screen.dart';
-import 'package:construction_app/profiles/workers_list_screen.dart';
-import 'package:construction_app/profiles/engineer_management_screen.dart';
-import 'package:construction_app/modules/resources/machine_management_screen.dart';
-import 'package:construction_app/modules/resources/tools_management_screen.dart';
-import 'package:construction_app/modules/inventory/material_list_screen.dart';
-import 'package:construction_app/modules/payments/payments_dashboard_screen.dart';
-import 'package:construction_app/notifications/notifications_screen.dart';
-import 'package:provider/provider.dart';
+import 'settings_screen.dart';
+
+import 'package:construction_app/modules/inventory/materials/screens/material_list_screen.dart';
+import 'package:construction_app/modules/inventory/inward/screens/inward_management_dashboard_screen.dart';
+import 'package:construction_app/modules/inventory/stock/screens/stock_operations_screen.dart';
+import 'package:construction_app/modules/inventory/parties/screens/party_management_screen.dart';
+import 'package:construction_app/modules/inventory/core/reports_dashboard_screen.dart';
+import 'package:construction_app/modules/inventory/approvals/approval_dashboard_screen.dart';
+
 import 'package:construction_app/utils/navigation_utils.dart';
 import 'package:construction_app/shared/widgets/app_sidebar.dart';
 import 'package:construction_app/shared/widgets/responsive_sidebar.dart';
-import 'package:construction_app/services/mock_notification_service.dart';
+
 
 class ContractorShell extends StatefulWidget {
   const ContractorShell({super.key});
@@ -27,87 +27,80 @@ class _ContractorShellState extends State<ContractorShell> {
 
   void _goTo(int i) => setState(() => _index = i);
 
-  late final List<Widget> _pages = [
-    ContractorDashboardScreen(onNavigateTo: _goTo),
-    const GovernanceHubScreen(), // Unified Hub
-    const EngineerManagementScreen(), // Global Directory
-    const WorkersListScreen(),
-    const MaterialListScreen(isAdmin: true),
-    const ToolsManagementScreen(),
-    const MachineManagementScreen(),
-    const PaymentsDashboardScreen(),
-    const NotificationsScreen(),
-  ];
-
   @override
   Widget build(BuildContext context) {
-    return Consumer<MockNotificationService>(
-      builder: (context, notificationService, child) {
-        final List<SidebarDestination> destinations = [
-          const SidebarDestination(
-            icon: Icons.dashboard_rounded,
-            label: 'Dashboard',
-          ),
-          const SidebarDestination(
-            icon: Icons.gavel_rounded,
-            label: 'Governance Hub',
-          ),
-          const SidebarDestination(
-            icon: Icons.engineering_rounded,
-            label: 'Engineers',
-          ),
-          const SidebarDestination(
-            icon: Icons.groups_rounded,
-            label: 'Workers',
-          ),
-          const SidebarDestination(
-            icon: Icons.inventory_2_rounded,
-            label: 'Inventory',
-          ),
-          const SidebarDestination(
-            icon: Icons.build_rounded,
-            label: 'Tools',
-          ),
-          const SidebarDestination(
-            icon: Icons.precision_manufacturing_rounded,
-            label: 'Machines',
-          ),
-          const SidebarDestination(
-            icon: Icons.payments_rounded,
-            label: 'Payments',
+    // Top-level Navigation Pages
+    final List<Widget> pages = [
+      ContractorDashboardScreen(onNavigateTo: _goTo),
+      const MaterialListScreen(isAdmin: true),     // Inventory (Materials)
+      const InwardManagementDashboardScreen(),     // Inward
+      const StockOperationsScreen(),               // Stock Ops
+      const ApprovalDashboardScreen(),             // Approvals
+      const PartyManagementScreen(),               // Suppliers
+      const ReportsDashboardScreen(),              // Reports
+      const SettingsScreen(),                      // Settings
+    ];
+
+    final List<SidebarDestination> destinations = [
+      const SidebarDestination(
+        icon: Icons.dashboard_rounded,
+        label: 'Dashboard',
+        index: 0,
+      ),
+      const SidebarDestination(
+        icon: Icons.inventory_2_rounded,
+        label: 'Inventory',
+        index: 1, // Clicking "Inventory" itself goes to Materials
+        children: [
+          SidebarDestination(
+            icon: Icons.move_to_inbox_rounded,
+            label: 'Inward',
+            index: 2,
           ),
           SidebarDestination(
-            icon: Icons.notifications_rounded,
-            label: 'Notifications',
-            badge: notificationService.unreadCount > 0 
-                ? notificationService.unreadCount.toString() 
-                : null,
+            icon: Icons.compare_arrows_rounded,
+            label: 'Stock Ops',
+            index: 3,
           ),
-        ];
+          SidebarDestination(
+            icon: Icons.approval_rounded,
+            label: 'Approvals',
+            index: 4,
+          ),
+          SidebarDestination(
+            icon: Icons.people_alt_rounded,
+            label: 'Suppliers',
+            index: 5,
+          ),
+          SidebarDestination(
+            icon: Icons.analytics_rounded,
+            label: 'Reports',
+            index: 6,
+          ),
+           SidebarDestination(
+            icon: Icons.settings_rounded,
+            label: 'Settings',
+            index: 7,
+          ),
+        ]
+      ),
+    ];
 
-        return PopScope(
-          canPop: false,
-          onPopInvokedWithResult: (didPop, result) async {
-            if (didPop) return;
-            
-            if (_index != 0) {
-              setState(() => _index = 0);
-            } else {
-              await NavigationUtils.showLogoutDialog(context);
-            }
-          },
-          child: ResponsiveSidebar(
-            selectedIndex: _index,
-            onDestinationSelected: _goTo,
-            destinations: destinations,
-            userName: 'Contractor Admin',
-            userRole: 'Administrator',
-            child: _pages[_index],
-          ),
-        );
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        
+        await NavigationUtils.showLogoutDialog(context);
       },
+      child: ResponsiveSidebar(
+        selectedIndex: _index,
+        onDestinationSelected: _goTo,
+        destinations: destinations,
+        userName: 'Inventory Admin',
+        userRole: 'Administrator',
+        child: pages[_index], // Directly use index since pages match destinations
+      ),
     );
   }
 }
-
-

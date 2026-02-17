@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:construction_app/dashboard/contractor_shell.dart';
 import 'package:construction_app/shared/theme/professional_theme.dart';
+import 'package:construction_app/shared/theme/app_theme.dart';
 
 /// Register Screen
 /// Users enter their details and verify with OTP
@@ -143,6 +144,9 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
       body: ProfessionalBackground(
         child: SafeArea(
@@ -169,40 +173,36 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                           Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              gradient: ConstructionColors.primaryGradient,
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
+                                  color: ConstructionColors.deepOrange.withValues(alpha: 0.3),
                                   blurRadius: 30,
                                   spreadRadius: 5,
                                 ),
                               ],
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.person_add_rounded,
                               size: 56,
-                              color: AppColors.deepBlue1,
+                              color: Colors.white,
                             ),
                           ),
                           const SizedBox(height: 24),
-                          const Text(
+                          Text(
                             'Create Account',
-                            style: TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                              letterSpacing: 0.5,
+                            style: theme.textTheme.displaySmall?.copyWith(
+                              fontWeight: FontWeight.w900,
+                              color: theme.colorScheme.primary,
                             ),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             'Join Smart Construction System',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.white.withOpacity(0.9),
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.textTheme.bodySmall?.color,
                               letterSpacing: 1.2,
-                              fontWeight: FontWeight.w300,
                             ),
                           ),
                         ],
@@ -230,12 +230,10 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               if (!_showOTPField) ...[
-                                const Text(
+                                Text(
                                   'Personal Details',
-                                  style: TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.deepBlue1,
+                                  style: theme.textTheme.headlineMedium?.copyWith(
+                                    fontWeight: FontWeight.w900,
                                   ),
                                 ),
                                 const SizedBox(height: 24),
@@ -282,21 +280,16 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                                   maxLines: 2,
                                 ),
                               ] else ...[
-                                const Text(
+                                Text(
                                   'Verify OTP',
-                                  style: TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.deepBlue1,
+                                  style: theme.textTheme.headlineMedium?.copyWith(
+                                    fontWeight: FontWeight.w900,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
                                   'Enter 6-digit verification code',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[600],
-                                  ),
+                                  style: theme.textTheme.bodyMedium,
                                 ),
                                 const SizedBox(height: 32),
                                 
@@ -313,26 +306,14 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                                         textAlign: TextAlign.center,
                                         maxLength: 1,
                                         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                                        style: const TextStyle(
+
+                                        style: TextStyle(
                                           fontSize: 20,
                                           fontWeight: FontWeight.bold,
                                         ),
                                         decoration: InputDecoration(
                                           counterText: '',
-                                          border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12),
-                                          ),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12),
-                                            borderSide: BorderSide(color: Colors.grey[300]!),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12),
-                                            borderSide: const BorderSide(
-                                              color: AppColors.deepBlue1,
-                                              width: 2,
-                                            ),
-                                          ),
+                                          contentPadding: const EdgeInsets.symmetric(vertical: 16),
                                         ),
                                         onChanged: (value) {
                                           if (value.isNotEmpty && index < 5) {
@@ -355,10 +336,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                                     if (_resendTimer > 0) ...[
                                       Text(
                                         'Resend OTP in $_resendTimer seconds',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.grey[600],
-                                        ),
+                                        style: theme.textTheme.bodySmall,
                                       ),
                                     ] else ...[
                                       TextButton(
@@ -381,7 +359,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                                       ? null
                                       : (_showOTPField ? _verifyOTP : _handleRegister),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.deepBlue1,
+                                    backgroundColor: ConstructionColors.deepOrange,
                                     foregroundColor: Colors.white,
                                     elevation: 0,
                                     shape: RoundedRectangleBorder(
@@ -401,9 +379,10 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                                         )
                                       : Text(
                                           _showOTPField ? 'Verify & Register' : 'Next',
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 16,
-                                            fontWeight: FontWeight.bold,
+                                            fontWeight: FontWeight.w600,
+                                            letterSpacing: 0.5,
                                           ),
                                         ),
                                 ),
@@ -418,7 +397,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                                   child: Text(
                                     'Already have an account? Sign In',
                                     style: TextStyle(
-                                      color: Colors.grey[600],
+                                      color: ConstructionColors.steelGray,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -459,17 +438,6 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
         hintText: hint,
         prefixIcon: Icon(icon),
         prefixText: prefixText,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.deepBlue1, width: 2),
-        ),
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {

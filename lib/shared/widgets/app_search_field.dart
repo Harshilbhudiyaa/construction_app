@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:construction_app/shared/theme/app_spacing.dart';
-import 'package:construction_app/shared/theme/professional_theme.dart';
 
 class AppSearchField extends StatefulWidget {
   final String hint;

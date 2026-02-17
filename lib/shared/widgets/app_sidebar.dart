@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:construction_app/shared/theme/app_theme.dart';
 
 class AppSidebar extends StatelessWidget {
   final int selectedIndex;
@@ -125,74 +124,7 @@ class AppSidebar extends StatelessWidget {
                   itemCount: destinations.length,
                   itemBuilder: (context, index) {
                     final destination = destinations[index];
-                    final isSelected = index == selectedIndex;
-
-                    return Container(
-                      margin: const EdgeInsets.symmetric(vertical: 3),
-                      decoration: BoxDecoration(
-                        gradient: isSelected 
-                          ? const LinearGradient(
-                              colors: [Color(0xFF1A237E), Color(0xFF3949AB)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            )
-                          : null,
-                        color: isSelected ? null : Colors.transparent,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () => onDestinationSelected(index),
-                          borderRadius: BorderRadius.circular(12),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  destination.icon,
-                                  color: isSelected 
-                                    ? Colors.white 
-                                    : (isDark ? Colors.white54 : const Color(0xFF78909C)),
-                                  size: 24,
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Text(
-                                    destination.label,
-                                    style: TextStyle(
-                                      color: isSelected 
-                                        ? Colors.white 
-                                        : (isDark ? Colors.white.withOpacity(0.8) : const Color(0xFF37474F)),
-                                      fontSize: 15,
-                                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                      decoration: TextDecoration.none,
-                                    ),
-                                  ),
-                                ),
-                                if (destination.badge != null)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFE53935),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Text(
-                                      destination.badge!,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        decoration: TextDecoration.none,
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
+                    return _buildNavItem(context, destination, isDark);
                   },
                 ),
               ),
@@ -231,16 +163,197 @@ class AppSidebar extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildNavItem(BuildContext context, SidebarDestination destination, bool isDark) {
+    if (destination.children != null && destination.children!.isNotEmpty) {
+      return _buildExpandableNavItem(context, destination, isDark);
+    }
+
+    final isSelected = selectedIndex == destination.index;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 3),
+      decoration: BoxDecoration(
+        gradient: isSelected
+            ? const LinearGradient(
+                colors: [Color(0xFF1A237E), Color(0xFF3949AB)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
+            : null,
+        color: isSelected ? null : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+             if (destination.index != null) {
+                onDestinationSelected(destination.index!);
+             }
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Icon(
+                  destination.icon,
+                  color: isSelected
+                      ? Colors.white
+                      : (isDark ? Colors.white54 : const Color(0xFF78909C)),
+                  size: 24,
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    destination.label,
+                    style: TextStyle(
+                      color: isSelected
+                          ? Colors.white
+                          : (isDark ? Colors.white.withOpacity(0.8) : const Color(0xFF37474F)),
+                      fontSize: 15,
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                ),
+                if (destination.badge != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE53935),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      destination.badge!,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExpandableNavItem(BuildContext context, SidebarDestination destination, bool isDark) {
+    // Check if any child is selected OR parent itself is selected (if it has an index)
+    bool isAnyChildSelected = false;
+    
+    // Helper to check recursively if needed, but for now depth 1 is enough
+    for (var child in destination.children!) {
+      if (child.index == selectedIndex) {
+        isAnyChildSelected = true;
+        break;
+      }
+    }
+    
+    final isParentSelected = destination.index == selectedIndex;
+    final isActive = isAnyChildSelected || isParentSelected;
+
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 3),
+        decoration: BoxDecoration(
+             color: isActive ? const Color(0xFF1A237E).withOpacity(isDark ? 0.2 : 0.05) : Colors.transparent,
+             borderRadius: BorderRadius.circular(12), 
+        ),
+        child: ExpansionTile(
+          initiallyExpanded: isActive,
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          leading: Container(
+             padding: const EdgeInsets.all(8),
+             decoration: BoxDecoration(
+                color: isActive ? const Color(0xFF1A237E) : Colors.transparent,
+                borderRadius: BorderRadius.circular(8),
+             ),
+             child: Icon(
+                destination.icon,
+                color: isActive 
+                  ? Colors.white 
+                  : (isDark ? Colors.white54 : const Color(0xFF78909C)),
+                size: 20,
+             ),
+          ),
+          title: Text(
+            destination.label,
+            style: TextStyle(
+              color: isActive
+                  ? (isDark ? Colors.white : const Color(0xFF1A237E))
+                  : (isDark ? Colors.white.withOpacity(0.8) : const Color(0xFF37474F)),
+              fontSize: 15,
+              fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+            ),
+          ),
+          childrenPadding: const EdgeInsets.only(left: 16, bottom: 8),
+          iconColor: isDark ? Colors.white70 : const Color(0xFF78909C),
+          collapsedIconColor: isDark ? Colors.white54 : const Color(0xFF78909C),
+          children: destination.children!.map((child) {
+             final isChildSelected = child.index == selectedIndex;
+             
+             return Container(
+                 margin: const EdgeInsets.only(left: 32, right: 16, bottom: 2),
+                 decoration: BoxDecoration(
+                   borderRadius: BorderRadius.circular(8),
+                   color: isChildSelected 
+                     ? (isDark ? Colors.white.withOpacity(0.1) : Colors.grey.withOpacity(0.1)) 
+                     : null,
+                 ),
+                 child: ListTile(
+                   contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                   dense: true,
+                   visualDensity: VisualDensity.compact,
+                   leading: Icon(
+                     child.icon, 
+                     size: 18, 
+                     color: isChildSelected 
+                        ? (isDark ? Colors.white : const Color(0xFF1A237E))
+                        : (isDark ? Colors.white38 : Colors.grey[600])
+                   ),
+                   title: Text(
+                     child.label,
+                     style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: isChildSelected ? FontWeight.w600 : FontWeight.w500,
+                        color: isChildSelected 
+                          ? (isDark ? Colors.white : const Color(0xFF1A237E))
+                          : (isDark ? Colors.white70 : Colors.grey[700])
+                     ),
+                   ),
+                   onTap: () {
+                     if (child.index != null) {
+                        onDestinationSelected(child.index!);
+                     }
+                   },
+                 ),
+             );
+          }).toList(),
+        ),
+      ),
+    );
+  }
 }
 
 class SidebarDestination {
   final IconData icon;
   final String label;
   final String? badge;
+  final int? index;
+  final List<SidebarDestination>? children;
 
   const SidebarDestination({
     required this.icon,
     required this.label,
     this.badge,
+    this.index,
+    this.children,
   });
 }

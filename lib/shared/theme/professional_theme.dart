@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'app_theme.dart';
+import 'package:construction_app/shared/theme/design_system.dart';
 
-/// Professional theme colors - Light gradients like login page
+/// Professional theme colors - Forwarding to DesignSystem
 class AppColors {
-  static const deepBlue1 = Color(0xFF1A237E);
-  static const deepBlue2 = Color(0xFF283593);
-  static const deepBlue3 = Color(0xFF3949AB);
-  static const deepBlue4 = Color(0xFF5C6BC0);
+  static const deepBlue1 = DesignSystem.deepNavy;
+  static const deepBlue2 = DesignSystem.royalBlue;
+  static const deepBlue3 = DesignSystem.electricBlue;
+  static const deepBlue4 = DesignSystem.softBlue;
   
-  static const accentGold = Color(0xFFFFD54F);
-  static const accentOrange = Color(0xFFFF8A65);
+  static const accentGold = DesignSystem.warning;
+  static const accentOrange = DesignSystem.info; // Mapping info to orange slot for now or keep custom if needed
   
   static const glassWhite = Color(0x33FFFFFF);
   static const glassWhiteThick = Color(0x66FFFFFF);
@@ -30,7 +30,7 @@ class AppColors {
   static const loginGradientEnd = Color(0xFFEDE7F6);   // Very light purple
 }
 
-/// Professional background - Light gradient like login page
+/// Professional background - Uses DesignSystem gradients
 class ProfessionalBackground extends StatelessWidget {
   final Widget child;
   
@@ -45,13 +45,7 @@ class ProfessionalBackground extends StatelessWidget {
     
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDark 
-            ? [const Color(0xFF020617), const Color(0xFF0F172A)]
-            : [const Color(0xFFF8FAFC), const Color(0xFFF1F5F9)],
-        ),
+        gradient: isDark ? DesignSystem.darkGradient : DesignSystem.lightGradient,
       ),
       child: child,
     );
@@ -120,25 +114,18 @@ class ProfessionalCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final glassColor = isDark 
-        ? Colors.white.withOpacity(0.03) 
-        : Colors.white.withOpacity(0.7);
-    final glassBorder = isDark 
-        ? Colors.white.withOpacity(0.08) 
-        : Colors.black.withOpacity(0.05);
-
     return Container(
       width: width,
       height: height,
-      margin: margin ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: margin,
       decoration: BoxDecoration(
-        color: color ?? (useGlass ? glassColor : theme.cardTheme.color),
+        color: color ?? (useGlass ? DesignSystem.glassColor(isDark) : theme.cardTheme.color),
         gradient: gradient,
         borderRadius: BorderRadius.circular(borderRadius),
-        border: border ?? Border.all(color: useGlass ? glassBorder : Colors.transparent),
+        border: border ?? Border.all(color: useGlass ? DesignSystem.glassBorder(isDark) : Colors.transparent),
         boxShadow: boxShadow ?? [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.08),
+            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
             blurRadius: isDark ? 30 : 20,
             offset: const Offset(0, 10),
             spreadRadius: 0,

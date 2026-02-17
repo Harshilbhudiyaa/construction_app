@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:construction_app/services/mock_engineer_service.dart';
-import 'package:construction_app/services/mock_worker_service.dart';
 import 'package:construction_app/services/auth_service.dart';
 import 'package:construction_app/services/theme_service.dart';
 import 'package:construction_app/dashboard/contractor_shell.dart';
-import 'package:construction_app/dashboard/engineer_shell.dart';
-import 'package:construction_app/dashboard/worker_shell.dart';
+
+
 import 'package:construction_app/shared/theme/app_theme.dart';
-import 'package:construction_app/profiles/worker_types.dart';
+
+import 'package:construction_app/auth/register_screen.dart';
 
 /// OTP-based Login Screen with Session Persistence
 class LoginScreen extends StatefulWidget {
@@ -138,10 +137,13 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
       try {
         // 1. Check for Admin Login
         if (_phoneCtrl.text == '9999999999') {
-          // Save session if remember me is checked
-          if (_rememberMe) {
-            await authService.saveSession(userId: 'admin', role: 'admin');
-          }
+          // Set session
+          await authService.login(
+            userId: 'admin',
+            userName: 'System Administrator',
+            role: 'admin',
+            persist: _rememberMe,
+          );
           
           Navigator.pushAndRemoveUntil(
             context,
@@ -151,50 +153,9 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
           return;
         }
 
-        // 2. Check for Engineer Login
-        final engineerService = context.read<MockEngineerService>();
-        final engineer = engineerService.findByPhone(_phoneCtrl.text);
 
-        if (engineer != null) {
-          if (!engineer.isActive) {
-            _showError('Account is inactive. Contact Administrator.');
-            return;
-          }
 
-          if (_rememberMe) {
-            await authService.saveSession(userId: engineer.id, role: 'engineer');
-          }
 
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => EngineerShell(engineerId: engineer.id)),
-            (_) => false,
-          );
-          return;
-        }
-
-        // 3. Check for Worker Login
-        final workerService = context.read<MockWorkerService>();
-        final workerList = workerService.workers.where((w) => w.phone == _phoneCtrl.text).toList();
-
-        if (workerList.isNotEmpty) {
-          final worker = workerList.first;
-          if (worker.status != WorkerStatus.active) {
-            _showError('Worker account is inactive.');
-            return;
-          }
-
-          if (_rememberMe) {
-            await authService.saveSession(userId: worker.id, role: 'worker');
-          }
-
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => WorkerShell(workerId: worker.id)),
-            (_) => false,
-          );
-          return;
-        }
 
         // 4. Not Found
         _showError('No user found. Try 9999999999 for Admin.');
@@ -241,9 +202,9 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
             colors: isDark 
               ? [const Color(0xFF0F1218), const Color(0xFF1A1F2B)]
               : [
-                  theme.colorScheme.primary.withOpacity(0.1),
-                  theme.colorScheme.secondary.withOpacity(0.05),
-                  theme.colorScheme.background,
+                  theme.colorScheme.primary.withValues(alpha: 0.1),
+                  theme.colorScheme.secondary.withValues(alpha: 0.05),
+                  theme.colorScheme.surface,
                 ],
           ),
         ),
@@ -275,7 +236,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: ConstructionColors.deepOrange.withOpacity(0.3),
+                                  color: ConstructionColors.deepOrange.withValues(alpha: 0.3),
                                   blurRadius: 30,
                                   spreadRadius: 5,
                                 ),
@@ -322,7 +283,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                         constraints: const BoxConstraints(maxWidth: 440),
                         child: Card(
                           elevation: 8,
-                          shadowColor: ConstructionColors.deepOrange.withOpacity(0.1),
+                          shadowColor: ConstructionColors.deepOrange.withValues(alpha: 0.1),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
@@ -515,6 +476,45 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                                               ),
                                             ),
                                     ),
+                                  ),
+                                  
+                                  const SizedBox(height: 24),
+
+                                  // Sign Up Link
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        "Don't have an account? ",
+                                        style: TextStyle(
+                                          color: ConstructionColors.steelGray,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) => const RegisterScreen(),
+                                            ),
+                                          );
+                                        },
+                                        style: TextButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                                          minimumSize: Size.zero,
+                                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        ),
+                                        child: Text(
+                                          'Sign Up',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: theme.colorScheme.primary,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),

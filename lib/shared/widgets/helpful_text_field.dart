@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:construction_app/shared/theme/professional_theme.dart';
 import 'info_tooltip.dart';
+import 'package:construction_app/shared/theme/design_system.dart';
 
 /// An enhanced text field with user-friendly features like tooltips,
 /// character counters, and better validation feedback
@@ -18,6 +18,7 @@ class HelpfulTextField extends StatefulWidget {
   final bool showCharacterCount;
   final String? prefixText;
   final String? suffixText;
+  final Widget? suffixIcon;
   final String? hintText;
   final bool obscureText;
   final int? maxLines;
@@ -40,6 +41,7 @@ class HelpfulTextField extends StatefulWidget {
     this.showCharacterCount = false,
     this.prefixText,
     this.suffixText,
+    this.suffixIcon,
     this.hintText,
     this.obscureText = false,
     this.maxLines = 1,
@@ -63,14 +65,14 @@ class _HelpfulTextFieldState extends State<HelpfulTextField> {
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
 
-    final baseColor = colorScheme.primary;
+
     final labelColor = colorScheme.onSurface;
     final fillColor = widget.useGlass 
-        ? (isDark ? Colors.white.withOpacity(0.04) : Colors.white)
-        : (_isFocused ? colorScheme.primary.withOpacity(0.03) : (isDark ? const Color(0xFF1E293B) : Colors.grey[50]));
+        ? DesignSystem.glassColor(isDark)
+        : (_isFocused ? colorScheme.primary.withValues(alpha: 0.03) : (isDark ? const Color(0xFF1E293B) : Colors.grey[50]));
     final borderColor = widget.useGlass
-        ? (isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05))
-        : (isDark ? Colors.white.withOpacity(0.05) : Colors.grey[200]!);
+        ? DesignSystem.glassBorder(isDark)
+        : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey[200]!);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,22 +133,24 @@ class _HelpfulTextFieldState extends State<HelpfulTextField> {
               isDense: true,
               hintText: widget.hintText,
               hintStyle: TextStyle(
-                color: colorScheme.onSurface.withOpacity(0.5),
+                color: colorScheme.onSurface.withValues(alpha: 0.5),
                 fontSize: 14,
               ),
+              contentPadding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
               prefixIcon: widget.icon != null
                   ? Icon(
                       widget.icon,
                       size: 20,
                       color: _isFocused
                           ? colorScheme.primary
-                          : colorScheme.onSurface.withOpacity(0.5),
+                          : colorScheme.onSurface.withValues(alpha: 0.5),
                     )
                   : null,
               prefixText: widget.prefixText,
               prefixStyle: TextStyle(color: colorScheme.onSurface),
               suffixText: widget.suffixText,
               suffixStyle: TextStyle(color: colorScheme.onSurface),
+              suffixIcon: widget.suffixIcon,
               filled: true,
               fillColor: fillColor,
               border: OutlineInputBorder(
@@ -175,7 +179,7 @@ class _HelpfulTextFieldState extends State<HelpfulTextField> {
               errorText: _errorText,
               errorStyle: const TextStyle(color: Colors.redAccent),
               counterText: widget.showCharacterCount ? null : '',
-              counterStyle: TextStyle(color: colorScheme.onSurface.withOpacity(0.5)),
+              counterStyle: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.5)),
             ),
           ),
         ),
