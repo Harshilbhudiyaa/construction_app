@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 class AppSearchField extends StatefulWidget {
   final String hint;
@@ -86,18 +86,18 @@ class _AppSearchFieldState extends State<AppSearchField> {
         decoration: BoxDecoration(
           color: _isFocused 
               ? Colors.white
-              : Colors.white.withOpacity(0.9),
+              : Colors.white.withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(40),
           border: Border.all(
             color: _isFocused
                 ? const Color(0xFF1A237E)
-                : const Color(0xFF1A237E).withOpacity(0.12),
+                : const Color(0xFF1A237E).withValues(alpha: 0.12),
             width: _isFocused ? 1.5 : 1.0,
           ),
           boxShadow: _isFocused
               ? [
                   BoxShadow(
-                    color: Colors.blueAccent.withOpacity(0.1),
+                    color: Colors.blueAccent.withValues(alpha: 0.1),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -113,7 +113,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
                 Icons.search_rounded,
                 color: _isFocused 
                     ? const Color(0xFF1A237E)
-                    : const Color(0xFF1A237E).withOpacity(0.4),
+                    : const Color(0xFF1A237E).withValues(alpha: 0.4),
                 size: 20,
               ),
             ),
@@ -135,7 +135,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
                 decoration: InputDecoration(
                   hintText: widget.hint,
                   hintStyle: TextStyle(
-                    color: const Color(0xFF1A237E).withOpacity(0.35),
+                    color: const Color(0xFF1A237E).withValues(alpha: 0.35),
                     fontWeight: FontWeight.w300,
                     fontSize: 15,
                   ),
@@ -161,12 +161,12 @@ class _AppSearchFieldState extends State<AppSearchField> {
                   child: Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.close_rounded,
-                      color: const Color(0xFF1A237E).withOpacity(0.5),
+                      color: const Color(0xFF1A237E).withValues(alpha: 0.5),
                       size: 16,
                     ),
                   ),
@@ -181,12 +181,12 @@ class _AppSearchFieldState extends State<AppSearchField> {
                 child: InkWell(
                   onTap: widget.onFilterTap,
                   borderRadius: BorderRadius.circular(20),
-                  splashColor: Colors.white.withOpacity(0.1),
-                  highlightColor: Colors.white.withOpacity(0.05),
+                  splashColor: Colors.white.withValues(alpha: 0.1),
+                  highlightColor: Colors.white.withValues(alpha: 0.05),
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.08),
+                      color: Colors.white.withValues(alpha: 0.08),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(

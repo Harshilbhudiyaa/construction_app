@@ -47,10 +47,12 @@ class _StaggeredAnimationState extends State<StaggeredAnimation>
       curve: Curves.easeIn,
     ));
 
-    Future.delayed(widget.delay * widget.index, () {
-      if (mounted) {
-        _controller.forward();
-      }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(widget.delay * widget.index, () {
+        if (mounted) {
+          _controller.forward();
+        }
+      });
     });
   }
 
@@ -117,10 +119,12 @@ class _AnimatedListItemState extends State<AnimatedListItem>
       curve: Curves.easeIn,
     ));
 
-    Future.delayed(Duration(milliseconds: 50 * widget.index), () {
-      if (mounted) {
-        _controller.forward();
-      }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(Duration(milliseconds: 50 * widget.index), () {
+        if (mounted) {
+          _controller.forward();
+        }
+      });
     });
   }
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:construction_app/shared/theme/app_spacing.dart';
+import 'package:construction_app/core/theme/app_spacing.dart';
 
 class SectionHeader extends StatelessWidget {
   final String title;

@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:construction_app/shared/theme/professional_theme.dart';
+import 'package:construction_app/core/theme/professional_theme.dart';
 
 /// Keyboard shortcut handler for power users
 class KeyboardShortcutHandler extends StatelessWidget {
@@ -125,7 +125,7 @@ class KeyboardShortcutsGuide extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.deepBlue1.withOpacity(0.1),
+                    color: AppColors.deepBlue1.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(

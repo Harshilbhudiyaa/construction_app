@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:construction_app/shared/theme/professional_theme.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:construction_app/core/theme/professional_theme.dart';
 
 /// A quick help guide widget that shows helpful tips to users
 class QuickHelpGuide extends StatelessWidget {
@@ -21,14 +21,14 @@ class QuickHelpGuide extends StatelessWidget {
       color: Colors.blue[50],
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: AppColors.deepBlue1.withOpacity(0.2)),
+        side: BorderSide(color: AppColors.deepBlue1.withValues(alpha: 0.2)),
       ),
       child: ExpansionTile(
         initiallyExpanded: isExpanded,
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppColors.deepBlue1.withOpacity(0.1),
+            color: AppColors.deepBlue1.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: const Icon(
@@ -58,7 +58,7 @@ class QuickHelpGuide extends StatelessWidget {
                       Icon(
                         item.icon,
                         size: 18,
-                        color: AppColors.deepBlue1.withOpacity(0.7),
+                        color: AppColors.deepBlue1.withValues(alpha: 0.7),
                       ),
                       const SizedBox(width: 12),
                       Expanded(

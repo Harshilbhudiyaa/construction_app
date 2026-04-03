@@ -21,7 +21,7 @@ class ResponsiveSidebar extends StatefulWidget {
     required this.child,
   });
 
-  static const double mobileBreakpoint = 800;
+  static const double mobileBreakpoint = 768;
 
   @override
   State<ResponsiveSidebar> createState() => _ResponsiveSidebarState();

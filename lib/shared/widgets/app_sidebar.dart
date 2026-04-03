@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:construction_app/core/theme/design_system.dart';
 
 class AppSidebar extends StatelessWidget {
   final int selectedIndex;
@@ -20,20 +21,21 @@ class AppSidebar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
+    
+    // Construction Theme: Always Light/Professional
 
     return Material(
       color: Colors.transparent,
       child: Container(
         width: 280,
         decoration: BoxDecoration(
-          color: colorScheme.surface,
-          border: Border(
-            right: BorderSide(color: isDark ? Colors.white.withOpacity(0.08) : const Color(0xFFE0E0E0), width: 1),
+          color: DesignSystem.surfaceWhite,
+          border: const Border(
+            right: BorderSide(color: Color(0xFFE0E0E0), width: 1),
           ),
-          boxShadow: isDark ? [] : [
+          boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(2, 0),
             ),
@@ -42,7 +44,7 @@ class AppSidebar extends StatelessWidget {
         child: SafeArea(
           child: Column(
             children: [
-              // Modern Header with Profile Photo
+              // Header with Profile Photo
               Container(
                 padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
                 child: Column(
@@ -52,16 +54,13 @@ class AppSidebar extends StatelessWidget {
                       width: 80,
                       height: 80,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF1A237E), Color(0xFF5C6BC0)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
+                        color: DesignSystem.charcoalBlack,
                         shape: BoxShape.circle,
+                        border: Border.all(color: DesignSystem.constructionYellow, width: 3),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF1A237E).withOpacity(0.3),
-                            blurRadius: 12,
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 8,
                             offset: const Offset(0, 4),
                           ),
                         ],
@@ -69,11 +68,12 @@ class AppSidebar extends StatelessWidget {
                       child: const Center(
                         child: Icon(
                           Icons.person,
-                          color: Colors.white,
+                          color: DesignSystem.constructionYellow,
                           size: 40,
                         ),
                       ),
                     ),
+                    const SizedBox(height: 12),
                     // User Name
                     Text(
                       userName ?? 'Contractor Admin',
@@ -81,7 +81,6 @@ class AppSidebar extends StatelessWidget {
                         color: colorScheme.onSurface,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        decoration: TextDecoration.none,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -90,17 +89,17 @@ class AppSidebar extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                       decoration: BoxDecoration(
-                        color: (isDark ? Colors.white : const Color(0xFF1A237E)).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
+                        color: DesignSystem.constructionYellow.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(color: DesignSystem.constructionYellow.withValues(alpha: 0.5)),
                       ),
                       child: Text(
                         (userRole ?? 'ADMINISTRATOR').toUpperCase(),
-                        style: TextStyle(
-                          color: isDark ? Colors.white.withOpacity(0.8) : const Color(0xFF1A237E),
+                        style: const TextStyle(
+                          color: DesignSystem.charcoalBlack,
                           fontSize: 11,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w900,
                           letterSpacing: 0.5,
-                          decoration: TextDecoration.none,
                         ),
                       ),
                     ),
@@ -112,7 +111,7 @@ class AppSidebar extends StatelessWidget {
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 16),
                 height: 1,
-                color: isDark ? Colors.white10 : const Color(0xFFE0E0E0),
+                color: const Color(0xFFE0E0E0),
               ),
 
               const SizedBox(height: 8),
@@ -124,7 +123,7 @@ class AppSidebar extends StatelessWidget {
                   itemCount: destinations.length,
                   itemBuilder: (context, index) {
                     final destination = destinations[index];
-                    return _buildNavItem(context, destination, isDark);
+                    return _buildNavItem(context, destination);
                   },
                 ),
               ),
@@ -134,24 +133,22 @@ class AppSidebar extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: Column(
                   children: [
-                    Text(
+                    const Text(
                       'CONSTRUCTION SUITE',
                       style: TextStyle(
-                        color: (isDark ? Colors.white : const Color(0xFF1A237E)).withOpacity(0.4),
+                        color: DesignSystem.steelGrey,
                         fontSize: 10,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 1.2,
-                        decoration: TextDecoration.none,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'v2.0.0 Premium',
                       style: TextStyle(
-                        color: (isDark ? Colors.white : const Color(0xFF78909C)).withOpacity(0.6),
+                        color: DesignSystem.steelGrey.withValues(alpha: 0.7),
                         fontSize: 9,
                         fontWeight: FontWeight.w600,
-                        decoration: TextDecoration.none,
                       ),
                     ),
                   ],
@@ -164,26 +161,15 @@ class AppSidebar extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(BuildContext context, SidebarDestination destination, bool isDark) {
+  Widget _buildNavItem(BuildContext context, SidebarDestination destination) {
     if (destination.children != null && destination.children!.isNotEmpty) {
-      return _buildExpandableNavItem(context, destination, isDark);
+      return _buildExpandableNavItem(context, destination);
     }
 
     final isSelected = selectedIndex == destination.index;
 
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 3),
-      decoration: BoxDecoration(
-        gradient: isSelected
-            ? const LinearGradient(
-                colors: [Color(0xFF1A237E), Color(0xFF3949AB)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              )
-            : null,
-        color: isSelected ? null : Colors.transparent,
-        borderRadius: BorderRadius.circular(12),
-      ),
+      margin: const EdgeInsets.symmetric(vertical: 2),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -192,16 +178,18 @@ class AppSidebar extends StatelessWidget {
                 onDestinationSelected(destination.index!);
              }
           },
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: isSelected ? DesignSystem.constructionYellow : Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+            ),
             child: Row(
               children: [
                 Icon(
                   destination.icon,
-                  color: isSelected
-                      ? Colors.white
-                      : (isDark ? Colors.white54 : const Color(0xFF78909C)),
+                  color: isSelected ? DesignSystem.charcoalBlack : DesignSystem.steelGrey,
                   size: 24,
                 ),
                 const SizedBox(width: 16),
@@ -209,12 +197,9 @@ class AppSidebar extends StatelessWidget {
                   child: Text(
                     destination.label,
                     style: TextStyle(
-                      color: isSelected
-                          ? Colors.white
-                          : (isDark ? Colors.white.withOpacity(0.8) : const Color(0xFF37474F)),
+                      color: isSelected ? DesignSystem.charcoalBlack : DesignSystem.textPrimary,
                       fontSize: 15,
                       fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                      decoration: TextDecoration.none,
                     ),
                   ),
                 ),
@@ -222,8 +207,8 @@ class AppSidebar extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE53935),
-                      borderRadius: BorderRadius.circular(10),
+                      color: DesignSystem.warning,
+                      borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
                       destination.badge!,
@@ -231,7 +216,6 @@ class AppSidebar extends StatelessWidget {
                         color: Colors.white,
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
-                        decoration: TextDecoration.none,
                       ),
                     ),
                   ),
@@ -243,11 +227,8 @@ class AppSidebar extends StatelessWidget {
     );
   }
 
-  Widget _buildExpandableNavItem(BuildContext context, SidebarDestination destination, bool isDark) {
-    // Check if any child is selected OR parent itself is selected (if it has an index)
+  Widget _buildExpandableNavItem(BuildContext context, SidebarDestination destination) {
     bool isAnyChildSelected = false;
-    
-    // Helper to check recursively if needed, but for now depth 1 is enough
     for (var child in destination.children!) {
       if (child.index == selectedIndex) {
         isAnyChildSelected = true;
@@ -261,50 +242,40 @@ class AppSidebar extends StatelessWidget {
     return Theme(
       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 3),
+        margin: const EdgeInsets.symmetric(vertical: 2),
         decoration: BoxDecoration(
-             color: isActive ? const Color(0xFF1A237E).withOpacity(isDark ? 0.2 : 0.05) : Colors.transparent,
-             borderRadius: BorderRadius.circular(12), 
+             color: isActive ? DesignSystem.concreteGrey : Colors.transparent,
+             borderRadius: BorderRadius.circular(8), 
         ),
         child: ExpansionTile(
           initiallyExpanded: isActive,
           tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          leading: Container(
-             padding: const EdgeInsets.all(8),
-             decoration: BoxDecoration(
-                color: isActive ? const Color(0xFF1A237E) : Colors.transparent,
-                borderRadius: BorderRadius.circular(8),
-             ),
-             child: Icon(
-                destination.icon,
-                color: isActive 
-                  ? Colors.white 
-                  : (isDark ? Colors.white54 : const Color(0xFF78909C)),
-                size: 20,
-             ),
+          leading: Icon(
+            destination.icon,
+            color: isActive ? DesignSystem.charcoalBlack : DesignSystem.steelGrey,
+            size: 20,
           ),
           title: Text(
             destination.label,
             style: TextStyle(
-              color: isActive
-                  ? (isDark ? Colors.white : const Color(0xFF1A237E))
-                  : (isDark ? Colors.white.withOpacity(0.8) : const Color(0xFF37474F)),
+              color: isActive ? DesignSystem.charcoalBlack : DesignSystem.textPrimary,
               fontSize: 15,
               fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
             ),
           ),
           childrenPadding: const EdgeInsets.only(left: 16, bottom: 8),
-          iconColor: isDark ? Colors.white70 : const Color(0xFF78909C),
-          collapsedIconColor: isDark ? Colors.white54 : const Color(0xFF78909C),
+          iconColor: DesignSystem.steelGrey,
+          collapsedIconColor: DesignSystem.steelGrey,
           children: destination.children!.map((child) {
              final isChildSelected = child.index == selectedIndex;
              
              return Container(
                  margin: const EdgeInsets.only(left: 32, right: 16, bottom: 2),
                  decoration: BoxDecoration(
-                   borderRadius: BorderRadius.circular(8),
-                   color: isChildSelected 
-                     ? (isDark ? Colors.white.withOpacity(0.1) : Colors.grey.withOpacity(0.1)) 
+                   borderRadius: BorderRadius.circular(6),
+                   color: isChildSelected ? DesignSystem.constructionYellow.withValues(alpha: 0.2) : null,
+                   border: isChildSelected 
+                     ? Border.all(color: DesignSystem.constructionYellow.withValues(alpha: 0.5)) 
                      : null,
                  ),
                  child: ListTile(
@@ -314,18 +285,14 @@ class AppSidebar extends StatelessWidget {
                    leading: Icon(
                      child.icon, 
                      size: 18, 
-                     color: isChildSelected 
-                        ? (isDark ? Colors.white : const Color(0xFF1A237E))
-                        : (isDark ? Colors.white38 : Colors.grey[600])
+                     color: isChildSelected ? DesignSystem.charcoalBlack : DesignSystem.steelGrey
                    ),
                    title: Text(
                      child.label,
                      style: TextStyle(
                         fontSize: 13,
-                        fontWeight: isChildSelected ? FontWeight.w600 : FontWeight.w500,
-                        color: isChildSelected 
-                          ? (isDark ? Colors.white : const Color(0xFF1A237E))
-                          : (isDark ? Colors.white70 : Colors.grey[700])
+                        fontWeight: isChildSelected ? FontWeight.w700 : FontWeight.w500,
+                        color: isChildSelected ? DesignSystem.charcoalBlack : DesignSystem.textSecondary
                      ),
                    ),
                    onTap: () {

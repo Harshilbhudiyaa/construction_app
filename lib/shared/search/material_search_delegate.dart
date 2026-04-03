@@ -1,9 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:construction_app/modules/inventory/materials/models/material_model.dart';
-import 'package:construction_app/modules/inventory/materials/screens/material_detail_screen.dart';
-import 'package:construction_app/services/mock_inventory_service.dart';
-import 'package:construction_app/shared/theme/design_system.dart';
+import 'package:construction_app/data/models/material_model.dart';
+import 'package:construction_app/data/repositories/inventory_repository.dart';
+import 'package:construction_app/core/theme/design_system.dart';
 
 class MaterialSearchDelegate extends SearchDelegate<ConstructionMaterial?> {
   final BuildContext context;
@@ -43,7 +42,7 @@ class MaterialSearchDelegate extends SearchDelegate<ConstructionMaterial?> {
   }
   
   Widget _buildResultList(BuildContext context) {
-    final inventoryService = this.context.read<MockInventoryService>();
+    final inventoryService = this.context.read<InventoryRepository>();
     
     return StreamBuilder<List<dynamic>>(
       stream: inventoryService.getMaterialsStream(),
@@ -83,7 +82,7 @@ class MaterialSearchDelegate extends SearchDelegate<ConstructionMaterial?> {
             final material = results[index];
             return ListTile(
               leading: CircleAvatar(
-                backgroundColor: DesignSystem.electricBlue.withOpacity(0.1),
+                backgroundColor: DesignSystem.electricBlue.withValues(alpha: 0.1),
                 child: Icon(material.category.icon, color: DesignSystem.electricBlue, size: 18),
               ),
               title: Text(material.name, style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -91,10 +90,6 @@ class MaterialSearchDelegate extends SearchDelegate<ConstructionMaterial?> {
               trailing: Text('${material.currentStock} ${material.unitType.label}'),
               onTap: () {
                 close(context, material);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => MaterialDetailScreen(materialId: material.id)),
-                );
               },
             );
           },
@@ -106,23 +101,24 @@ class MaterialSearchDelegate extends SearchDelegate<ConstructionMaterial?> {
   @override
   ThemeData appBarTheme(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     
     return theme.copyWith(
-      appBarTheme: AppBarTheme(
-        backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.white,
         elevation: 0,
-        iconTheme: IconThemeData(color: isDark ? Colors.white : Colors.black87),
+        iconTheme: IconThemeData(color: DesignSystem.charcoalBlack),
         titleTextStyle: TextStyle(
-          color: isDark ? Colors.white : Colors.black87,
+          color: DesignSystem.charcoalBlack,
           fontSize: 18,
           fontWeight: FontWeight.bold,
         ),
       ),
-      inputDecorationTheme: InputDecorationTheme(
+      inputDecorationTheme: const InputDecorationTheme(
         border: InputBorder.none,
-        hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.grey[400]),
+        hintStyle: TextStyle(color: DesignSystem.textSecondary),
       ),
     );
   }
 }
+
+

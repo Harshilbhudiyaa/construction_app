@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:construction_app/shared/theme/professional_theme.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:construction_app/core/theme/professional_theme.dart';
 
 /// Smart autocomplete field with suggestions
 class SmartAutocomplete extends StatelessWidget {
@@ -51,7 +51,7 @@ class SmartAutocomplete extends StatelessWidget {
                 child: Icon(
                   Icons.info_outline_rounded,
                   size: 16,
-                  color: AppColors.deepBlue1.withOpacity(0.7),
+                  color: AppColors.deepBlue1.withValues(alpha: 0.7),
                 ),
               ),
             ],
@@ -121,7 +121,7 @@ class SmartAutocomplete extends StatelessWidget {
                   constraints: const BoxConstraints(maxHeight: 200),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.deepBlue1.withOpacity(0.2)),
+                    border: Border.all(color: AppColors.deepBlue1.withValues(alpha: 0.2)),
                   ),
                   child: ListView.builder(
                     padding: EdgeInsets.zero,

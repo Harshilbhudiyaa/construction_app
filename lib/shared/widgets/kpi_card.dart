@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:construction_app/shared/theme/app_spacing.dart';
+import 'package:construction_app/core/theme/app_spacing.dart';
 
 class KpiCard extends StatefulWidget {
   final String title;
@@ -61,70 +61,78 @@ class _KpiCardState extends State<KpiCard> with SingleTickerProviderStateMixin {
               setState(() => _isHovered = false);
               _controller.reverse();
             },
-            child: Card(
-              elevation: _isHovered ? 8 : 2,
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      cardColor.withOpacity(0.1),
-                      cardColor.withOpacity(0.05),
-                    ],
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOutCubic,
+              transform: _isHovered
+                  ? Matrix4.translationValues(0.0, -2.0, 0.0)
+                  : Matrix4.identity(),
+              child: Card(
+                elevation: _isHovered ? 8 : 2,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        cardColor.withValues(alpha: _isHovered ? 0.15 : 0.1),
+                        cardColor.withValues(alpha: 0.05),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                   ),
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [cardColor, cardColor.withOpacity(0.7)],
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: cardColor.withOpacity(0.3),
-                                  blurRadius: 8,
-                                  spreadRadius: 1,
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [cardColor, cardColor.withValues(alpha: 0.7)],
                                 ),
-                              ],
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: cardColor.withValues(alpha: _isHovered ? 0.5 : 0.3),
+                                    blurRadius: _isHovered ? 14 : 8,
+                                    spreadRadius: _isHovered ? 3 : 1,
+                                  ),
+                                ],
+                              ),
+                              child: Icon(
+                                widget.icon,
+                                size: 20,
+                                color: Colors.white,
+                              ),
                             ),
-                            child: Icon(
-                              widget.icon,
-                              size: 20,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      Text(
-                        widget.value,
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.w900,
-                              color: cardColor,
-                            ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        widget.title,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: cs.onSurfaceVariant,
-                              fontWeight: FontWeight.w500,
-                            ),
-                      ),
-                    ],
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Text(
+                          widget.value,
+                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.w900,
+                                color: cardColor,
+                              ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          widget.title,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: cs.onSurfaceVariant,
+                                fontWeight: FontWeight.w500,
+                              ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

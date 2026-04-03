@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:construction_app/shared/theme/professional_theme.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:construction_app/core/theme/professional_theme.dart';
 
 /// Progress indicator for multi-step forms
 class StepProgressIndicator extends StatelessWidget {
@@ -68,7 +68,7 @@ class StepProgressIndicator extends StatelessWidget {
                         color: isComplete
                             ? AppColors.deepBlue1
                             : isActive
-                                ? AppColors.deepBlue1.withOpacity(0.1)
+                                ? AppColors.deepBlue1.withValues(alpha: 0.1)
                                 : Colors.grey[200],
                         shape: BoxShape.circle,
                         border: isActive && !isComplete
@@ -136,10 +136,10 @@ class FormCompletionProgress extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 0,
-      color: AppColors.deepBlue1.withOpacity(0.05),
+      color: AppColors.deepBlue1.withValues(alpha: 0.05),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: AppColors.deepBlue1.withOpacity(0.1)),
+        side: BorderSide(color: AppColors.deepBlue1.withValues(alpha: 0.1)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -272,7 +272,7 @@ class _SuccessAnimationState extends State<SuccessAnimation>
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.green.withOpacity(0.4),
+                        color: Colors.green.withValues(alpha: 0.4),
                         blurRadius: 20,
                         spreadRadius: 5,
                       ),

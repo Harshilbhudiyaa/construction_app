@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'info_tooltip.dart';
-import 'package:construction_app/shared/theme/design_system.dart';
+import 'package:construction_app/core/theme/design_system.dart';
 
 /// An enhanced text field with user-friendly features like tooltips,
 /// character counters, and better validation feedback
+/// Updated for Construction Theme 🏗️
 class HelpfulTextField extends StatefulWidget {
   final String label;
   final TextEditingController controller;
@@ -23,9 +24,11 @@ class HelpfulTextField extends StatefulWidget {
   final bool obscureText;
   final int? maxLines;
 
-  final bool useGlass;
+  final bool useGlass; // Kept for API compatibility, but ignored
   final bool readOnly;
+  final bool enabled;
   final ValueChanged<String>? onChanged;
+  final VoidCallback? onTap;
 
   const HelpfulTextField({
     super.key,
@@ -47,7 +50,9 @@ class HelpfulTextField extends StatefulWidget {
     this.maxLines = 1,
     this.useGlass = false,
     this.readOnly = false,
+    this.enabled = true,
     this.onChanged,
+    this.onTap,
   });
 
 
@@ -61,18 +66,10 @@ class _HelpfulTextFieldState extends State<HelpfulTextField> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
-
-
-    final labelColor = colorScheme.onSurface;
-    final fillColor = widget.useGlass 
-        ? DesignSystem.glassColor(isDark)
-        : (_isFocused ? colorScheme.primary.withValues(alpha: 0.03) : (isDark ? const Color(0xFF1E293B) : Colors.grey[50]));
-    final borderColor = widget.useGlass
-        ? DesignSystem.glassBorder(isDark)
-        : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey[200]!);
+    // Construction Theme Colors
+    const labelColor = DesignSystem.charcoalBlack;
+    const fillColor = DesignSystem.surfaceWhite;
+    const borderColor = Color(0xFFE0E0E0);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,7 +79,7 @@ class _HelpfulTextFieldState extends State<HelpfulTextField> {
           children: [
             Text(
               widget.label,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
                 color: labelColor,
@@ -97,93 +94,112 @@ class _HelpfulTextFieldState extends State<HelpfulTextField> {
         const SizedBox(height: 8),
 
         // Text field with focus management
-        Focus(
-          onFocusChange: (focused) {
-            setState(() => _isFocused = focused);
-            if (!focused && widget.validator != null) {
-              // Validate on blur
-              setState(() {
-                _errorText = widget.validator!(widget.controller.text);
-              });
-            }
-          },
-          child: TextFormField(
-            readOnly: widget.readOnly,
-            controller: widget.controller,
-            keyboardType: widget.keyboardType,
-            obscureText: widget.obscureText,
-            maxLines: widget.maxLines,
-            maxLength: widget.maxLength,
-            inputFormatters: widget.inputFormatters,
-            validator: widget.validator,
-            style: TextStyle(
-              color: colorScheme.onSurface,
-              fontWeight: FontWeight.w600,
-            ),
-            onChanged: (value) {
-              // Clear error on change
-              if (_errorText != null) {
-                setState(() => _errorText = null);
-              }
-              if (widget.onChanged != null) {
-                widget.onChanged!(value);
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Focus(
+            onFocusChange: (focused) {
+              if (mounted) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted) {
+                    setState(() => _isFocused = focused);
+                    if (!focused && widget.validator != null) {
+                      // Validate on blur
+                      setState(() {
+                        _errorText = widget.validator!(widget.controller.text);
+                      });
+                    }
+                  }
+                });
               }
             },
-            decoration: InputDecoration(
-              isDense: true,
-              hintText: widget.hintText,
-              hintStyle: TextStyle(
-                color: colorScheme.onSurface.withValues(alpha: 0.5),
-                fontSize: 14,
+            child: TextFormField(
+              enabled: widget.enabled,
+              onTap: widget.onTap,
+              readOnly: widget.readOnly,
+              controller: widget.controller,
+              keyboardType: widget.keyboardType,
+              obscureText: widget.obscureText,
+              maxLines: widget.maxLines,
+              maxLength: widget.maxLength,
+              inputFormatters: widget.inputFormatters,
+              validator: widget.validator,
+              style: const TextStyle(
+                color: DesignSystem.textPrimary,
+                fontWeight: FontWeight.w600,
               ),
-              contentPadding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-              prefixIcon: widget.icon != null
-                  ? Icon(
-                      widget.icon,
-                      size: 20,
-                      color: _isFocused
-                          ? colorScheme.primary
-                          : colorScheme.onSurface.withValues(alpha: 0.5),
-                    )
-                  : null,
-              prefixText: widget.prefixText,
-              prefixStyle: TextStyle(color: colorScheme.onSurface),
-              suffixText: widget.suffixText,
-              suffixStyle: TextStyle(color: colorScheme.onSurface),
-              suffixIcon: widget.suffixIcon,
-              filled: true,
-              fillColor: fillColor,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: borderColor),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: borderColor),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: colorScheme.primary,
-                  width: 2,
+              onChanged: (value) {
+                // Clear error on change
+                if (_errorText != null) {
+                  setState(() => _errorText = null);
+                }
+                if (widget.onChanged != null) {
+                  widget.onChanged!(value);
+                }
+              },
+              decoration: InputDecoration(
+                isDense: true,
+                hintText: widget.hintText,
+                hintStyle: const TextStyle(
+                  color: DesignSystem.textSecondary,
+                  fontSize: 14,
                 ),
+                contentPadding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                prefixIcon: widget.icon != null
+                    ? Icon(
+                        widget.icon,
+                        size: 20,
+                        color: _isFocused
+                            ? DesignSystem.constructionYellow
+                            : DesignSystem.steelGrey,
+                      )
+                    : null,
+                prefixText: widget.prefixText,
+                prefixStyle: const TextStyle(color: DesignSystem.textPrimary),
+                suffixText: widget.suffixText,
+                suffixStyle: const TextStyle(color: DesignSystem.textPrimary),
+                suffixIcon: widget.suffixIcon,
+                filled: true,
+                fillColor: fillColor,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: borderColor),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: borderColor),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(
+                    color: DesignSystem.constructionYellow,
+                    width: 2,
+                  ),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: DesignSystem.error, width: 1.5),
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: DesignSystem.error, width: 2),
+                ),
+                errorText: _errorText,
+                errorStyle: const TextStyle(color: DesignSystem.error),
+                counterText: widget.showCharacterCount ? null : '',
+                counterStyle: const TextStyle(color: DesignSystem.textSecondary),
               ),
-              errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
-              ),
-              focusedErrorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Colors.redAccent, width: 2),
-              ),
-              errorText: _errorText,
-              errorStyle: const TextStyle(color: Colors.redAccent),
-              counterText: widget.showCharacterCount ? null : '',
-              counterStyle: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.5)),
             ),
           ),
         ),
-
 
         // Help text
         if (widget.helpText != null) ...[
@@ -191,9 +207,9 @@ class _HelpfulTextFieldState extends State<HelpfulTextField> {
           Row(
             children: [
               Icon(
-                Icons.lightbulb_outline_rounded,
+                Icons.info_outline_rounded,
                 size: 14,
-                color: Colors.grey[500],
+                color: Colors.grey[600],
               ),
               const SizedBox(width: 4),
               Expanded(
@@ -201,7 +217,7 @@ class _HelpfulTextFieldState extends State<HelpfulTextField> {
                   widget.helpText!,
                   style: TextStyle(
                     fontSize: 11,
-                    color: Colors.grey[600],
+                    color: Colors.grey[700],
                     fontStyle: FontStyle.italic,
                   ),
                 ),

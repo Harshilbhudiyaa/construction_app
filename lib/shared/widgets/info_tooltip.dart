@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:construction_app/shared/theme/professional_theme.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:construction_app/core/theme/professional_theme.dart';
 
 /// A helpful tooltip widget that provides contextual information to users
 class InfoTooltip extends StatelessWidget {
@@ -34,7 +34,7 @@ class InfoTooltip extends StatelessWidget {
       child: Icon(
         icon,
         size: 18,
-        color: color ?? AppColors.deepBlue1.withOpacity(0.7),
+        color: color ?? AppColors.deepBlue1.withValues(alpha: 0.7),
       ),
     );
   }
