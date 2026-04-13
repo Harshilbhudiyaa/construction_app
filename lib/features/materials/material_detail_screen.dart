@@ -7,6 +7,7 @@ import 'package:construction_app/data/repositories/inventory_repository.dart';
 import 'package:construction_app/data/repositories/stock_entry_repository.dart';
 import 'package:construction_app/core/routing/app_router.dart';
 import 'package:construction_app/features/stock/widgets/stock_entry_sheets.dart';
+import 'package:construction_app/data/models/stock_entry_model.dart';
 
 /// Material detail screen showing stock stats and full purchase history.
 class MaterialDetailScreen extends StatelessWidget {
@@ -156,44 +157,151 @@ class MaterialDetailScreen extends StatelessWidget {
                         style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
                   ),
 
-                ...entries.map((e) => Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: Row(
-                    children: [
-                      // Date column
-                      Container(
-                        width: 42, height: 42,
-                        decoration: BoxDecoration(color: bcAmber.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
-                        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                          Text('${e.entryDate.day}', style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 14, height: 1)),
-                          Text(
-                            ['', 'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][e.entryDate.month],
-                            style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 9, fontWeight: FontWeight.w700),
+                ...entries.map((e) {
+                  final hasSubType = e.subType.isNotEmpty && e.subType != material.name;
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: bcNavy.withValues(alpha: 0.02),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            // Date column
+                            Container(
+                              width: 44, height: 44,
+                              decoration: BoxDecoration(
+                                color: bcAmber.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text('${e.entryDate.day}', style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 16, height: 1)),
+                                  Text(
+                                    ['', 'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][e.entryDate.month].toUpperCase(),
+                                    style: const TextStyle(color: bcAmber, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.5),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(e.supplierName, 
+                                            style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 14),
+                                            maxLines: 1, overflow: TextOverflow.ellipsis),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      _EntryTypeBadge(e.entryType),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 2),
+                                  if (hasSubType)
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 2),
+                                      child: Text(e.subType, style: const TextStyle(color: bcAmber, fontSize: 11, fontWeight: FontWeight.w700)),
+                                    ),
+                                  Text(
+                                    '${fmtQty(e.quantity)} ${e.unit} @ ₹${e.unitPrice.toStringAsFixed(0)}',
+                                    style: const TextStyle(color: Color(0xFF64748B), fontSize: 12, fontWeight: FontWeight.w600),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 12),
+                          child: Divider(height: 1, color: Color(0xFFF1F5F9)),
+                        ),
+                        
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('TOTAL AMOUNT', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
+                                Text(fmt.format(e.totalAmount), style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 15)),
+                              ],
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: e.pendingAmount > 0 ? bcDanger.withValues(alpha: 0.08) : bcSuccess.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    e.pendingAmount > 0 ? Icons.error_outline_rounded : Icons.check_circle_outline_rounded,
+                                    size: 14,
+                                    color: e.pendingAmount > 0 ? bcDanger : bcSuccess,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    e.pendingAmount > 0 ? 'DUE: ${fmt.format(e.pendingAmount)}' : 'FULLY PAID',
+                                    style: TextStyle(
+                                      color: e.pendingAmount > 0 ? bcDanger : bcSuccess,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        
+                        if (e.remarks != null && e.remarks!.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: bcSurface,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: const Color(0xFFF1F5F9)),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Icon(Icons.notes_rounded, size: 14, color: Color(0xFF94A3B8)),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    e.remarks!,
+                                    style: const TextStyle(color: Color(0xFF64748B), fontSize: 11, fontStyle: FontStyle.italic),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ]),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text(e.supplierName, style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w800, fontSize: 13)),
-                        Text('${fmtQty(e.quantity)} ${e.unit}',
-                            style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11)),
-                      ])),
-                      Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                        Text(fmt.format(e.totalAmount), style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 13)),
-                        if (e.pendingAmount > 0)
-                          Text('Due ${fmt.format(e.pendingAmount)}', style: const TextStyle(color: bcDanger, fontSize: 10, fontWeight: FontWeight.w700)),
-                        if (e.pendingAmount == 0)
-                          const Text('Paid ✓', style: TextStyle(color: bcSuccess, fontSize: 10, fontWeight: FontWeight.w700)),
-                      ]),
-                    ],
-                  ),
-                )),
+                        ],
+                      ],
+                    ),
+                  );
+                }),
 
                 const SizedBox(height: 80),
               ]),
@@ -246,6 +354,51 @@ class MaterialDetailScreen extends StatelessWidget {
             },
             style: ElevatedButton.styleFrom(backgroundColor: bcDanger, foregroundColor: Colors.white),
             child: const Text('DELETE', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EntryTypeBadge extends StatelessWidget {
+  final StockEntryType type;
+  const _EntryTypeBadge(this.type);
+
+  @override
+  Widget build(BuildContext context) {
+    Color color;
+    IconData icon;
+    switch (type) {
+      case StockEntryType.directEntry:
+        color = bcAmber;
+        icon = Icons.bolt_rounded;
+        break;
+      case StockEntryType.supplierBill:
+        color = const Color(0xFF6366F1); // Indigo
+        icon = Icons.receipt_long_rounded;
+        break;
+      case StockEntryType.miscExpense:
+        color = bcDanger;
+        icon = Icons.money_off_rounded;
+        break;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 10, color: color),
+          const SizedBox(width: 4),
+          Text(
+            type.displayName.toUpperCase(),
+            style: TextStyle(color: color, fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 0.5),
           ),
         ],
       ),

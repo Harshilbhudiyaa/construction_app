@@ -246,18 +246,50 @@ class _DirectEntrySheetState extends State<DirectEntrySheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const StockSheetLabel('Select Material'),
-          const SizedBox(height: 6),
-          StockMaterialSelector(
-            materials: invRepo.materials,
-            selected: _selectedMaterial,
-            onSelected: (m) {
+          if (widget.initialMaterial != null)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: bcNavy.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: bcNavy.withValues(alpha: 0.1)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.inventory_2_rounded, size: 16, color: bcNavy),
+                  const SizedBox(width: 10),
+                  Text(
+                    widget.initialMaterial!.name,
+                    style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w800, fontSize: 13),
+                  ),
+                  const Spacer(),
+                  const Text('LOCKED', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 10, fontWeight: FontWeight.w900)),
+                ],
+              ),
+            )
+          else
+            StockMaterialSelector(
+              materials: invRepo.materials,
+              selected: _selectedMaterial,
+              onSelected: (m) {
+                setState(() {
+                  _selectedMaterial = m;
+                  if (m != null && _rateCtrl.text.isEmpty) {
+                    _rateCtrl.text = m.pricePerUnit.toStringAsFixed(0);
+                    _descCtrl.text = m.name;
+                  }
+                });
+              },
+            ),
+          const SizedBox(height: 12),
+          _RecentRatesReference(
+            materialId: _selectedMaterial?.id,
+            onRateSelected: (rate) {
               setState(() {
-                _selectedMaterial = m;
-                if (m != null && _rateCtrl.text.isEmpty) {
-                  _rateCtrl.text = m.pricePerUnit.toStringAsFixed(0);
-                  _descCtrl.text = m.name;
-                }
+                _rateCtrl.text = rate.toStringAsFixed(0);
+                _autoTotal = true;
+                _recalc();
               });
             },
           ),
@@ -787,5 +819,70 @@ class _MiscExpenseSheetState extends State<MiscExpenseSheet> {
     await context.read<StockEntryRepository>().addEntry(entry);
     if (!mounted) return;
     Navigator.pop(context);
+  }
+}
+
+class _RecentRatesReference extends StatelessWidget {
+  final String? materialId;
+  final ValueChanged<double> onRateSelected;
+  const _RecentRatesReference({this.materialId, required this.onRateSelected});
+
+  @override
+  Widget build(BuildContext context) {
+    if (materialId == null || materialId!.isEmpty) return const SizedBox.shrink();
+
+    final stockRepo = context.watch<StockEntryRepository>();
+    final entries = stockRepo.getEntriesForMaterial(materialId!)
+        .where((e) => e.entryType != StockEntryType.miscExpense)
+        .take(3)
+        .toList();
+
+    if (entries.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('RECENT RATES (TAP TO USE)', 
+            style: TextStyle(color: Color(0xFF64748B), fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 1)),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 48,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: entries.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (context, index) {
+              final e = entries[index];
+              return InkWell(
+                onTap: () => onRateSelected(e.unitPrice),
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: bcAmber.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: bcAmber.withValues(alpha: 0.15)),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('₹${e.unitPrice.toStringAsFixed(0)}', 
+                          style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 13)),
+                      Text(
+                        '${DateFormat('d MMM').format(e.entryDate)} • ${e.supplierName}',
+                        style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 9, fontWeight: FontWeight.w600),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
   }
 }

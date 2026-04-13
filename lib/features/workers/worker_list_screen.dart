@@ -7,6 +7,7 @@ import 'package:construction_app/data/models/worker_model.dart';
 import 'package:construction_app/data/repositories/worker_repository.dart' show WorkerRepository, daysInMonth;
 import 'package:construction_app/data/repositories/site_repository.dart';
 import 'package:construction_app/features/workers/worker_history_screen.dart';
+import 'package:construction_app/features/workers/worker_profile_screen.dart';
 
 class WorkerListScreen extends StatefulWidget {
   const WorkerListScreen({super.key});
@@ -65,30 +66,44 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
             padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
             child: _SearchBar(onChanged: (v) => setState(() => _search = v)),
           ),
-          // Occupation chips (quick filter row)
-          _OccupationChipRow(workers: workers),
           Expanded(
-            child: workerRepo.isLoading
-                ? const Center(child: CircularProgressIndicator(color: bcAmber))
-                : workers.isEmpty
-                    ? _emptyState(context)
-                    : ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(12, 8, 12, 80),
-                        physics: const BouncingScrollPhysics(),
-                        itemCount: workers.length,
-                        itemBuilder: (_, i) {
-                          final w = workers[i];
-                          final salaryDue = workerRepo.getSalaryDue(w.id, now.year, now.month);
-                          final advance   = workerRepo.getTotalAdvancePaid(w.id);
-                          return _WorkerCard(
-                            worker: w,
-                            salaryDue: salaryDue,
-                            advancePaid: advance,
-                            fmt: fmt,
-                            onTap: () => _showWorkerDetail(context, w),
-                          );
-                        },
-                      ),
+            child: RefreshIndicator(
+              onRefresh: () => workerRepo.refresh(),
+              color: bcAmber,
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 80),
+                physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                children: [
+                  const SizedBox(height: 12),
+                  _DashboardHeader(siteId: siteId),
+                  const SizedBox(height: 20),
+                  
+                  // Occupation chips (quick filter row)
+                  _OccupationChipRow(workers: workers),
+                  const SizedBox(height: 12),
+
+                  if (workerRepo.isLoading)
+                    const Center(child: Padding(
+                      padding: EdgeInsets.all(40.0),
+                      child: CircularProgressIndicator(color: bcAmber),
+                    ))
+                  else if (workers.isEmpty)
+                    _emptyState(context)
+                  else
+                    ...workers.map((w) {
+                      final salaryDue = workerRepo.getSalaryDue(w.id, now.year, now.month);
+                      final advance   = workerRepo.getTotalAdvancePaid(w.id);
+                      return _WorkerCard(
+                        worker: w,
+                        salaryDue: salaryDue,
+                        advancePaid: advance,
+                        fmt: fmt,
+                        onTap: () => _showWorkerDetail(context, w),
+                      );
+                    }),
+                ],
+              ),
+            ),
           ),
         ],
       ),
@@ -115,14 +130,14 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
   void _showAddWorkerSheet(BuildContext context, String? siteId) {
     showModalBottomSheet(
       context: context, isScrollControlled: true, backgroundColor: Colors.transparent,
-      builder: (_) => _WorkerFormSheet(siteId: siteId ?? context.read<SiteRepository>().selectedSiteId ?? 'S-001'),
+      builder: (_) => WorkerFormSheet(siteId: siteId ?? context.read<SiteRepository>().selectedSiteId ?? 'S-001'),
     );
   }
 
   void _showWorkerDetail(BuildContext context, WorkerModel worker) {
-    showModalBottomSheet(
-      context: context, isScrollControlled: true, backgroundColor: Colors.transparent,
-      builder: (_) => _WorkerDetailSheet(worker: worker),
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => WorkerProfileScreen(worker: worker)),
     );
   }
 
@@ -147,73 +162,107 @@ class _WorkerCard extends StatelessWidget {
   final NumberFormat fmt;
   final VoidCallback onTap;
 
-  const _WorkerCard({required this.worker, required this.salaryDue, required this.advancePaid,
-    required this.fmt, required this.onTap});
+  const _WorkerCard({
+    required this.worker,
+    required this.salaryDue,
+    required this.advancePaid,
+    required this.fmt,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     final occColor = _occColor(worker.occupation);
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: salaryDue > 0 ? bcInfo.withValues(alpha: 0.3) : const Color(0xFFE2E8F0)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 44, height: 44,
-              decoration: BoxDecoration(color: occColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
-              child: Center(child: Text(worker.name[0].toUpperCase(),
-                  style: TextStyle(color: occColor, fontWeight: FontWeight.w900, fontSize: 20))),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(worker.name, style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w800, fontSize: 14)),
-                const SizedBox(height: 2),
-                Row(children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(color: occColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(5)),
-                    child: Text(
-                      worker.occupation == WorkerOccupation.other
-                          ? (worker.customOccupation?.isNotEmpty == true ? worker.customOccupation! : 'Other')
-                          : worker.occupation.displayName,
-                      style: TextStyle(color: occColor, fontSize: 9.5, fontWeight: FontWeight.w700),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: bcNavy.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+        border: Border.all(color: const Color(0xFFF1F5F9)),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Hero(
+                  tag: 'worker_pfp_${worker.id}',
+                  child: Container(
+                    width: 50, height: 50,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [occColor.withValues(alpha: 0.15), occColor.withValues(alpha: 0.05)],
+                      ),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Center(
+                      child: Text(
+                        worker.name[0].toUpperCase(),
+                        style: TextStyle(color: occColor, fontWeight: FontWeight.w900, fontSize: 20),
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(5)),
-                    child: Text(
-                      worker.salaryType == SalaryType.daily
-                          ? '₹${worker.salaryAmount.toStringAsFixed(0)}/day'
-                          : '₹${fmt.format(worker.salaryAmount)}/mo',
-                      style: const TextStyle(color: Color(0xFF64748B), fontSize: 9.5, fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                ]),
-              ]),
-            ),
-            Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-              if (salaryDue > 0)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(color: bcInfo.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
-                  child: Text('Due: ${fmt.format(salaryDue)}', style: const TextStyle(color: bcInfo, fontWeight: FontWeight.w800, fontSize: 11)),
                 ),
-              if (advancePaid > 0) ...[
-                const SizedBox(height: 3),
-                Text('Adv: ${fmt.format(advancePaid)}', style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 10)),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(worker.name, 
+                              style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 15, letterSpacing: -0.2)),
+                          ),
+                          _RecentActivityTracker(workerId: worker.id),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(color: occColor.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(6)),
+                            child: Text(
+                              worker.occupation == WorkerOccupation.other
+                                  ? (worker.customOccupation?.isNotEmpty == true ? worker.customOccupation! : 'Other')
+                                  : worker.occupation.displayName,
+                              style: TextStyle(color: occColor, fontSize: 9, fontWeight: FontWeight.w800),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            worker.salaryType == SalaryType.daily
+                                ? '₹${worker.salaryAmount.toStringAsFixed(0)}/d'
+                                : '₹${fmt.format(worker.salaryAmount)}/m',
+                            style: const TextStyle(color: Color(0xFF64748B), fontSize: 9, fontWeight: FontWeight.w700),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(fmt.format(salaryDue), 
+                      style: TextStyle(color: salaryDue > 0 ? bcSuccess : bcNavy, fontWeight: FontWeight.w900, fontSize: 15)),
+                    const Text('NET DUE', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                  ],
+                ),
               ],
-            ]),
-          ],
+            ),
+          ),
         ),
       ),
     );
@@ -297,16 +346,16 @@ class _OccupationChipRowState extends State<_OccupationChipRow> {
 
 // ─── Worker Form Sheet ────────────────────────────────────────────────────────
 
-class _WorkerFormSheet extends StatefulWidget {
+class WorkerFormSheet extends StatefulWidget {
   final String siteId;
   final WorkerModel? existing;
-  const _WorkerFormSheet({required this.siteId, this.existing});
+  const WorkerFormSheet({super.key, required this.siteId, this.existing});
 
   @override
-  State<_WorkerFormSheet> createState() => _WorkerFormSheetState();
+  State<WorkerFormSheet> createState() => _WorkerFormSheetState();
 }
 
-class _WorkerFormSheetState extends State<_WorkerFormSheet> {
+class _WorkerFormSheetState extends State<WorkerFormSheet> {
   final _nameCtrl   = TextEditingController();
   final _phoneCtrl  = TextEditingController();
   final _salaryCtrl = TextEditingController();
@@ -555,7 +604,7 @@ class _WorkerDetailSheet extends StatelessWidget {
           Navigator.pop(context);
           showModalBottomSheet(
             context: context, isScrollControlled: true, backgroundColor: Colors.transparent,
-            builder: (_) => _WorkerFormSheet(siteId: worker.siteId, existing: worker),
+            builder: (_) => WorkerFormSheet(siteId: worker.siteId, existing: worker),
           );
         }),
         _ActionBtn('View Full History', Icons.history_rounded, const Color(0xFF64748B), () {
@@ -573,11 +622,11 @@ class _WorkerDetailSheet extends StatelessWidget {
   }
 
   void _showMarkAttendance(BuildContext context) {
-    showDialog(context: context, builder: (_) => _AttendanceDialog(worker: worker));
+    showDialog(context: context, builder: (_) => AttendanceDialog(worker: worker));
   }
 
   void _showGiveAdvance(BuildContext context) {
-    showDialog(context: context, builder: (_) => _AdvanceDialog(worker: worker));
+    showDialog(context: context, builder: (_) => AdvanceDialog(worker: worker));
   }
 }
 
@@ -630,15 +679,15 @@ class _ActionBtn extends StatelessWidget {
 
 // ─── Attendance Dialog ────────────────────────────────────────────────────────
 
-class _AttendanceDialog extends StatefulWidget {
+class AttendanceDialog extends StatefulWidget {
   final WorkerModel worker;
-  const _AttendanceDialog({required this.worker});
+  const AttendanceDialog({super.key, required this.worker});
 
   @override
-  State<_AttendanceDialog> createState() => _AttendanceDialogState();
+  State<AttendanceDialog> createState() => _AttendanceDialogState();
 }
 
-class _AttendanceDialogState extends State<_AttendanceDialog> {
+class _AttendanceDialogState extends State<AttendanceDialog> {
   AttendanceStatus _status = AttendanceStatus.present;
   final DateTime _date = DateTime.now();
 
@@ -705,15 +754,15 @@ class _AttendanceDialogState extends State<_AttendanceDialog> {
 
 // ─── Advance Dialog ────────────────────────────────────────────────────────────
 
-class _AdvanceDialog extends StatefulWidget {
+class AdvanceDialog extends StatefulWidget {
   final WorkerModel worker;
-  const _AdvanceDialog({required this.worker});
+  const AdvanceDialog({super.key, required this.worker});
 
   @override
-  State<_AdvanceDialog> createState() => _AdvanceDialogState();
+  State<AdvanceDialog> createState() => _AdvanceDialogState();
 }
 
-class _AdvanceDialogState extends State<_AdvanceDialog> {
+class _AdvanceDialogState extends State<AdvanceDialog> {
   final _amountCtrl  = TextEditingController();
   final _remarksCtrl = TextEditingController();
 
@@ -967,3 +1016,139 @@ Widget _formField(String label, TextEditingController ctrl, {String? hint, TextI
         ),
       ),
     ]);
+
+// ─── Dashboard Header ────────────────────────────────────────────────────────
+
+class _DashboardHeader extends StatelessWidget {
+  final String? siteId;
+  const _DashboardHeader({this.siteId});
+
+  @override
+  Widget build(BuildContext context) {
+    final workerRepo = context.watch<WorkerRepository>();
+    final stats = workerRepo.getTodayStats(siteId: siteId);
+    final totalDue = siteId != null ? workerRepo.getTotalSalaryDueForSite(siteId!) : 0.0;
+    final fmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          stops: [0.0, 0.6, 1.0],
+          colors: [bcNavy, Color(0xFF1E3A8A), Color(0xFF1E1B4B)],
+        ),
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: bcNavy.withValues(alpha: 0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+          BoxShadow(
+            color: bcAmber.withValues(alpha: 0.1),
+            blurRadius: 30,
+            offset: const Offset(0, 15),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('TODAY\'S ATTENDANCE', 
+                    style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1.2)),
+                  const SizedBox(height: 6),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text('${stats['present']}', 
+                        style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900, height: 1)),
+                      Text(' / ${stats['total']}', 
+                        style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 18, fontWeight: FontWeight.w700)),
+                    ],
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text('MONTHLY DUE', 
+                      style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                    Text(fmt.format(totalDue), 
+                      style: const TextStyle(color: bcAmber, fontSize: 15, fontWeight: FontWeight.w900)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              _statMini(Icons.check_circle_rounded, '${stats['present']}', 'Present', bcSuccess),
+              _statMini(Icons.timelapse_rounded, '${stats['halfDay']}', 'Half', bcAmber),
+              _statMini(Icons.cancel_rounded, '${stats['absent']}', 'Absent', bcDanger),
+              _statMini(Icons.help_outline_rounded, '${stats['notMarked']}', 'Pending', Colors.white24),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _statMini(IconData icon, String value, String label, Color color) => Expanded(
+    child: Row(
+      children: [
+        Icon(icon, color: color, size: 12),
+        const SizedBox(width: 4),
+        Text(value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12)),
+        const SizedBox(width: 2),
+        Text(label, style: const TextStyle(color: Colors.white38, fontSize: 9, fontWeight: FontWeight.w600)),
+      ],
+    ),
+  );
+}
+
+// ─── Recent Activity Tracker ──────────────────────────────────────────────────
+
+class _RecentActivityTracker extends StatelessWidget {
+  final String workerId;
+  const _RecentActivityTracker({required this.workerId});
+
+  @override
+  Widget build(BuildContext context) {
+    final workerRepo = context.watch<WorkerRepository>();
+    final history = workerRepo.getRecentAttendance(workerId);
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: history.map((status) {
+        Color color;
+        switch (status) {
+          case AttendanceStatus.present: color = bcSuccess; break;
+          case AttendanceStatus.absent:  color = bcDanger; break;
+          case AttendanceStatus.halfDay: color = bcAmber; break;
+          default:                       color = const Color(0xFFE2E8F0);
+        }
+        return Container(
+          width: 6, height: 6,
+          margin: const EdgeInsets.only(left: 3),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        );
+      }).toList(),
+    );
+  }
+}

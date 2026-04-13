@@ -25,6 +25,12 @@ class WorkerRepository extends ChangeNotifier {
     _load();
   }
 
+  Future<void> refresh() async {
+    _isLoading = true;
+    notifyListeners();
+    await _load();
+  }
+
   // ── Load / Save ─────────────────────────────────────────────────────────────
 
   Future<void> _load() async {
@@ -246,6 +252,64 @@ class WorkerRepository extends ChangeNotifier {
     return _workers
         .where((w) => w.siteId == siteId && w.isActive)
         .fold(0.0, (s, w) => s + getSalaryDue(w.id, now.year, now.month));
+  }
+
+  /// Get today's attendance stats for a site (Present, Absent, Not Marked).
+  Map<String, int> getTodayStats({String? siteId}) {
+    final now = DateTime.now();
+    final norm = _normalizeDate(now);
+    final siteWorkers = siteId != null 
+        ? getWorkersForSite(siteId) 
+        : _workers.where((w) => w.isActive).toList();
+    
+    int present = 0;
+    int absent = 0;
+    int halfDay = 0;
+    int notMarked = 0;
+
+    for (final w in siteWorkers) {
+      try {
+        final record = _attendance.firstWhere(
+          (a) => a.workerId == w.id && _normalizeDate(a.date) == norm
+        );
+        if (record.status == AttendanceStatus.present) {
+          present++;
+        } else if (record.status == AttendanceStatus.absent) {
+          absent++;
+        } else if (record.status == AttendanceStatus.halfDay) {
+          halfDay++;
+        }
+      } catch (_) {
+        notMarked++;
+      }
+    }
+
+    return {
+      'present': present,
+      'absent': absent,
+      'halfDay': halfDay,
+      'notMarked': notMarked,
+      'total': siteWorkers.length,
+    };
+  }
+
+  /// Get attendance history for the last X days.
+  List<AttendanceStatus?> getRecentAttendance(String workerId, {int days = 7}) {
+    final List<AttendanceStatus?> history = [];
+    final now = DateTime.now();
+    for (int i = days - 1; i >= 0; i--) {
+      final date = now.subtract(Duration(days: i));
+      final norm = _normalizeDate(date);
+      try {
+        final record = _attendance.firstWhere(
+          (a) => a.workerId == workerId && _normalizeDate(a.date) == norm
+        );
+        history.add(record.status);
+      } catch (_) {
+        history.add(null);
+      }
+    }
+    return history;
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────────────

@@ -7,7 +7,8 @@ import 'package:construction_app/data/repositories/worker_repository.dart';
 
 class WorkerHistoryScreen extends StatefulWidget {
   final WorkerModel worker;
-  const WorkerHistoryScreen({super.key, required this.worker});
+  final bool isEmbedded;
+  const WorkerHistoryScreen({super.key, required this.worker, this.isEmbedded = false});
 
   @override
   State<WorkerHistoryScreen> createState() => _WorkerHistoryScreenState();
@@ -61,26 +62,12 @@ class _WorkerHistoryScreenState extends State<WorkerHistoryScreen> {
     final fmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
     final monthYearFmt = DateFormat('MMMM yyyy');
 
-    return Scaffold(
-      backgroundColor: bcSurface,
-      appBar: AppBar(
-        backgroundColor: bcNavy,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(widget.worker.name, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
-            Text('Payment & Attendance History', style: TextStyle(color: Colors.white.withValues(alpha:0.6), fontSize: 11)),
-          ],
-        ),
-      ),
-      body: Column(
+    final content = Column(
         children: [
           // Month Selector
           Container(
             color: bcNavy,
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+            padding: EdgeInsets.fromLTRB(16, widget.isEmbedded ? 16 : 0, 16, 24),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
@@ -107,33 +94,35 @@ class _WorkerHistoryScreenState extends State<WorkerHistoryScreen> {
             ),
           ),
 
-          // KPI Row
-          Transform.translate(
-            offset: const Offset(0, -16),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(color: Colors.black.withValues(alpha:0.04), blurRadius: 20, offset: const Offset(0, 10)),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _kpiStat('Earned', fmt.format(earned), bcNavy),
-                    _vSep(),
-                    _kpiStat('Advances', fmt.format(advanced), bcDanger),
-                    _vSep(),
-                    _kpiStat('Net Due', fmt.format(netDue), bcSuccess),
-                  ],
+          if (!widget.isEmbedded) ...[
+            // KPI Row
+            Transform.translate(
+              offset: const Offset(0, -16),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black.withValues(alpha:0.04), blurRadius: 20, offset: const Offset(0, 10)),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _kpiStat('Earned', fmt.format(earned), bcNavy),
+                      _vSep(),
+                      _kpiStat('Advances', fmt.format(advanced), bcDanger),
+                      _vSep(),
+                      _kpiStat('Net Due', fmt.format(netDue), bcSuccess),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
+          ],
 
           Expanded(
             child: ListView(
@@ -184,7 +173,25 @@ class _WorkerHistoryScreenState extends State<WorkerHistoryScreen> {
             ),
           ),
         ],
+      );
+
+    if (widget.isEmbedded) return content;
+
+    return Scaffold(
+      backgroundColor: bcSurface,
+      appBar: AppBar(
+        backgroundColor: bcNavy,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(widget.worker.name, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
+            Text('Payment & Attendance History', style: TextStyle(color: Colors.white.withValues(alpha:0.6), fontSize: 11)),
+          ],
+        ),
       ),
+      body: content,
     );
   }
 
