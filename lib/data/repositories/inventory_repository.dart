@@ -18,7 +18,6 @@ class DashboardAnalytics {
   final int lowStockItems;
   final int pendingApprovals;
   final List<StockMovementPoint> movementTrend;
-  final Map<String, double> stockDistribution; // Category -> Quantity
   final Map<String, int> approvalStats; // Status -> Count
 
   DashboardAnalytics({
@@ -30,7 +29,6 @@ class DashboardAnalytics {
     required this.lowStockItems,
     required this.pendingApprovals,
     required this.movementTrend,
-    required this.stockDistribution,
     required this.approvalStats,
   });
 }
@@ -526,14 +524,6 @@ class InventoryRepository extends ChangeNotifier {
       trend.add(StockMovementPoint(dayDate, dayQty));
     }
 
-    // Stock distribution by category
-    final Map<String, double> distribution = {};
-    for (var m in filteredMaterials) {
-      if (m.currentStock > 0) {
-        final category = m.category.displayName;
-        distribution[category] = (distribution[category] ?? 0) + m.currentStock;
-      }
-    }
 
     // Approval stats
     final Map<String, int> approvalMetrics = {
@@ -551,7 +541,6 @@ class InventoryRepository extends ChangeNotifier {
       lowStockItems: lowStock,
       pendingApprovals: pending,
       movementTrend: trend,
-      stockDistribution: distribution,
       approvalStats: approvalMetrics,
     );
   }
@@ -574,13 +563,12 @@ class InventoryRepository extends ChangeNotifier {
         id: 'MAT-001',
         siteId: 'S-001',
         name: 'Ultratech Cement (Premium)',
-        category: MaterialCategory.civilStructural,
         subType: 'OPC 53 Grade',
         brand: 'Ultratech',
         pricePerUnit: 450,
         purchasePrice: 420,
         salePrice: 480,
-        unitType: UnitType.bag,
+        unitType: 'bag',
         currentStock: 1250,
         minimumStockLimit: 100,
         storageLocation: 'Warehouse A',
@@ -597,13 +585,12 @@ class InventoryRepository extends ChangeNotifier {
         id: 'MAT-002',
         siteId: 'S-001',
         name: 'TMT Steel Bar 12mm',
-        category: MaterialCategory.civilStructural,
         subType: 'TMT Bar',
         brand: 'Tata Tiscon',
         pricePerUnit: 75000,
         purchasePrice: 72000,
         salePrice: 78000,
-        unitType: UnitType.ton,
+        unitType: 'ton',
         currentStock: 45.5,
         minimumStockLimit: 5.0,
         storageLocation: 'Yard 1',
@@ -619,13 +606,12 @@ class InventoryRepository extends ChangeNotifier {
         id: 'MAT-003',
         siteId: 'S-001',
         name: 'High-End Vitrified Tiles',
-        category: MaterialCategory.civilStructural,
         subType: 'Italian Polish',
         brand: 'Kajaria',
         pricePerUnit: 120,
         purchasePrice: 110,
         salePrice: 145,
-        unitType: UnitType.sqf,
+        unitType: 'sqf',
         currentStock: 4200,
         minimumStockLimit: 500,
         storageLocation: 'Warehouse B',
@@ -641,13 +627,12 @@ class InventoryRepository extends ChangeNotifier {
         id: 'MAT-004',
         siteId: 'S-002',
         name: 'Jindal Steel Sections',
-        category: MaterialCategory.civilStructural,
         subType: 'Beams',
         brand: 'Jindal',
         pricePerUnit: 85000,
         purchasePrice: 82000,
         salePrice: 88000,
-        unitType: UnitType.ton,
+        unitType: 'ton',
         currentStock: 1.2,
         minimumStockLimit: 0.2,
         storageLocation: 'Site 2 Yard',
@@ -672,7 +657,7 @@ class InventoryRepository extends ChangeNotifier {
         transporterName: 'Standard Logistics Corp',
         siteId: 'S-001',
         driverName: 'Rajesh Kumar', driverMobile: '9876543210', driverLicense: 'DL-MH12-20150042',
-        materialId: 'MAT-001', materialName: 'Ultratech Cement (Premium)', category: MaterialCategory.civilStructural,
+        materialId: 'MAT-001', materialName: 'Ultratech Cement (Premium)',
         quantity: 500, unit: 'Bags', photoProofs: [],
         ratePerUnit: 420, transportCharges: 5000, taxPercentage: 18, totalAmount: 247000,
         status: InwardStatus.approved, createdAt: now.subtract(const Duration(days: 2)),
@@ -686,7 +671,7 @@ class InventoryRepository extends ChangeNotifier {
         transporterName: 'Gujarat Freight Solutions',
         siteId: 'S-001',
         driverName: 'Suresh Patel', driverMobile: '9988776655', driverLicense: 'DL-GJ01-20184412',
-        materialId: 'MAT-002', materialName: 'TMT Steel Bar 12mm', category: MaterialCategory.civilStructural,
+        materialId: 'MAT-002', materialName: 'TMT Steel Bar 12mm',
         quantity: 10, unit: 'Ton', photoProofs: [],
         ratePerUnit: 72000, transportCharges: 12000, taxPercentage: 18, totalAmount: 852000,
         status: InwardStatus.pendingApproval, createdAt: now.subtract(const Duration(hours: 5)),
@@ -699,7 +684,7 @@ class InventoryRepository extends ChangeNotifier {
         transporterName: 'Arora Transporters',
         siteId: 'S-001',
         driverName: 'Amit Arora', driverMobile: '9123456780', driverLicense: 'DL-MH43-20120011',
-        materialId: 'MAT-003', materialName: 'High-End Vitrified Tiles', category: MaterialCategory.civilStructural,
+        materialId: 'MAT-003', materialName: 'High-End Vitrified Tiles',
         quantity: 400, unit: 'SqFt', photoProofs: [],
         ratePerUnit: 110, transportCharges: 1500, taxPercentage: 12, totalAmount: 50960,
         status: InwardStatus.approved, createdAt: now.subtract(const Duration(days: 5)),
@@ -713,7 +698,7 @@ class InventoryRepository extends ChangeNotifier {
         transporterName: 'Local Haulage Co',
         siteId: 'S-002',
         driverName: 'Vikram Singh', driverMobile: '9001234567', driverLicense: 'DL-MH04-20199012',
-        materialId: 'MAT-004', materialName: 'Jindal Steel Sections', category: MaterialCategory.civilStructural,
+        materialId: 'MAT-004', materialName: 'Jindal Steel Sections',
         quantity: 2, unit: 'Ton', photoProofs: [],
         ratePerUnit: 82000, transportCharges: 3000, taxPercentage: 18, totalAmount: 197000,
         status: InwardStatus.pendingApproval, createdAt: now.subtract(const Duration(hours: 1)),
@@ -990,7 +975,7 @@ class InventoryRepository extends ChangeNotifier {
       materialId: materialId,
       materialName: material.name,
       quantity: quantity,
-      unit: material.unitType.label,
+      unit: material.unitType,
       timestamp: date ?? DateTime.now(),
       siteId: material.siteId,
       rate: rate,
@@ -1033,7 +1018,7 @@ class InventoryRepository extends ChangeNotifier {
       orElse: () => throw Exception('Material not found: $materialId'),
     );
     if (material.currentStock < quantity) {
-      throw Exception('Insufficient stock. Available: ${material.currentStock} ${material.unitType.label}');
+      throw Exception('Insufficient stock. Available: ${material.currentStock} ${material.unitType}');
     }
 
     final effectiveRate = rate ?? material.salePrice;
@@ -1044,7 +1029,7 @@ class InventoryRepository extends ChangeNotifier {
       materialId: materialId,
       materialName: material.name,
       quantity: quantity,
-      unit: material.unitType.label,
+      unit: material.unitType,
       timestamp: date ?? DateTime.now(),
       siteId: siteId ?? material.siteId,
       rate: effectiveRate,

@@ -23,14 +23,7 @@ void main() {
         role: UserRole.admin,
       );
       service = InventoryRepository();
-    ............................................................................
-
-
-
-
-
-
-    
+      
       // No need to await service.isLoading as it's a bool getter
     });
 
@@ -48,7 +41,7 @@ void main() {
         driverLicense: 'LIC123',
         materialId: 'MAT-001',
         materialName: 'Ultratech Cement',
-        category: MaterialCategory.civilStructural,
+        category: 'Civil/Structural',
         quantity: 100,
         unit: 'bag',
         photoProofs: [],
@@ -89,7 +82,7 @@ void main() {
         driverLicense: 'LIC123',
         materialId: 'MAT-001',
         materialName: 'Ultratech Cement',
-        category: MaterialCategory.civilStructural,
+        category: 'Civil/Structural',
         quantity: 50,
         unit: 'bag',
         photoProofs: [],
@@ -145,7 +138,7 @@ void main() {
         driverLicense: 'LIC123',
         materialId: 'MAT-001',
         materialName: 'Ultratech Cement',
-        category: MaterialCategory.civilStructural,
+        category: 'Civil/Structural',
         quantity: 50,
         unit: 'bag',
         photoProofs: [],
@@ -177,7 +170,7 @@ void main() {
         driverLicense: 'LIC123',
         materialId: 'MAT-001',
         materialName: 'Ultratech Cement',
-        category: MaterialCategory.civilStructural,
+        category: 'Civil/Structural',
         quantity: 50,
         unit: 'bag',
         photoProofs: [],

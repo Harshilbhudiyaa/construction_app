@@ -3,7 +3,7 @@ import 'package:construction_app/core/theme/aesthetic_tokens.dart';
 import 'package:construction_app/data/models/material_model.dart';
 
 class UnitPickerSheet extends StatefulWidget {
-  final UnitType? initialUnit;
+  final String? initialUnit;
   const UnitPickerSheet({super.key, this.initialUnit});
 
   @override
@@ -11,83 +11,115 @@ class UnitPickerSheet extends StatefulWidget {
 }
 
 class _UnitPickerSheetState extends State<UnitPickerSheet> {
-  late UnitType _selectedUnit;
+  late String _selectedUnit;
   String _searchQuery = '';
   final TextEditingController _searchCtrl = TextEditingController();
+  final TextEditingController _customCtrl = TextEditingController();
+  bool _isCustom = false;
 
   @override
   void initState() {
     super.initState();
-    _selectedUnit = widget.initialUnit ?? UnitType.none;
+    _selectedUnit = widget.initialUnit ?? '';
+    if (_selectedUnit.isNotEmpty && !standardUnits.contains(_selectedUnit)) {
+      _isCustom = true;
+      _customCtrl.text = _selectedUnit;
+    }
   }
 
   @override
   void dispose() {
     _searchCtrl.dispose();
+    _customCtrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final filteredUnits = UnitType.values.where((u) {
-      if (u == UnitType.none) return false;
-      final name = u.toString().split('.').last.toUpperCase();
-      final label = u.label.toUpperCase();
+    final filteredUnits = standardUnits.where((u) {
       final search = _searchQuery.toUpperCase();
-      return name.contains(search) || label.contains(search);
+      return u.toUpperCase().contains(search);
     }).toList();
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
         children: [
           _buildHeader(context),
           _buildSearchBar(),
           Expanded(
-            child: ListView.builder(
+            child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 8),
-              itemCount: filteredUnits.length,
-              itemBuilder: (context, index) {
-                final unit = filteredUnits[index];
-                final isSelected = _selectedUnit == unit;
-                return ListTile(
-                  leading: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    width: 20,
-                    height: 20,
+              children: [
+                ...filteredUnits.map((unit) {
+                  final isSelected = !_isCustom && _selectedUnit == unit;
+                  return ListTile(
+                    leading: _buildRadio(isSelected),
+                    title: Text(
+                      unit.toUpperCase(),
+                      style: TextStyle(
+                        color: isSelected ? bcPrimary : bcNavy,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      ),
+                    ),
+                    onTap: () {
+                      setState(() {
+                        _selectedUnit = unit;
+                        _isCustom = false;
+                      });
+                    },
+                  );
+                }),
+                
+                // Custom Option
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: isSelected ? bcPrimary : Colors.grey,
-                        width: 2,
-                      ),
+                      color: _isCustom ? bcPrimary.withValues(alpha: 0.05) : bcSurface,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: _isCustom ? bcPrimary : const Color(0xFFE2E8F0)),
                     ),
-                    child: Center(
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        width: isSelected ? 10 : 0,
-                        height: isSelected ? 10 : 0,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: bcPrimary,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        GestureDetector(
+                          onTap: () => setState(() => _isCustom = true),
+                          child: Row(
+                            children: [
+                              _buildRadio(_isCustom),
+                              const SizedBox(width: 12),
+                              const Text('CUSTOM UNIT', style: TextStyle(color: bcNavy, fontWeight: FontWeight.bold, fontSize: 13)),
+                            ],
+                          ),
                         ),
-                      ),
+                        if (_isCustom) ...[
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: _customCtrl,
+                            autofocus: true,
+                            decoration: InputDecoration(
+                              hintText: 'Enter unit (e.g. bundle, box, etc.)',
+                              hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                            style: const TextStyle(fontSize: 14, color: bcNavy),
+                            onChanged: (v) => setState(() => _selectedUnit = v),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
-                  title: Text(
-                    '${_getUnitFullName(unit)} - ${unit.label}',
-                    style: TextStyle(
-                      color: isSelected ? bcPrimary : bcNavy,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    ),
-                  ),
-                  onTap: () => setState(() => _selectedUnit = unit),
-                );
-              },
+                ),
+              ],
             ),
           ),
           _buildConfirmButton(context),
@@ -96,18 +128,47 @@ class _UnitPickerSheetState extends State<UnitPickerSheet> {
     );
   }
 
+  Widget _buildRadio(bool isSelected) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      width: 20,
+      height: 20,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: isSelected ? bcPrimary : Colors.grey.withValues(alpha: 0.5),
+          width: 2,
+        ),
+      ),
+      child: Center(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          width: isSelected ? 10 : 0,
+          height: isSelected ? 10 : 0,
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            color: bcPrimary,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildHeader(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+      padding: const EdgeInsets.fromLTRB(20, 16, 8, 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            'Select Unit',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: bcNavy),
+          const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Select Unit', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: bcNavy)),
+              Text('Pick standard units or add custom', style: TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
+            ],
           ),
           IconButton(
-            icon: const Icon(Icons.close, color: bcNavy),
+            icon: const Icon(Icons.close_rounded, color: bcNavy),
             onPressed: () => Navigator.pop(context),
           ),
         ],
@@ -121,12 +182,12 @@ class _UnitPickerSheetState extends State<UnitPickerSheet> {
       child: TextField(
         controller: _searchCtrl,
         decoration: InputDecoration(
-          hintText: 'Search Units',
-          prefixIcon: const Icon(Icons.search, color: Colors.grey),
+          hintText: 'Search Standard Units',
+          prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF94A3B8), size: 20),
           filled: true,
-          fillColor: Colors.grey[100],
+          fillColor: bcSurface,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
             borderSide: BorderSide.none,
           ),
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -137,66 +198,26 @@ class _UnitPickerSheetState extends State<UnitPickerSheet> {
   }
 
   Widget _buildConfirmButton(BuildContext context) {
+    final finalUnit = _isCustom ? _customCtrl.text.trim() : _selectedUnit;
+    final isEnabled = finalUnit.isNotEmpty;
+
     return Padding(
       padding: EdgeInsets.fromLTRB(16, 8, 16, MediaQuery.of(context).padding.bottom + 16),
       child: SizedBox(
         width: double.infinity,
-        height: 50,
+        height: 54,
         child: ElevatedButton(
-          onPressed: () => Navigator.pop(context, _selectedUnit),
+          onPressed: isEnabled ? () => Navigator.pop(context, finalUnit) : null,
           style: ElevatedButton.styleFrom(
             backgroundColor: bcPrimary,
             foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            disabledBackgroundColor: bcSurface,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             elevation: 0,
           ),
-          child: const Text(
-            'CONFIRM',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
+          child: const Text('CONFIRM SELECTION', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
         ),
       ),
     );
-  }
-
-  String _getUnitFullName(UnitType unit) {
-    switch (unit) {
-      case UnitType.nos: return 'Numbers';
-      case UnitType.pcs: return 'Pieces';
-      case UnitType.kgs: return 'Kilograms';
-      case UnitType.bag: return 'Bags';
-      case UnitType.wks: return 'Weeks';
-      case UnitType.mon: return 'Month';
-      case UnitType.yrs: return 'Years';
-      case UnitType.bal: return 'Bale';
-      case UnitType.bou: return 'Billion of Units';
-      case UnitType.btl: return 'Bottles';
-      case UnitType.box: return 'Box';
-      case UnitType.bkl: return 'Buckles';
-      case UnitType.bun: return 'Bunches';
-      case UnitType.bdl: return 'Bundles';
-      case UnitType.can: return 'Cans';
-      case UnitType.cms: return 'Centimeters';
-      case UnitType.ctn: return 'Cartons';
-      case UnitType.dzn: return 'Dozens';
-      case UnitType.gms: return 'Grams';
-      case UnitType.grs: return 'Gross';
-      case UnitType.klt: return 'Kiloliters';
-      case UnitType.kms: return 'Kilometers';
-      case UnitType.ltr: return 'Liters';
-      case UnitType.mgm: return 'Milligrams';
-      case UnitType.mlt: return 'Milliliters';
-      case UnitType.mtr: return 'Meters';
-      case UnitType.prs: return 'Pairs';
-      case UnitType.qtl: return 'Quintal';
-      case UnitType.rll: return 'Rolls';
-      case UnitType.sqf: return 'Square Feet';
-      case UnitType.sqm: return 'Square Meters';
-      case UnitType.tne: return 'Metric Ton';
-      case UnitType.unit: return 'Units';
-      case UnitType.cft: return 'Cubic Feet';
-      case UnitType.ton: return 'Tons';
-      default: return unit.label;
-    }
   }
 }

@@ -10,7 +10,8 @@ import 'package:construction_app/data/repositories/stock_entry_repository.dart';
 import 'package:construction_app/core/routing/app_router.dart';
 
 class MaterialCatalogScreen extends StatefulWidget {
-  const MaterialCatalogScreen({super.key});
+  final bool initialInStockFilter;
+  const MaterialCatalogScreen({super.key, this.initialInStockFilter = false});
 
   @override
   State<MaterialCatalogScreen> createState() => _MaterialCatalogScreenState();
@@ -18,7 +19,14 @@ class MaterialCatalogScreen extends StatefulWidget {
 
 class _MaterialCatalogScreenState extends State<MaterialCatalogScreen> {
   String _search = '';
-  MaterialCategory? _filter;
+  String? _filter;
+  bool _onlyInStock = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _onlyInStock = widget.initialInStockFilter;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,11 +36,16 @@ class _MaterialCatalogScreenState extends State<MaterialCatalogScreen> {
     final siteId    = siteRepo.selectedSiteId;
     final fmt       = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
 
+
     final materials = invRepo.materials.where((m) {
-      final siteOk = siteId == null || m.siteId == siteId || m.siteId.isEmpty;
-      final catOk  = _filter == null || m.category == _filter;
-      final srchOk = _search.isEmpty || m.name.toLowerCase().contains(_search.toLowerCase());
-      return siteOk && catOk && srchOk;
+      final sId = siteId;
+      final siteOk = (sId == null || m.siteId == sId || m.siteId.isEmpty);
+      final srchOk = (_search.isEmpty || 
+          m.name.toLowerCase().contains(_search.toLowerCase()));
+      final bool filterInStock = _onlyInStock;
+      final stockOk = !filterInStock || m.currentStock > 0;
+      
+      return siteOk && srchOk && stockOk;
     }).toList();
 
     return Scaffold(
@@ -100,9 +113,9 @@ class _MaterialCatalogScreenState extends State<MaterialCatalogScreen> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  _CategoryFilter(
-                    selected: _filter,
-                    onChanged: (c) => setState(() => _filter = c),
+                  _InStockFilter(
+                    active: _onlyInStock,
+                    onToggled: (v) => setState(() => _onlyInStock = v),
                   ),
                 ],
               ),
@@ -148,7 +161,7 @@ class _MaterialCatalogScreenState extends State<MaterialCatalogScreen> {
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.layers_outlined, size: 64, color: const Color(0xFFCBD5E1)),
+        const Icon(Icons.layers_outlined, size: 64, color: Color(0xFFCBD5E1)),
         const SizedBox(height: 16),
         const Text('No materials yet', style: TextStyle(color: bcNavy, fontWeight: FontWeight.w800, fontSize: 16)),
         const SizedBox(height: 8),
@@ -158,12 +171,7 @@ class _MaterialCatalogScreenState extends State<MaterialCatalogScreen> {
   );
 
   void _showAddMaterialSheet(BuildContext context, String? siteId) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _AddMaterialSheet(siteId: siteId ?? context.read<SiteRepository>().selectedSiteId ?? 'S-001'),
-    );
+    Navigator.pushNamed(context, AppRoutes.addItem);
   }
 }
 
@@ -204,10 +212,10 @@ class _MaterialCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: _catColor(material.category).withValues(alpha: 0.1),
+                      color: bcNavy.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(_catIcon(material.category), color: _catColor(material.category), size: 20),
+                    child: const Icon(Icons.inventory_2_rounded, color: bcNavy, size: 20),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -216,14 +224,21 @@ class _MaterialCard extends StatelessWidget {
                       children: [
                         Text(material.name,
                             style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w800, fontSize: 14)),
-                        Row(
-                          children: [
-                            if (material.subType.isNotEmpty) ...[
-                              _Tag(material.subType, const Color(0xFF60A5FA)),
-                              const SizedBox(width: 6),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              if (material.variant.isNotEmpty) ...[
+                                _Tag(material.variant, const Color(0xFF6366F1)),
+                                const SizedBox(width: 6),
+                              ],
+                              if (material.subType.isNotEmpty) ...[
+                                _Tag(material.subType, const Color(0xFF60A5FA)),
+                                const SizedBox(width: 6),
+                              ],
+                              _Tag(material.unitType.toUpperCase(), const Color(0xFFA78BFA)),
                             ],
-                            _Tag(material.unitType.label, const Color(0xFFA78BFA)),
-                          ],
+                          ),
                         ),
                       ],
                     ),
@@ -232,14 +247,14 @@ class _MaterialCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        '${material.currentStock.toStringAsFixed(material.currentStock.truncateToDouble() == material.currentStock ? 0 : 1)} ${material.unitType.label}',
+                        '${material.currentStock.toStringAsFixed(material.currentStock.truncateToDouble() == material.currentStock ? 0 : 1)} ${material.unitType}',
                         style: TextStyle(
                           color: isLowStock ? bcDanger : bcNavy,
                           fontWeight: FontWeight.w900,
                           fontSize: 15,
                         ),
                       ),
-                      Text('in stock', style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 10)),
+                      const Text('in stock', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 10)),
                     ],
                   ),
                 ],
@@ -265,15 +280,6 @@ class _MaterialCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Color _catColor(MaterialCategory c) {
-    // Only civilStructural exists currently — default handles future additions
-    return const Color(0xFFF59E0B);
-  }
-
-  IconData _catIcon(MaterialCategory c) {
-    return Icons.foundation_rounded;
   }
 }
 
@@ -308,98 +314,7 @@ class _StatPair extends StatelessWidget {
   );
 }
 
-// ─── Category Filter ──────────────────────────────────────────────────────────
 
-class _CategoryFilter extends StatelessWidget {
-  final MaterialCategory? selected;
-  final ValueChanged<MaterialCategory?> onChanged;
-  const _CategoryFilter({required this.selected, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => _showFilter(context),
-      child: Container(
-        height: 40,
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        decoration: BoxDecoration(
-          color: selected != null ? bcAmber.withValues(alpha: 0.1) : bcSurface,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: selected != null ? bcAmber.withValues(alpha: 0.4) : const Color(0xFFE2E8F0)),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.filter_list_rounded, color: selected != null ? bcAmber : const Color(0xFF94A3B8), size: 18),
-            if (selected != null) ...[
-              const SizedBox(width: 4),
-              const Icon(Icons.close_rounded, color: bcAmber, size: 14),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showFilter(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _CategoryFilterSheet(selected: selected, onChanged: (c) { onChanged(c); Navigator.pop(context); }),
-    );
-  }
-}
-
-class _CategoryFilterSheet extends StatelessWidget {
-  final MaterialCategory? selected;
-  final ValueChanged<MaterialCategory?> onChanged;
-  const _CategoryFilterSheet({required this.selected, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text('Filter by Category', style: TextStyle(color: bcNavy, fontWeight: FontWeight.w800, fontSize: 16)),
-          const SizedBox(height: 16),
-          _FilterChip(label: 'All', selected: selected == null, onTap: () => onChanged(null)),
-          ...MaterialCategory.values.map((c) =>
-            _FilterChip(label: c.displayName, selected: selected == c, onTap: () => onChanged(c))),
-        ],
-      ),
-    );
-  }
-}
-
-class _FilterChip extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-  const _FilterChip({required this.label, required this.selected, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
-        decoration: BoxDecoration(
-          color: selected ? bcAmber.withValues(alpha: 0.1) : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: selected ? bcAmber : const Color(0xFFE2E8F0)),
-        ),
-        child: Text(label, style: TextStyle(color: selected ? bcAmber : bcNavy, fontWeight: FontWeight.w700, fontSize: 13)),
-      ),
-    );
-  }
-}
 
 // ─── Stock Summary Badge ──────────────────────────────────────────────────────
 
@@ -426,136 +341,40 @@ class _StockSummaryBadge extends StatelessWidget {
   );
 }
 
-// ─── Add Material Bottom Sheet ────────────────────────────────────────────────
-
-class _AddMaterialSheet extends StatefulWidget {
-  final String siteId;
-  const _AddMaterialSheet({required this.siteId});
-
-  @override
-  State<_AddMaterialSheet> createState() => _AddMaterialSheetState();
-}
-
-class _AddMaterialSheetState extends State<_AddMaterialSheet> {
-  final _nameCtrl    = TextEditingController();
-  final _subtypeCtrl = TextEditingController();
-  final _priceCtrl   = TextEditingController();
-  final _stockCtrl   = TextEditingController();
-  MaterialCategory _category = MaterialCategory.civilStructural;
-  UnitType _unit = UnitType.bag;
-  bool _submitting = false;
-
-  @override
-  void dispose() {
-    _nameCtrl.dispose(); _subtypeCtrl.dispose();
-    _priceCtrl.dispose(); _stockCtrl.dispose();
-    super.dispose();
-  }
+class _InStockFilter extends StatelessWidget {
+  final bool active;
+  final ValueChanged<bool> onToggled;
+  const _InStockFilter({required this.active, required this.onToggled});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      padding: EdgeInsets.fromLTRB(20, 12, 20, MediaQuery.of(context).viewInsets.bottom + 24),
-      child: SingleChildScrollView(
-        child: Column(
+    return GestureDetector(
+      onTap: () => onToggled(!active),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: active ? bcAmber.withValues(alpha: 0.1) : Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: active ? bcAmber.withValues(alpha: 0.4) : const Color(0xFFE2E8F0)),
+        ),
+        child: Row(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: Container(
-                width: 40, height: 4,
-                decoration: BoxDecoration(color: const Color(0xFFE2E8F0), borderRadius: BorderRadius.circular(2)),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text('Add Material', style: TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 20)),
-            const SizedBox(height: 20),
-
-            _field('Material Name *', _nameCtrl, hint: 'e.g. Cement, Steel TMT Bar'),
-            const SizedBox(height: 12),
-            _field('Sub-type / Grade', _subtypeCtrl, hint: 'e.g. OPC 53, 12mm, OPC 43'),
-            const SizedBox(height: 12),
-
-            // Category
-            const Text('Category', style: TextStyle(color: bcNavy, fontWeight: FontWeight.w700, fontSize: 13)),
-            const SizedBox(height: 6),
-            _DropdownRow<MaterialCategory>(
-              value: _category,
-              items: MaterialCategory.values,
-              labelBuilder: (c) => c.displayName,
-              onChanged: (c) => setState(() => _category = c!),
-            ),
-            const SizedBox(height: 12),
-
-            // Unit
-            const Text('Unit', style: TextStyle(color: bcNavy, fontWeight: FontWeight.w700, fontSize: 13)),
-            const SizedBox(height: 6),
-            _DropdownRow<UnitType>(
-              value: _unit,
-              items: UnitType.values,
-              labelBuilder: (u) => u.label,
-              onChanged: (u) => setState(() => _unit = u!),
-            ),
-            const SizedBox(height: 12),
-
-            Row(
-              children: [
-                Expanded(child: _field('Current Price (₹)', _priceCtrl, hint: '450', keyboardType: TextInputType.number)),
-                const SizedBox(width: 10),
-                Expanded(child: _field('In Stock', _stockCtrl, hint: '0', keyboardType: TextInputType.number)),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton.icon(
-                onPressed: _submitting ? null : () => _submit(context),
-                icon: _submitting ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Icon(Icons.check_rounded),
-                label: const Text('Save Material'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: bcNavy,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                ),
+            Icon(Icons.inventory_2_outlined, size: 14, color: active ? bcAmber : const Color(0xFF94A3B8)),
+            const SizedBox(width: 6),
+            Text(
+              'In Stock',
+              style: TextStyle(
+                color: active ? bcAmber : const Color(0xFF94A3B8),
+                fontSize: 12,
+                fontWeight: active ? FontWeight.w800 : FontWeight.w600,
               ),
             ),
           ],
         ),
       ),
     );
-  }
-
-  Future<void> _submit(BuildContext context) async {
-    final name = _nameCtrl.text.trim();
-    if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Material name is required')));
-      return;
-    }
-    setState(() => _submitting = true);
-    final price = double.tryParse(_priceCtrl.text) ?? 0;
-    final stock = double.tryParse(_stockCtrl.text) ?? 0;
-    final material = ConstructionMaterial(
-      id: const Uuid().v4(),
-      siteId: widget.siteId,
-      name: name,
-      category: _category,
-      subType: _subtypeCtrl.text.trim(),
-      pricePerUnit: price,
-      purchasePrice: price,
-      salePrice: price,
-      unitType: _unit,
-      currentStock: stock,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    );
-    await context.read<InventoryRepository>().addMaterial(material);
-    if (context.mounted) Navigator.pop(context);
   }
 }
 

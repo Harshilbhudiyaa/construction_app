@@ -87,7 +87,7 @@ class _StockDamageScreenState extends State<StockDamageScreen> {
                             const SizedBox(width: 16),
                             Expanded(
                               child: HelpfulTextField(
-                                label: _selectedMaterial != null ? 'Quantity (${_selectedMaterial!.unitType.label})' : 'Quantity',
+                                label: _selectedMaterial != null ? 'Quantity (${_selectedMaterial!.unitType})' : 'Quantity',
                                 controller: _quantityController,
                                 hintText: 'Enter quantity',
                                 keyboardType: TextInputType.number,
@@ -112,7 +112,7 @@ class _StockDamageScreenState extends State<StockDamageScreen> {
                         ),
                         const SizedBox(height: 16),
                         HelpfulTextField(
-                          label: _selectedMaterial != null ? 'Quantity (${_selectedMaterial!.unitType.label})' : 'Quantity',
+                          label: _selectedMaterial != null ? 'Quantity (${_selectedMaterial!.unitType})' : 'Quantity',
                           controller: _quantityController,
                           hintText: 'Enter quantity',
                           keyboardType: TextInputType.number,
@@ -239,7 +239,7 @@ class _StockDamageScreenState extends State<StockDamageScreen> {
         materialId: _selectedMaterial!.id,
         materialName: _selectedMaterial!.name,
         quantity: quantity,
-        unit: _selectedMaterial!.unitType.label,
+        unit: _selectedMaterial!.unitType,
         type: _damageType,
         remarks: _reasonController.text + (_remarksController.text.isNotEmpty ? ' - ${_remarksController.text}' : ''),
         recordedBy: context.read<AuthRepository>().userName ?? 'System',
@@ -313,10 +313,10 @@ class _StockDamageScreenState extends State<StockDamageScreen> {
                           contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
                           leading: CircleAvatar(
                             backgroundColor: bcNavy.withValues(alpha: 0.05),
-                            child: Icon(material.category.icon, color: bcNavy, size: 20),
+                            child: const Icon(Icons.foundation_rounded, color: bcNavy, size: 20),
                           ),
                           title: Text(material.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                          subtitle: Text('Bal: ${material.currentStock} ${material.unitType.label} • ${material.brand ?? "Default"}', style: const TextStyle(fontSize: 12)),
+                          subtitle: Text('Bal: ${material.currentStock} ${material.unitType} • ${material.brand ?? "Default"}', style: const TextStyle(fontSize: 12)),
                           trailing: const Icon(Icons.chevron_right_rounded, color: bcNavy, size: 20),
                           onTap: () {
                             setState(() => _selectedMaterial = material);

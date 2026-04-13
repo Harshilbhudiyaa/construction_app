@@ -187,7 +187,8 @@ class StockSupplierSelector extends StatelessWidget {
 
 class DirectEntrySheet extends StatefulWidget {
   final PartyModel? initialSupplier;
-  const DirectEntrySheet({super.key, this.initialSupplier});
+  final ConstructionMaterial? initialMaterial;
+  const DirectEntrySheet({super.key, this.initialSupplier, this.initialMaterial});
 
   @override
   State<DirectEntrySheet> createState() => _DirectEntrySheetState();
@@ -211,6 +212,11 @@ class _DirectEntrySheetState extends State<DirectEntrySheet> {
   void initState() {
     super.initState();
     _selectedSupplier = widget.initialSupplier;
+    _selectedMaterial = widget.initialMaterial;
+    if (_selectedMaterial != null) {
+      _rateCtrl.text = _selectedMaterial!.pricePerUnit.toStringAsFixed(0);
+      _descCtrl.text = _selectedMaterial!.name;
+    }
     _qtyCtrl.addListener(_recalc);
     _rateCtrl.addListener(_recalc);
   }
@@ -323,7 +329,7 @@ class _DirectEntrySheetState extends State<DirectEntrySheet> {
       materialId: _selectedMaterial?.id ?? '',
       materialName: _selectedMaterial?.name ?? desc,
       subType: _selectedMaterial?.subType ?? desc,
-      unit: _selectedMaterial?.unitType.label ?? '',
+      unit: _selectedMaterial?.unitType ?? 'unit',
       quantity: qty,
       unitPrice: rate,
       totalAmount: total,
@@ -588,38 +594,102 @@ class _AddBillItemDialogState extends State<_AddBillItemDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      title: const Text('Add Item', style: TextStyle(color: bcNavy, fontWeight: FontWeight.w900)),
-      content: Column(mainAxisSize: MainAxisSize.min, children: [
-        StockMaterialSelector(materials: widget.materials, selected: _mat, onSelected: (m) {
-          setState(() { _mat = m; if (m != null) { _nameCtrl.text = m.name; _rateCtrl.text = m.pricePerUnit.toStringAsFixed(0); } });
-        }),
-        const SizedBox(height: 10),
-        stockSheetField('Name / Description', _nameCtrl, hint: 'Material name'),
-        const SizedBox(height: 8),
-        Row(children: [
-          Expanded(child: stockSheetField('Qty', _qtyCtrl, hint: '0', keyboardType: TextInputType.number)),
-          const SizedBox(width: 8),
-          Expanded(child: stockSheetField('Rate ₹', _rateCtrl, hint: '0', keyboardType: TextInputType.number)),
-        ]),
-      ]),
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+      titlePadding: EdgeInsets.zero,
+      contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+      title: Container(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        decoration: BoxDecoration(
+          color: bcNavy.withValues(alpha: 0.03),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: bcAmber.withValues(alpha: 0.1), shape: BoxShape.circle),
+              child: const Icon(Icons.add_shopping_cart_rounded, color: bcAmber, size: 28),
+            ),
+            const SizedBox(height: 12),
+            const Text('Add Bill Item', style: TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 18)),
+          ],
+        ),
+      ),
+      content: SizedBox(
+        width: 400, // Makes it feel less "small"
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const StockSheetLabel('Select Material (if applies)'),
+            const SizedBox(height: 8),
+            StockMaterialSelector(materials: widget.materials, selected: _mat, onSelected: (m) {
+              setState(() {
+                _mat = m;
+                if (m != null) {
+                  _nameCtrl.text = m.name;
+                  _rateCtrl.text = m.pricePerUnit.toStringAsFixed(0);
+                }
+              });
+            }),
+            const SizedBox(height: 20),
+            stockSheetField('Name / Description *', _nameCtrl, hint: 'e.g. 12mm Steel Bars'),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(child: stockSheetField('Quantity *', _qtyCtrl, hint: '0', keyboardType: TextInputType.number)),
+                const SizedBox(width: 16),
+                Expanded(child: stockSheetField('Unit Rate (₹)', _rateCtrl, hint: '0', keyboardType: TextInputType.number)),
+              ],
+            ),
+          ],
+        ),
+      ),
+      actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-        ElevatedButton(
-          onPressed: () {
-            final name = _nameCtrl.text.trim();
-            final qty  = double.tryParse(_qtyCtrl.text) ?? 0;
-            final rate = double.tryParse(_rateCtrl.text) ?? 0;
-            if (name.isEmpty || qty == 0) return;
-            widget.onAdd(_BillItem(
-              materialId: _mat?.id ?? '',
-              name: name, subtype: _mat?.subType ?? '',
-              unit: _mat?.unitType.label ?? '', qty: qty, rate: rate,
-            ));
-            Navigator.pop(context);
-          },
-          style: ElevatedButton.styleFrom(backgroundColor: bcNavy),
-          child: const Text('Add', style: TextStyle(color: Colors.white)),
+        Row(
+          children: [
+            Expanded(
+              child: TextButton(
+                onPressed: () => Navigator.pop(context),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14), side: const BorderSide(color: Color(0xFFE2E8F0))),
+                ),
+                child: const Text('Cancel', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w700)),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () {
+                  final name = _nameCtrl.text.trim();
+                  final qty  = double.tryParse(_qtyCtrl.text) ?? 0;
+                  final rate = double.tryParse(_rateCtrl.text) ?? 0;
+                  if (name.isEmpty || qty <= 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter name and valid quantity')));
+                    return;
+                  }
+                  widget.onAdd(_BillItem(
+                    materialId: _mat?.id ?? '',
+                    name: name, subtype: _mat?.subType ?? '',
+                    unit: _mat?.unitType ?? 'unit', qty: qty, rate: rate,
+                  ));
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: bcNavy,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                ),
+                child: const Text('Add to Bill', style: TextStyle(fontWeight: FontWeight.w800)),
+              ),
+            ),
+          ],
         ),
       ],
     );

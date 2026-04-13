@@ -103,13 +103,11 @@ class ReportingService extends ChangeNotifier {
   List<InwardMovementModel> getInwardReport({
     DateTime? startDate,
     DateTime? endDate,
-    MaterialCategory? category,
     InwardStatus? status,
   }) {
     return _inventoryRepo.logs.where((log) {
       if (startDate != null && log.createdAt.isBefore(startDate)) return false;
       if (endDate != null && log.createdAt.isAfter(endDate)) return false;
-      if (category != null && log.category != category) return false;
       if (status != null && log.status != status) return false;
       return true;
     }).toList()
@@ -133,11 +131,9 @@ class ReportingService extends ChangeNotifier {
   }
 
   List<ConstructionMaterial> getStockLevelReport({
-    MaterialCategory? category,
     bool lowStockOnly = false,
   }) {
     return _inventoryRepo.materials.where((m) {
-      if (category != null && m.category != category) return false;
       if (lowStockOnly && m.currentStock > m.minimumStockLimit) return false;
       return true;
     }).toList()

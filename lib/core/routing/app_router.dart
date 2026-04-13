@@ -102,15 +102,19 @@ class AppRoutes {
     siteManagement: (_) => const SiteManagementScreen(),
 
     // ── New screens ─────────────────────────────────────────────────────────────
-    materialCatalog: (_) => const MaterialCatalogScreen(),
+    materialCatalog: (ctx) {
+      final args = ModalRoute.of(ctx)!.settings.arguments;
+      final showInStock = args is Map<String, dynamic> ? (args['inStock'] ?? false) : false;
+      return MaterialCatalogScreen(initialInStockFilter: showInStock);
+    },
     materialDetail: (ctx) {
-      final id = ModalRoute.of(ctx)!.settings.arguments as String;
-      return MaterialDetailScreen(materialId: id);
+      final id = ModalRoute.of(ctx)!.settings.arguments as String?;
+      return MaterialDetailScreen(materialId: id ?? 'missing_id');
     },
     supplierList: (_) => const SupplierListScreen(),
     supplierDetail: (ctx) {
-      final id = ModalRoute.of(ctx)!.settings.arguments as String;
-      return SupplierDetailScreen(supplierId: id);
+      final id = ModalRoute.of(ctx)!.settings.arguments as String?;
+      return SupplierDetailScreen(supplierId: id ?? 'missing_id');
     },
     stockHub:      (_) => const StockHubScreen(),
     workerList:    (_) => const WorkerListScreen(),
@@ -137,9 +141,13 @@ class AppRoutes {
     milestones:     (_) => const ProjectMilestonesScreen(),
     financialSummary: (_) => const FinancialSummaryScreen(),
     addItem: (_) => const AddEditItemScreen(),
+    editItem: (ctx) {
+      final id = ModalRoute.of(ctx)!.settings.arguments as String?;
+      return AddEditItemScreen(materialId: id);
+    },
     itemDetail: (ctx) {
-      final id = ModalRoute.of(ctx)!.settings.arguments as String;
-      return ItemDetailScreen(materialId: id);
+      final id = ModalRoute.of(ctx)!.settings.arguments as String?;
+      return ItemDetailScreen(materialId: id ?? 'missing_id');
     },
     labourList: (_) => const LabourListScreen(),
     labourEntry: (ctx) {
@@ -147,8 +155,8 @@ class AppRoutes {
       return LabourEntryFormScreen(editingEntry: args as LabourEntryModel?);
     },
     labourDetail: (ctx) {
-      final id = ModalRoute.of(ctx)!.settings.arguments as String;
-      return LabourDetailScreen(entryId: id);
+      final id = ModalRoute.of(ctx)!.settings.arguments as String?;
+      return LabourDetailScreen(entryId: id ?? 'missing_id');
     },
 
     // ── Calculators (UNTOUCHED) ──────────────────────────────────────────────────

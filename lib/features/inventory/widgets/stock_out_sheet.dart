@@ -52,13 +52,13 @@ class _StockOutSheetState extends State<StockOutSheet> {
           _buildHeader(context),
           const SizedBox(height: 16),
           Text(material.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: bcNavy)),
-          Text('Available Stock: ${material.currentStock} ${material.unitType.label}', style: TextStyle(fontSize: 12, color: material.isLowStock ? Colors.red : Colors.grey)),
+          Text('Available Stock: ${material.currentStock} ${material.unitType}', style: TextStyle(fontSize: 12, color: material.isLowStock ? Colors.red : Colors.grey)),
           const SizedBox(height: 24),
           Row(
             children: [
               Expanded(child: _buildTextField('Quantity', _qtyCtrl, '0', isNumber: true)),
               const SizedBox(width: 16),
-              Expanded(child: _buildTextField('Unit', TextEditingController(text: material.unitType.label), '', enabled: false)),
+              Expanded(child: _buildTextField('Unit', TextEditingController(text: material.unitType), '', enabled: false)),
             ],
           ),
           const SizedBox(height: 16),

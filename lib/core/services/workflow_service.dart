@@ -95,7 +95,7 @@ class WorkflowService extends ChangeNotifier {
     final material = inventoryRepo.materials.firstWhere((m) => m.id == materialId);
     
     if (material.currentStock < quantity) {
-      throw Exception('Insufficient Stock! Available: ${material.currentStock} ${material.unitType.label}');
+      throw Exception('Insufficient Stock! Available: ${material.currentStock} ${material.unitType}');
     }
 
     await inventoryRepo.recordStockOut(

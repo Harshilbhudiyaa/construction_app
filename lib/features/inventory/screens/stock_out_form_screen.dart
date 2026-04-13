@@ -184,7 +184,7 @@ class _StockOutFormScreenState extends State<StockOutFormScreen> {
 
   Widget _buildQuantityField() {
     return HelpfulTextField(
-      label: _selectedMaterial != null ? 'Quantity Used (${_selectedMaterial!.unitType.label})' : 'Quantity Used',
+      label: _selectedMaterial != null ? 'Quantity Used (${_selectedMaterial!.unitType})' : 'Quantity Used',
       controller: _quantityController,
       hintText: 'Enter quantity',
       keyboardType: TextInputType.number,
@@ -384,7 +384,7 @@ class _StockOutFormScreenState extends State<StockOutFormScreen> {
                                       color: bcNavy.withValues(alpha: 0.03),
                                       borderRadius: BorderRadius.circular(14),
                                     ),
-                                    child: Icon(material.category.icon, color: bcNavy, size: 22),
+                                    child: const Icon(Icons.foundation_rounded, color: bcNavy, size: 22),
                                   ),
                                   const SizedBox(width: 16),
                                   Expanded(
@@ -401,7 +401,7 @@ class _StockOutFormScreenState extends State<StockOutFormScreen> {
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          'Stock: ${material.currentStock} ${material.unitType.label} • ${material.brand ?? "No Brand"}',
+                                          'Stock: ${material.currentStock} ${material.unitType} • ${material.brand ?? "No Brand"}',
                                           style: TextStyle(
                                             color: bcNavy.withValues(alpha: 0.5),
                                             fontSize: 12,

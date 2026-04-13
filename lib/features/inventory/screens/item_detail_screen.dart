@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:construction_app/core/theme/aesthetic_tokens.dart';
 import 'package:construction_app/data/models/material_model.dart';
@@ -27,7 +27,7 @@ class ItemDetailScreen extends StatelessWidget {
             slivers: [
               SmartConstructionSliverAppBar(
                 title: material.name,
-                subtitle: '${material.category.displayName} • ${material.unitType.label}',
+                subtitle: material.unitType.toUpperCase(),
                 category: 'MATERIAL DETAILS',
                 actions: [
                   IconButton(
@@ -43,7 +43,7 @@ class ItemDetailScreen extends StatelessWidget {
                 headerStats: [
                   HeroStatPill(
                     label: 'Current Stock',
-                    value: '${material.currentStock.toStringAsFixed(0)} ${material.unitType.label}',
+                    value: '${material.currentStock.toStringAsFixed(0)} ${material.unitType}',
                     icon: Icons.inventory_2_rounded,
                     color: material.isLowStock ? bcDanger : bcSuccess,
                     showBorder: false,
@@ -111,9 +111,9 @@ class ItemDetailScreen extends StatelessWidget {
           const SizedBox(height: 24),
           Row(
             children: [
-              _StatItem(label: 'Current Stock', value: '${material.currentStock.toStringAsFixed(0)} ${material.unitType.label}'),
+              _StatItem(label: 'Current Stock', value: '${material.currentStock.toStringAsFixed(0)} ${material.unitType}'),
               _StatItem(label: 'Stock Value', value: '₹ ${(material.currentStock * material.purchasePrice).toStringAsFixed(0)}'),
-              _StatItem(label: 'Low Stock At', value: '${material.minimumStockLimit.toStringAsFixed(0)} ${material.unitType.label}'),
+              _StatItem(label: 'Low Stock At', value: '${material.minimumStockLimit.toStringAsFixed(0)} ${material.unitType}'),
             ],
           ),
         ],

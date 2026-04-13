@@ -34,11 +34,9 @@ class _InwardEntryFormScreenState extends State<InwardEntryFormScreen> {
   late final InventoryRepository _inventoryService;
   bool _isLoading = false;
   // Material Selection
-  MaterialCategory _category = MaterialCategory.civilStructural;
-  MaterialPreset? _selectedPreset;
   final _materialNameCtrl = TextEditingController();
   String? _selectedMaterialId; // Specific ConstructionMaterial ID
-  UnitType _unitType = UnitType.bag;
+  String _unitType = 'bag';
   final List<TextEditingController> _sizeCtrls = [];
 
   // Billing
@@ -81,24 +79,11 @@ class _InwardEntryFormScreenState extends State<InwardEntryFormScreen> {
 
   void _loadEditingData() {
     final log = widget.editingLog!;
-    _category = log.category;
     _materialNameCtrl.text = log.materialName;
     _selectedMaterialId = log.materialId;
     _qtyCtrl.text = log.quantity.toString();
     
-    // Attempt to match preset
-    try {
-      _selectedPreset = _category.presets.firstWhere((p) => p.name == log.materialName);
-    } catch (_) {
-      _selectedPreset = null;
-    }
-
-    // Restore UnitType from label
-    try {
-      _unitType = UnitType.values.firstWhere((u) => u.label == log.unit);
-    } catch (_) {
-      _unitType = UnitType.unit;
-    }
+    _unitType = log.unit;
 
     _rateCtrl.text = log.ratePerUnit.toString();
     _transportCtrl.text = log.transportCharges.toString();
@@ -244,11 +229,10 @@ class _InwardEntryFormScreenState extends State<InwardEntryFormScreen> {
           driverName: _driverNameCtrl.text,
           driverMobile: _driverMobileCtrl.text,
           driverLicense: _driverLicenseCtrl.text,
-          materialId: _selectedMaterialId, 
+          materialId: _selectedMaterialId,
           materialName: _materialNameCtrl.text,
-          category: _category,
           quantity: double.parse(_qtyCtrl.text),
-          unit: _unitType.label,
+          unit: _unitType,
           photoProofs: [
             if (_photo1Path != null) InwardPhotoProof(photoUrl: _photo1Path!, stage: 'Departure', capturedAt: DateTime.now(), locationTag: _photo1Location ?? ''),
             if (_photo2Path != null) InwardPhotoProof(photoUrl: _photo2Path!, stage: 'Arrival', capturedAt: DateTime.now(), locationTag: _photo2Location ?? ''),
@@ -420,71 +404,28 @@ class _InwardEntryFormScreenState extends State<InwardEntryFormScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              HelpfulDropdown<MaterialCategory>(
-                label: 'Material Category',
-                value: _category,
-                useGlass: false,
-                items: MaterialCategory.values,
-                labelMapper: (cat) => cat.displayName,
-                onChanged: (cat) {
-                  if (cat != null) {
-                    setState(() {
-                      _category = cat;
-                      _selectedPreset = null;
-                      _selectedMaterialId = null;
-                      _materialNameCtrl.clear();
-                      _sizeCtrls.clear();
-                    });
-                  }
-                },
-              ),
-              const SizedBox(height: 16),
               Consumer<InventoryRepository>(
                 builder: (context, repo, child) {
-                  final filteredMaterials = repo.materials.where((m) => m.category == _category).toList();
+                  final filteredMaterials = repo.materials;
                   
-                  return Column(
-                    children: [
-                      HelpfulDropdown<ConstructionMaterial?>(
-                        label: 'Catalog Material (Master)',
-                        value: _selectedMaterialId != null 
-                            ? filteredMaterials.firstWhere((m) => m.id == _selectedMaterialId, orElse: () => filteredMaterials.first)
-                            : null,
-                        items: [null, ...filteredMaterials],
-                        labelMapper: (m) => m == null ? 'New / Not in Master' : m.name,
-                        onChanged: (m) {
-                          setState(() {
-                            if (m != null) {
-                              _selectedMaterialId = m.id;
-                              _materialNameCtrl.text = m.name;
-                              _unitType = m.unitType;
-                              _selectedPreset = null; // Clear preset since we have master item
-                            } else {
-                              _selectedMaterialId = null;
-                            }
-                          });
-                        },
-                      ),
-                      if (_selectedMaterialId == null) ...[
-                        const SizedBox(height: 16),
-                        HelpfulDropdown<MaterialPreset?>(
-                          label: 'Quick Preset (Suggested)',
-                          value: _selectedPreset,
-                          items: [null, ..._category.presets],
-                          labelMapper: (p) => p == null ? 'Custom Material' : p.name,
-                          onChanged: (p) {
-                            if (p != null) {
-                              setState(() {
-                                _selectedPreset = p;
-                                _materialNameCtrl.text = p.name;
-                                _unitType = p.defaultUnit;
-                                _sizeCtrls.clear();
-                              });
-                            }
-                          },
-                        ),
-                      ],
-                    ],
+                  return HelpfulDropdown<ConstructionMaterial?>(
+                    label: 'Catalog Material (Master)',
+                    value: _selectedMaterialId != null 
+                        ? filteredMaterials.firstWhere((m) => m.id == _selectedMaterialId, orElse: () => filteredMaterials.first)
+                        : null,
+                    items: [null, ...filteredMaterials],
+                    labelMapper: (m) => m == null ? 'New / Not in Master' : m.name,
+                    onChanged: (m) {
+                      setState(() {
+                        if (m != null) {
+                          _selectedMaterialId = m.id;
+                          _materialNameCtrl.text = m.name;
+                          _unitType = m.unitType;
+                        } else {
+                          _selectedMaterialId = null;
+                        }
+                      });
+                    },
                   );
                 }
               ),
@@ -496,11 +437,11 @@ class _InwardEntryFormScreenState extends State<InwardEntryFormScreen> {
                 validator: (v) => v!.isEmpty ? 'Required' : null,
               ),
               const SizedBox(height: 16),
-              HelpfulDropdown<UnitType>(
+              HelpfulDropdown<String>(
                 label: 'Unit',
                 value: _unitType,
-                items: UnitType.values,
-                labelMapper: (u) => u.label.toUpperCase(),
+                items: standardUnits,
+                labelMapper: (u) => u.toUpperCase(),
                 onChanged: (u) {
                   if (u != null) setState(() => _unitType = u);
                 },
@@ -528,7 +469,7 @@ class _InwardEntryFormScreenState extends State<InwardEntryFormScreen> {
                         if (id != null) {
                           final m = siteMaterials.firstWhere((m) => m.id == id);
                           _materialNameCtrl.text = m.name;
-                          _category = m.category;
+
                           _unitType = m.unitType;
                         }
                       });
@@ -544,7 +485,7 @@ class _InwardEntryFormScreenState extends State<InwardEntryFormScreen> {
                       label: 'Quantity Delivered',
                       controller: _qtyCtrl,
                       keyboardType: TextInputType.number,
-                      suffixText: _unitType.label,
+                      suffixText: _unitType,
                       useGlass: false,
                       validator: (v) {
                         if (v == null || v.isEmpty) return 'Required';
@@ -557,10 +498,7 @@ class _InwardEntryFormScreenState extends State<InwardEntryFormScreen> {
                   ),
                 ],
               ),
-              if (_selectedPreset?.hasSizeGrade == true) ...[
-                const SizedBox(height: 24),
-                _buildDynamicSizeGradeSection(),
-              ],
+              // Simplified UI: Removed presets and dynamic size section for now to restore build
             ],
           ),
         ),
@@ -591,35 +529,6 @@ class _InwardEntryFormScreenState extends State<InwardEntryFormScreen> {
             ),
           ],
         ),
-        if (_selectedPreset?.suggestedSizes != null) ...[
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _selectedPreset!.suggestedSizes!.map((s) {
-              final isSelected = _sizeCtrls.any((c) => c.text == s);
-              return FilterChip(
-                label: Text(s, style: TextStyle(fontSize: 11, color: isSelected ? DesignSystem.charcoalBlack : null)),
-                selected: isSelected,
-                onSelected: (val) {
-                  setState(() {
-                    if (val) {
-                      _sizeCtrls.add(TextEditingController(text: s));
-                    } else {
-                      final idx = _sizeCtrls.indexWhere((c) => c.text == s);
-                      if (idx != -1) {
-                        _sizeCtrls[idx].dispose();
-                        _sizeCtrls.removeAt(idx);
-                      }
-                    }
-                  });
-                },
-                selectedColor: DesignSystem.constructionYellow,
-                checkmarkColor: DesignSystem.charcoalBlack,
-              );
-            }).toList(),
-          ),
-        ],
         const SizedBox(height: 16),
         Wrap(
           spacing: 12,

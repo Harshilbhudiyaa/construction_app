@@ -53,13 +53,13 @@ class _StockInSheetState extends State<StockInSheet> {
           _buildHeader(context),
           const SizedBox(height: 16),
           Text(material.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: bcNavy)),
-          Text('Purchase Rate: ₹ ${material.purchasePrice} / ${material.unitType.label}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+          Text('Purchase Rate: ₹ ${material.purchasePrice} / ${material.unitType}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
           const SizedBox(height: 24),
           Row(
             children: [
               Expanded(child: _buildTextField('Quantity', _qtyCtrl, '0', isNumber: true)),
               const SizedBox(width: 16),
-              Expanded(child: _buildTextField('Unit', TextEditingController(text: material.unitType.label), '', enabled: false)),
+              Expanded(child: _buildTextField('Unit', TextEditingController(text: material.unitType), '', enabled: false)),
             ],
           ),
           const SizedBox(height: 16),

@@ -172,7 +172,7 @@ class ApprovalDashboardScreen extends StatelessWidget {
                   color: bcAmber.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(log.category.icon, color: bcAmber, size: 20),
+                child: const Icon(Icons.category_rounded, color: bcAmber, size: 20),
               ),
               const SizedBox(width: 14),
               Expanded(

@@ -128,7 +128,7 @@ class _StockTransferScreenState extends State<StockTransferScreen> {
                           children: [
                             Expanded(
                               child: HelpfulTextField(
-                                label: _selectedMaterial != null ? 'Quantity to Transfer (${_selectedMaterial!.unitType.label})' : 'Quantity to Transfer',
+                                label: _selectedMaterial != null ? 'Quantity to Transfer (${_selectedMaterial!.unitType})' : 'Quantity to Transfer',
                                 controller: _quantityController,
                                 hintText: 'Enter quantity',
                                 keyboardType: TextInputType.number,
@@ -158,7 +158,7 @@ class _StockTransferScreenState extends State<StockTransferScreen> {
                         )
                       else ...[
                         HelpfulTextField(
-                          label: _selectedMaterial != null ? 'Quantity (${_selectedMaterial!.unitType.label})' : 'Quantity',
+                          label: _selectedMaterial != null ? 'Quantity (${_selectedMaterial!.unitType})' : 'Quantity',
                           controller: _quantityController,
                           hintText: 'Enter quantity',
                           keyboardType: TextInputType.number,
@@ -276,7 +276,7 @@ class _StockTransferScreenState extends State<StockTransferScreen> {
         materialId: _selectedMaterial!.id,
         materialName: _selectedMaterial!.name,
         quantity: double.parse(_quantityController.text),
-        unit: _selectedMaterial!.unitType.label,
+        unit: _selectedMaterial!.unitType,
         fromSiteId: _fromSite,
         toSiteId: _toSite,
         remarks: _remarksController.text,
@@ -353,7 +353,7 @@ class _StockTransferScreenState extends State<StockTransferScreen> {
                             child: const Icon(Icons.inventory_2_rounded, color: Color(0xFF6366F1), size: 20),
                           ),
                           title: Text(material.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                          subtitle: Text('Bal: ${material.currentStock} ${material.unitType.label} • ${material.brand ?? "Default"}', style: const TextStyle(fontSize: 12)),
+                          subtitle: Text('Bal: ${material.currentStock} ${material.unitType} • ${material.brand ?? "Default"}', style: const TextStyle(fontSize: 12)),
                           trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF6366F1), size: 20),
                           onTap: () {
                             setState(() => _selectedMaterial = material);

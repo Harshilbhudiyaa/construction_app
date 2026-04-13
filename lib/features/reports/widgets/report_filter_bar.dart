@@ -1,21 +1,17 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:construction_app/core/theme/aesthetic_tokens.dart';
 import 'package:construction_app/data/models/material_model.dart';
 import 'package:intl/intl.dart';
 
 class ReportFilterBar extends StatelessWidget {
   final DateTimeRange? dateRange;
-  final MaterialCategory? selectedCategory;
   final Function(DateTimeRange?) onDateRangeChanged;
-  final Function(MaterialCategory?) onCategoryChanged;
   final VoidCallback onClearFilters;
 
   const ReportFilterBar({
     super.key,
     required this.dateRange,
-    required this.selectedCategory,
     required this.onDateRangeChanged,
-    required this.onCategoryChanged,
     required this.onClearFilters,
   });
 
@@ -72,11 +68,7 @@ class ReportFilterBar extends StatelessWidget {
                 if (picked != null) onDateRangeChanged(picked);
               },
             ),
-            const SizedBox(width: 12),
-            // Category Dropdown
-            _buildCategorySelector(context),
-            const SizedBox(width: 12),
-            if (dateRange != null || selectedCategory != null)
+            if (dateRange != null)
               IconButton(
                 onPressed: onClearFilters,
                 icon: const Icon(Icons.refresh_rounded, color: bcDanger, size: 20),
@@ -125,44 +117,5 @@ class ReportFilterBar extends StatelessWidget {
     );
   }
 
-  Widget _buildCategorySelector(BuildContext context) {
-    return PopupMenuButton<MaterialCategory?>(
-      onSelected: onCategoryChanged,
-      itemBuilder: (context) => [
-        const PopupMenuItem(value: null, child: Text('All Categories')),
-        ...MaterialCategory.values.map(
-          (c) => PopupMenuItem(value: c, child: Text(c.displayName)),
-        ),
-      ],
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: selectedCategory != null ? bcNavy : Colors.transparent,
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(color: selectedCategory != null ? bcNavy : const Color(0xFFCBD5E1)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              selectedCategory?.icon ?? Icons.category_rounded,
-              size: 16,
-              color: selectedCategory != null ? Colors.white : const Color(0xFF64748B),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              selectedCategory?.displayName ?? 'All Categories',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: selectedCategory != null ? Colors.white : const Color(0xFF334155),
-              ),
-            ),
-            const SizedBox(width: 4),
-            Icon(Icons.arrow_drop_down_rounded, size: 18, color: selectedCategory != null ? Colors.white : const Color(0xFF64748B)),
-          ],
-        ),
-      ),
-    );
-  }
 }
+

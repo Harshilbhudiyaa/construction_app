@@ -127,8 +127,8 @@ class ReportExportService {
 
     sheet.appendRow([
       TextCellValue('Material Name'),
-      TextCellValue('Category'),
       TextCellValue('Brand'),
+      TextCellValue('Sub-type'),
       TextCellValue('Current Stock'),
       TextCellValue('Unit'),
       TextCellValue('Price/Unit'),
@@ -138,10 +138,10 @@ class ReportExportService {
     for (var m in materials) {
       sheet.appendRow([
         TextCellValue(m.name),
-        TextCellValue(m.category.displayName),
         TextCellValue(m.brand ?? ''),
+        TextCellValue(m.subType),
         DoubleCellValue(m.currentStock),
-        TextCellValue(m.unitType.label),
+        TextCellValue(m.unitType),
         DoubleCellValue(m.pricePerUnit),
         DoubleCellValue(m.totalAmount),
       ]);
@@ -160,12 +160,12 @@ class ReportExportService {
         build: (context) => [
           _buildPdfHeader('INVENTORY STOCK VALUATION REPORT'),
           pw.TableHelper.fromTextArray(
-            headers: ['Material', 'Category', 'Stock', 'Unit', 'Value'],
+            headers: ['Material', 'Sub-type', 'Stock', 'Unit', 'Value'],
             data: materials.map((m) => [
               m.name,
-              m.category.displayName,
+              m.subType,
               m.currentStock.toString(),
-              m.unitType.label,
+              m.unitType,
               m.totalAmount.toStringAsFixed(0),
             ]).toList(),
             headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.white),

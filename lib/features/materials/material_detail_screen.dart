@@ -5,6 +5,8 @@ import 'package:construction_app/core/theme/aesthetic_tokens.dart';
 import 'package:construction_app/data/models/material_model.dart';
 import 'package:construction_app/data/repositories/inventory_repository.dart';
 import 'package:construction_app/data/repositories/stock_entry_repository.dart';
+import 'package:construction_app/core/routing/app_router.dart';
+import 'package:construction_app/features/stock/widgets/stock_entry_sheets.dart';
 
 /// Material detail screen showing stock stats and full purchase history.
 class MaterialDetailScreen extends StatelessWidget {
@@ -19,9 +21,9 @@ class MaterialDetailScreen extends StatelessWidget {
     final material = invRepo.materials.firstWhere(
       (m) => m.id == materialId,
       orElse: () => ConstructionMaterial(
-        id: '', siteId: '', name: 'Unknown', category: MaterialCategory.civilStructural,
+        id: '', siteId: '', name: 'Unknown',
         subType: '',
-        pricePerUnit: 0, purchasePrice: 0, salePrice: 0, unitType: UnitType.bag,
+        pricePerUnit: 0, purchasePrice: 0, salePrice: 0, unitType: 'unit',
         currentStock: 0, createdAt: DateTime.now(), updatedAt: DateTime.now(),
       ),
     );
@@ -48,6 +50,20 @@ class MaterialDetailScreen extends StatelessWidget {
             expandedHeight: 220,
             pinned: true,
             backgroundColor: bcNavy,
+            leading: const BackButton(color: Colors.white),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.edit_outlined, color: Colors.white),
+                onPressed: () => Navigator.pushNamed(context, AppRoutes.editItem, arguments: materialId),
+                tooltip: 'Edit Material',
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete_outline_rounded, color: Colors.white),
+                onPressed: () => _confirmDelete(context, invRepo, material),
+                tooltip: 'Delete Material',
+              ),
+              const SizedBox(width: 8),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 color: bcNavy,
@@ -61,17 +77,16 @@ class MaterialDetailScreen extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: _catColor(material.category).withValues(alpha: 0.15),
+                            color: bcAmber.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(16),
                           ),
-                          child: Icon(_catIcon(material.category), color: _catColor(material.category), size: 26),
+                          child: const Icon(Icons.inventory_2_rounded, color: bcAmber, size: 26),
                         ),
                         const SizedBox(width: 14),
                         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                           Text(material.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 22, height: 1.1)),
                           if (material.subType.isNotEmpty)
                             Text(material.subType, style: const TextStyle(color: Colors.white54, fontSize: 12)),
-                          Text(material.category.displayName, style: const TextStyle(color: Colors.white38, fontSize: 11)),
                         ])),
                       ]),
                       const SizedBox(height: 16),
@@ -88,7 +103,7 @@ class MaterialDetailScreen extends StatelessWidget {
                               color: isLow ? bcDanger : bcAmber, size: 16),
                           const SizedBox(width: 8),
                           Text(
-                            'Current Stock: ${fmtQty(material.currentStock)} ${material.unitType.label}',
+                            'Current Stock: ${fmtQty(material.currentStock)} ${material.unitType}',
                             style: TextStyle(color: isLow ? bcDanger : Colors.white, fontWeight: FontWeight.w800, fontSize: 13),
                           ),
                           if (isLow) ...[
@@ -112,13 +127,13 @@ class MaterialDetailScreen extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _StatCol('Current Rate', '₹${material.pricePerUnit.toStringAsFixed(0)}/${material.unitType.label}'),
+                  _StatCol('Current Rate', '₹${material.pricePerUnit.toStringAsFixed(0)}/${material.unitType}'),
                   _VSep(),
                   _StatCol('Avg Buy Price', avgPrice > 0 ? '₹${avgPrice.toStringAsFixed(0)}' : '—'),
                   _VSep(),
                   _StatCol('Total Spend', fmt.format(totalSpend)),
                   _VSep(),
-                  _StatCol('Total Purchased', '${fmtQty(totalPurch)} ${material.unitType.label}'),
+                  _StatCol('Total Purchased', '${fmtQty(totalPurch)} ${material.unitType}'),
                 ],
               ),
             ),
@@ -186,15 +201,55 @@ class MaterialDetailScreen extends StatelessWidget {
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showQuickAddStock(context, material),
+        backgroundColor: bcNavy,
+        label: const Text('Add Stock', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        icon: const Icon(Icons.add_box_rounded, color: Colors.white),
+      ),
     );
   }
 
-  Color _catColor(MaterialCategory c) {
-    return const Color(0xFFF59E0B); // only civilStructural exists
+  void _showQuickAddStock(BuildContext context, ConstructionMaterial material) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => DirectEntrySheet(initialMaterial: material),
+    );
   }
 
-  IconData _catIcon(MaterialCategory c) {
-    return Icons.foundation_rounded;
+  void _confirmDelete(BuildContext context, InventoryRepository repo, ConstructionMaterial material) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Delete Material?', style: TextStyle(color: bcNavy, fontWeight: FontWeight.w900)),
+        content: Text('Are you sure you want to delete "${material.name}"? This action cannot be undone.', 
+            style: const TextStyle(color: bcTextSecondary, fontSize: 14)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('CANCEL', style: TextStyle(color: bcTextSecondary, fontWeight: FontWeight.bold)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(ctx); // Close dialog
+              await repo.deleteMaterial(material.id);
+              if (context.mounted) Navigator.pop(context); // Back to catalog
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('${material.name} deleted'), backgroundColor: bcNavy),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: bcDanger, foregroundColor: Colors.white),
+            child: const Text('DELETE', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 }
 

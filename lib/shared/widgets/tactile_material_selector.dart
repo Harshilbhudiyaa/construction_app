@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:construction_app/core/theme/aesthetic_tokens.dart';
 import 'package:construction_app/data/models/material_model.dart';
 
@@ -85,9 +85,9 @@ class TactileMaterialSelector extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: Center(
+                    child: Center(
                     child: Icon(
-                      selectedMaterial!.category.icon, 
+                      Icons.foundation_rounded, 
                       color: themeColor, 
                       size: 30,
                     ),
@@ -134,7 +134,7 @@ class TactileMaterialSelector extends StatelessWidget {
                             Icon(Icons.analytics_outlined, color: themeColor, size: 14),
                             const SizedBox(width: 8),
                             Text(
-                              'STOCK: ${selectedMaterial!.currentStock} ${selectedMaterial!.unitType.label}'.toUpperCase(),
+                              'STOCK: ${selectedMaterial!.currentStock} ${selectedMaterial!.unitType}'.toUpperCase(),
                               style: TextStyle(
                                 color: themeColor, 
                                 fontSize: 11,

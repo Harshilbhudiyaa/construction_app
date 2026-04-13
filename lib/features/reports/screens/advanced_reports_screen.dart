@@ -21,7 +21,6 @@ class AdvancedReportsScreen extends StatefulWidget {
 class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   DateTimeRange? _dateRange;
-  MaterialCategory? _category;
   bool _isLoading = false;
 
 
@@ -40,7 +39,6 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> with Sing
   void _clearFilters() {
     setState(() {
       _dateRange = null;
-      _category = null;
     });
   }
 
@@ -73,9 +71,7 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> with Sing
                       // Filter Section
                       ReportFilterBar(
                         dateRange: _dateRange,
-                        selectedCategory: _category,
                         onDateRangeChanged: (range) => setState(() => _dateRange = range),
-                        onCategoryChanged: (cat) => setState(() => _category = cat),
                         onClearFilters: _clearFilters,
                       ),
                       const SizedBox(height: 24),
@@ -171,7 +167,6 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> with Sing
     final logs = service.getInwardReport(
       startDate: _dateRange?.start,
       endDate: _dateRange?.end,
-      category: _category,
     );
 
     if (logs.isEmpty) return const _EmptyState(text: 'No inward logs found for selected filters.');
@@ -195,7 +190,7 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> with Sing
   }
 
   Widget _buildStockTab(ReportingService service) {
-    final materials = service.getStockLevelReport(category: _category);
+    final materials = service.getStockLevelReport();
 
     if (materials.isEmpty) return const _EmptyState(text: 'No materials found.');
 
@@ -209,7 +204,7 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> with Sing
           child: _ReportListItem(
             title: m.name,
             subtitle: '${m.brand} • ${m.subType}',
-            trailing: '${m.currentStock} ${m.unitType.label}',
+            trailing: '${m.currentStock} ${m.unitType}',
             status: isLow ? 'LOW STOCK' : 'OPTIMAL',
             statusColor: isLow ? bcDanger : bcSuccess,
           ),
@@ -313,7 +308,7 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> with Sing
                 setState(() => _isLoading = true);
                 try {
                   if (_tabController.index == 1) { // Stock Tab
-                    final data = service.getStockLevelReport(category: _category);
+                    final data = service.getStockLevelReport();
                     await ReportExportService.exportStockToExcel(
                       data, 
                       'Stock_Valuation_${DateFormat('yyyyMMdd').format(DateTime.now())}'
@@ -322,7 +317,6 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> with Sing
                     final data = service.getInwardReport(
                       startDate: _dateRange?.start,
                       endDate: _dateRange?.end,
-                      category: _category,
                     );
                     await ReportExportService.exportInwardLogsToExcel(
                       data, 
@@ -344,7 +338,7 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> with Sing
                 setState(() => _isLoading = true);
                 try {
                   if (_tabController.index == 1) { // Stock Tab
-                    final data = service.getStockLevelReport(category: _category);
+                    final data = service.getStockLevelReport();
                     await ReportExportService.exportStockToPdf(
                       data, 
                       'Stock_Valuation_${DateFormat('yyyyMMdd').format(DateTime.now())}'
@@ -353,7 +347,6 @@ class _AdvancedReportsScreenState extends State<AdvancedReportsScreen> with Sing
                     final data = service.getInwardReport(
                       startDate: _dateRange?.start,
                       endDate: _dateRange?.end,
-                      category: _category,
                     );
                     await ReportExportService.exportInwardLogsToPdf(
                       data, 

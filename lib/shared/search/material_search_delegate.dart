@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:construction_app/data/models/material_model.dart';
 import 'package:construction_app/data/repositories/inventory_repository.dart';
@@ -31,6 +31,7 @@ class MaterialSearchDelegate extends SearchDelegate<ConstructionMaterial?> {
     );
   }
 
+
   @override
   Widget buildResults(BuildContext context) {
     return _buildResultList(context);
@@ -56,8 +57,7 @@ class MaterialSearchDelegate extends SearchDelegate<ConstructionMaterial?> {
         
         final results = materials.where((m) {
           return m.name.toLowerCase().contains(queryLower) ||
-                 m.subType.toLowerCase().contains(queryLower) ||
-                 m.category.displayName.toLowerCase().contains(queryLower);
+                 m.subType.toLowerCase().contains(queryLower);
         }).toList();
         
         if (results.isEmpty) {
@@ -83,11 +83,11 @@ class MaterialSearchDelegate extends SearchDelegate<ConstructionMaterial?> {
             return ListTile(
               leading: CircleAvatar(
                 backgroundColor: DesignSystem.electricBlue.withValues(alpha: 0.1),
-                child: Icon(material.category.icon, color: DesignSystem.electricBlue, size: 18),
+                child: const Icon(Icons.inventory_2_rounded, color: DesignSystem.electricBlue, size: 18),
               ),
               title: Text(material.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text('${material.category.displayName} • ${material.subType}'),
-              trailing: Text('${material.currentStock} ${material.unitType.label}'),
+              subtitle: Text(material.subType),
+              trailing: Text('${material.currentStock} ${material.unitType}'),
               onTap: () {
                 close(context, material);
               },

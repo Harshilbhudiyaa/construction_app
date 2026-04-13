@@ -80,7 +80,7 @@ void main() {
           driverLicense: 'DL-00',
           materialId: 'MAT-001',
           materialName: 'Cement',
-          category: MaterialCategory.civilStructural,
+          category: 'Civil/Structural',
           quantity: 100,
           unit: 'Bag',
           photoProofs: [],

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:construction_app/core/theme/aesthetic_tokens.dart';
 import 'package:construction_app/data/models/material_model.dart';
 
@@ -104,7 +104,7 @@ class LowStockAlertDialog extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(m.category.icon, color: bcNavy.withValues(alpha: 0.3), size: 16),
+                const Icon(Icons.inventory_2_rounded, color: bcNavy, size: 16),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -115,7 +115,7 @@ class LowStockAlertDialog extends StatelessWidget {
                         style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: bcNavy),
                       ),
                       Text(
-                        'Only ${m.currentStock} ${m.unitType.label} left',
+                        'Only ${m.currentStock} ${m.unitType} left',
                         style: const TextStyle(fontSize: 11, color: bcDanger, fontWeight: FontWeight.w600),
                       ),
                     ],

@@ -44,9 +44,9 @@ class _ContractorShellState extends State<ContractorShell>
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) => _MoreBottomSheet(onNavigate: (route) {
+      builder: (_) => _MoreBottomSheet(onNavigate: (route, [args]) {
         Navigator.pop(context);
-        Navigator.pushNamed(context, route);
+        Navigator.pushNamed(context, route, arguments: args);
       }),
     );
   }
@@ -314,7 +314,7 @@ class _BottomNavItemState extends State<_BottomNavItem>
 // ─── "More" Bottom Sheet ──────────────────────────────────────────────────────
 
 class _MoreBottomSheet extends StatelessWidget {
-  final void Function(String route) onNavigate;
+  final void Function(String route, [dynamic args]) onNavigate;
   const _MoreBottomSheet({required this.onNavigate});
 
   @override
@@ -324,6 +324,7 @@ class _MoreBottomSheet extends StatelessWidget {
       _MoreItem('Suppliers',   Icons.people_alt_rounded,           AppRoutes.supplierList,      const Color(0xFF34D399)),
       _MoreItem('Stock Entry', Icons.add_box_rounded,              AppRoutes.stockHub,          const Color(0xFF60A5FA)),
       _MoreItem('Payments',    Icons.account_balance_wallet_rounded,AppRoutes.paymentHistory,   const Color(0xFFA78BFA)),
+      _MoreItem('Inventory',   Icons.inventory_2_rounded,          AppRoutes.materialCatalog,   const Color(0xFF10B981), args: {'inStock': true}),
       _MoreItem('Reports',     Icons.analytics_rounded,            AppRoutes.reports,           const Color(0xFFFB7185)),
       _MoreItem('Calculator',  Icons.calculate_rounded,            AppRoutes.calculatorHome,    bcAmber),
       _MoreItem('Ledger',      Icons.receipt_long_rounded,         AppRoutes.partyLedger,       const Color(0xFF10B981)),
@@ -374,7 +375,7 @@ class _MoreBottomSheet extends StatelessWidget {
               childAspectRatio: 0.85,
             ),
             itemCount: items.length,
-            itemBuilder: (_, i) => _MoreItemTile(item: items[i], onTap: () => onNavigate(items[i].route)),
+            itemBuilder: (_, i) => _MoreItemTile(item: items[i], onTap: () => onNavigate(items[i].route, items[i].args)),
           ),
         ],
       ),
@@ -387,7 +388,8 @@ class _MoreItem {
   final IconData icon;
   final String route;
   final Color color;
-  const _MoreItem(this.label, this.icon, this.route, this.color);
+  final dynamic args;
+  const _MoreItem(this.label, this.icon, this.route, this.color, {this.args});
 }
 
 class _MoreItemTile extends StatelessWidget {

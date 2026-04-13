@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:construction_app/core/theme/professional_theme.dart';
 import 'package:construction_app/core/theme/aesthetic_tokens.dart';
@@ -256,7 +256,7 @@ class _InventoryReportsScreenState extends State<InventoryReportsScreen> with Si
                       child: _ReportItemCard(
                         title: m.name,
                         value: '₹${NumberFormat('#,##,###').format(value)}',
-                        subtitle: '${m.currentStock.toInt()} ${m.unitType.label} • ₹${m.pricePerUnit}/${m.unitType.label}',
+                        subtitle: '${m.currentStock.toInt()} ${m.unitType} • ₹${m.pricePerUnit}/${m.unitType}',
                         icon: Icons.currency_rupee_rounded,
                         color: Colors.green,
                       ),

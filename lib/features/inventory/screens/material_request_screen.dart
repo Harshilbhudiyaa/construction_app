@@ -34,7 +34,7 @@ class _MaterialRequestScreenState extends State<MaterialRequestScreen> {
   String _site = 'Main Site';
   bool _isLoading = false;
   ConstructionMaterial? _selectedMaterial;
-  String get _unit => _selectedMaterial?.unitType.label ?? '';
+  String get _unit => _selectedMaterial?.unitType ?? '';
   
   @override
   void dispose() {
@@ -235,7 +235,7 @@ class _MaterialRequestScreenState extends State<MaterialRequestScreen> {
         materialId: _selectedMaterial!.id,
         materialName: _selectedMaterial!.name,
         quantity: double.parse(_quantityController.text),
-        unit: _selectedMaterial!.unitType.label,
+        unit: _selectedMaterial!.unitType,
         priority: _priority,
         siteId: _site, 
         purpose: _purposeController.text,
@@ -555,7 +555,7 @@ class _MaterialRequestScreenState extends State<MaterialRequestScreen> {
                                       color: bcNavy.withValues(alpha: 0.03),
                                       borderRadius: BorderRadius.circular(14),
                                     ),
-                                    child: Icon(material.category.icon, color: bcNavy, size: 22),
+                                    child: const Icon(Icons.foundation_rounded, color: bcNavy, size: 22),
                                   ),
                                   const SizedBox(width: 16),
                                   Expanded(
@@ -572,7 +572,7 @@ class _MaterialRequestScreenState extends State<MaterialRequestScreen> {
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          'Stock: ${material.currentStock} ${material.unitType.label} • ${material.brand ?? "No Brand"}',
+                                          'Stock: ${material.currentStock} ${material.unitType} • ${material.brand ?? "No Brand"}',
                                           style: TextStyle(
                                             color: bcNavy.withValues(alpha: 0.5),
                                             fontSize: 12,

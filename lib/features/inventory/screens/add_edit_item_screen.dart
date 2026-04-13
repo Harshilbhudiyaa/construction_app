@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 import 'package:construction_app/core/theme/aesthetic_tokens.dart';
-import 'package:construction_app/core/theme/professional_theme.dart';
 import 'package:construction_app/data/models/material_model.dart';
 import 'package:construction_app/data/repositories/inventory_repository.dart';
 import 'package:construction_app/data/repositories/site_repository.dart';
-import 'package:construction_app/shared/widgets/professional_page.dart';
 import 'package:construction_app/features/inventory/widgets/unit_picker_sheet.dart';
 
 class AddEditItemScreen extends StatefulWidget {
@@ -18,424 +17,526 @@ class AddEditItemScreen extends StatefulWidget {
 
 class _AddEditItemScreenState extends State<AddEditItemScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameCtrl = TextEditingController();
-  final _salePriceCtrl = TextEditingController(text: '0');
-  final _purchasePriceCtrl = TextEditingController(text: '0');
-  final _openingStockCtrl = TextEditingController(text: '0');
-  final _lowStockCtrl = TextEditingController(text: '10');
-  final _hsnCtrl = TextEditingController();
-  final _conversionCtrl = TextEditingController(text: '1.0');
   
-  MaterialCategory _category = MaterialCategory.civilStructural;
-  UnitType _primaryUnit = UnitType.pcs;
-  String? _selectedSiteId;
-  bool _taxIncluded = true;
-  bool _hasSecondaryUnit = false;
-  UnitType? _secondaryUnit;
+  // Controllers
+  final _nameCtrl     = TextEditingController();
+  final _brandCtrl    = TextEditingController();
+
+  final _subTypeCtrl  = TextEditingController();
+  final _hsnCtrl      = TextEditingController();
+  
+  // Variation Data
+  final List<_VariantEntry> _variants = [];
+  
+  // Shared Data
+  String _unit = 'pcs';
+  double _taxPercent = 18.0;
+  bool _includeTax = false;
+  
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    
-    // Schedule data loading after first frame to avoid inhibiting initState if providers throw
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      
-      final repo = context.read<InventoryRepository>();
-      final siteRepo = context.read<SiteRepository>();
-      
-      ConstructionMaterial? material;
-      if (widget.materialId != null) {
-        try {
-          material = repo.materials.firstWhere((m) => m.id == widget.materialId);
-        } catch (_) {
-          material = null;
-        }
-      }
+    if (widget.materialId != null) {
+      _loadExisting();
+    } else {
+      // Default one variant for new product
+      _addVariant();
+    }
+  }
 
-      final ConstructionMaterial? initialMaterial = material;
-      if (initialMaterial != null) {
-        setState(() {
-          _nameCtrl.text = initialMaterial.name;
-          _salePriceCtrl.text = initialMaterial.salePrice.toString();
-          _purchasePriceCtrl.text = initialMaterial.purchasePrice.toString();
-          _openingStockCtrl.text = initialMaterial.currentStock.toString();
-          _lowStockCtrl.text = initialMaterial.minimumStockLimit.toString();
-          _hsnCtrl.text = initialMaterial.hsnCode ?? '';
-          _conversionCtrl.text = initialMaterial.conversionFactor?.toString() ?? '1.0';
-          
-          _category = initialMaterial.category;
-          _primaryUnit = initialMaterial.unitType;
-          _selectedSiteId = initialMaterial.siteId;
-          _taxIncluded = initialMaterial.taxIncluded;
-          _secondaryUnit = initialMaterial.secondaryUnit;
-          _hasSecondaryUnit = initialMaterial.secondaryUnit != null;
-        });
-      } else {
-        setState(() {
-          _selectedSiteId = siteRepo.selectedSiteId;
-        });
-      }
+  void _loadExisting() {
+    final repo = context.read<InventoryRepository>();
+    final m = repo.materials.firstWhere((e) => e.id == widget.materialId);
+    _nameCtrl.text     = m.name;
+    _brandCtrl.text    = m.brand ?? '';
+
+    _subTypeCtrl.text  = m.subType;
+    _hsnCtrl.text      = m.hsnCode ?? '';
+    _unit            = m.unitType;
+    _taxPercent      = m.taxPercentage;
+    _includeTax      = m.taxPercentage > 0;
+    
+    _variants.add(_VariantEntry(
+      variantName: m.variant,
+      stock: m.currentStock,
+      rate: m.pricePerUnit,
+      limit: m.minimumStockLimit,
+    ));
+  }
+
+  void _addVariant() {
+    setState(() {
+      _variants.add(_VariantEntry());
     });
   }
 
   @override
   void dispose() {
     _nameCtrl.dispose();
-    _salePriceCtrl.dispose();
-    _purchasePriceCtrl.dispose();
-    _openingStockCtrl.dispose();
-    _lowStockCtrl.dispose();
+    _brandCtrl.dispose();
+    _subTypeCtrl.dispose();
     _hsnCtrl.dispose();
-    _conversionCtrl.dispose();
+    for (var v in _variants) { v.dispose(); }
     super.dispose();
-  }
-
-  Future<void> _pickUnit(bool isPrimary) async {
-    final result = await showModalBottomSheet<UnitType>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => UnitPickerSheet(initialUnit: isPrimary ? _primaryUnit : _secondaryUnit),
-    );
-
-    if (result != null) {
-      setState(() {
-        if (isPrimary) {
-          _primaryUnit = result;
-        } else {
-          _secondaryUnit = result;
-        }
-      });
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return ProfessionalPage(
-      title: widget.materialId == null ? 'Add Product' : 'Edit Product',
-      subtitle: 'Stock Inventory Details',
-      category: 'SmartConstruction STOCK',
-      actions: [
-        TextButton(
-          onPressed: _save,
-          child: const Text('SAVE', style: TextStyle(color: bcAmber, fontWeight: FontWeight.bold, fontSize: 16)),
+    final invRepo = context.watch<InventoryRepository>();
+    
+    // Autocomplete suggestions
+    final brands     = invRepo.materials.map((m) => m.brand ?? '').where((b) => b.isNotEmpty).toSet().toList();
+
+    return Scaffold(
+      backgroundColor: bcSurface,
+      appBar: AppBar(
+        title: Text(widget.materialId == null ? 'New Product' : 'Edit Product', 
+            style: const TextStyle(fontWeight: FontWeight.w900, color: bcNavy)),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: bcNavy, size: 20),
+          onPressed: () => Navigator.pop(context),
         ),
-      ],
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const ProfessionalSectionHeader(
-                  title: 'General Details',
-                  subtitle: 'Basic item information',
-                ),
-                ProfessionalCard(
-                  child: Column(
-                    children: [
-                      _buildTextField('Item Name *', _nameCtrl, 'Enter Item Name', icon: Icons.inventory_2_rounded),
-                      const SizedBox(height: 28),
-                      _buildCategoryDropdown(),
-                      const SizedBox(height: 28),
-                      _buildSiteDropdown(),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 36),
-
-                const ProfessionalSectionHeader(
-                  title: 'Units',
-                  subtitle: 'Measurement units and conversion',
-                ),
-                ProfessionalCard(
-                  child: Column(
-                    children: [
-                      _buildUnitButton('Primary Unit', _primaryUnit, () => _pickUnit(true), icon: Icons.straighten_rounded),
-                      const SizedBox(height: 20),
-                      Row(
-                        children: [
-                          const Icon(Icons.layers_rounded, color: bcTextSecondary, size: 20),
-                          const SizedBox(width: 12),
-                          const Text('Secondary Unit', style: TextStyle(color: bcNavy, fontWeight: FontWeight.w600)),
-                          const Spacer(),
-                          Switch.adaptive(
-                            value: _hasSecondaryUnit,
-                            activeTrackColor: bcAmber.withValues(alpha: 0.4),
-                            activeThumbColor: bcAmber,
-                            onChanged: (v) => setState(() => _hasSecondaryUnit = v),
-                          ),
-                        ],
-                      ),
-                      if (_hasSecondaryUnit) ...[
-                        const SizedBox(height: 20),
-                        _buildUnitButton('Secondary Unit', _secondaryUnit ?? UnitType.none, () => _pickUnit(false), icon: Icons.layers_outlined),
-                        const SizedBox(height: 28),
-                        _buildTextField('Conversion Factor', _conversionCtrl, 'e.g. 1 Box = 10 Pcs', isNumber: true, icon: Icons.swap_horiz_rounded),
-                      ],
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 36),
-
-                const ProfessionalSectionHeader(
-                  title: 'Pricing (Optional)',
-                  subtitle: 'Sale and purchase rates',
-                ),
-                ProfessionalCard(
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(child: _buildTextField('Sale Price (₹)', _salePriceCtrl, '0', isNumber: true, icon: Icons.sell_rounded)),
-                          const SizedBox(width: 20),
-                          Expanded(child: _buildTextField('Purchase Price (₹)', _purchasePriceCtrl, '0', isNumber: true, icon: Icons.shopping_basket_rounded)),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
-                        children: [
-                          const Icon(Icons.receipt_long_rounded, color: bcTextSecondary, size: 20),
-                          const SizedBox(width: 12),
-                          const Text('Tax Included', style: TextStyle(color: bcNavy, fontWeight: FontWeight.w600)),
-                          const Spacer(),
-                          Switch.adaptive(
-                            value: _taxIncluded,
-                            activeTrackColor: bcAmber.withValues(alpha: 0.4),
-                            activeThumbColor: bcAmber,
-                            onChanged: (v) => setState(() => _taxIncluded = v),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 36),
-
-                const ProfessionalSectionHeader(
-                  title: 'Stock (Optional)',
-                  subtitle: 'Initial levels and alerts',
-                ),
-                ProfessionalCard(
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(child: _buildTextField('In Stock', _openingStockCtrl, '0', isNumber: true, icon: Icons.warehouse_rounded)),
-                          const SizedBox(width: 20),
-                          Expanded(child: _buildTextField('Low Stock Warning', _lowStockCtrl, '10', isNumber: true, icon: Icons.notification_important_rounded)),
-                        ],
-                      ),
-                      const SizedBox(height: 28),
-                      _buildTextField('HSN Code', _hsnCtrl, 'Optional', icon: Icons.qr_code_rounded),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 120),
-              ],
+      ),
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            // ─── Basic Info Card ──────────────────────────────────────────
+            _SectionCard(
+              title: 'BASIC INFORMATION',
+              icon: Icons.info_outline_rounded,
+              child: Column(
+                children: [
+                  _buildTextField('Material / Product Name *', _nameCtrl, 'e.g. TMT Steel Rod'),
+                  const SizedBox(height: 16),
+                  _buildAutocompleteField('Brand (Optional)', _brandCtrl, brands),
+                  const SizedBox(height: 16),
+                  _buildTextField('Sub-type / Quality', _subTypeCtrl, 'e.g. Grade 53'),
+                ],
+              ),
             ),
-          ),
+
+            // ─── Units & Tax ──────────────────────────────────────────────
+            _SectionCard(
+              title: 'UNITS & TAXATION',
+              icon: Icons.settings_outlined,
+              child: Column(
+                children: [
+                  _buildUnitSelector(),
+                  const SizedBox(height: 16),
+                  _buildTaxToggle(),
+                  if (_includeTax) ...[
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(child: _buildNumberField('GST %', initialValue: _taxPercent.toString(), onChanged: (v) => _taxPercent = double.tryParse(v) ?? 18)),
+                        const SizedBox(width: 12),
+                        Expanded(child: _buildTextField('HSN Code (Optional)', _hsnCtrl, 'XXXX')),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
+            // ─── Variants Card ────────────────────────────────────────────
+            _SectionCard(
+              title: 'PRODUCT VARIATIONS',
+              icon: Icons.layers_outlined,
+              trailing: widget.materialId == null ? GestureDetector(
+                onTap: _addVariant,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(color: bcPrimary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+                  child: const Row(children: [
+                    Icon(Icons.add_rounded, color: bcPrimary, size: 16),
+                    Text('ADD', style: TextStyle(color: bcPrimary, fontWeight: FontWeight.bold, fontSize: 11)),
+                  ]),
+                ),
+              ) : null,
+              child: Column(
+                children: [
+                  ..._variants.asMap().entries.map((e) => _buildVariantEntry(e.key, e.value)),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 32),
+            _buildSubmitButton(),
+            const SizedBox(height: 40),
+          ],
         ),
-      ],
+      ),
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController? ctrl, String hint, {bool isNumber = false, IconData? icon}) {
+  Widget _buildTextField(String label, TextEditingController ctrl, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: bcTextSecondary, letterSpacing: 0.5)),
-        const SizedBox(height: 10),
+        Text(label, style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w700, fontSize: 13)),
+        const SizedBox(height: 6),
         TextFormField(
           controller: ctrl,
-          keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-          style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w600, fontSize: 15),
-          decoration: InputDecoration(
-            hintText: hint,
-            prefixIcon: icon != null ? Icon(icon, color: bcNavy.withValues(alpha: 0.6), size: 20) : null,
-            filled: true,
-            fillColor: Colors.grey[50],
-            hintStyle: TextStyle(color: Colors.grey[400], fontWeight: FontWeight.normal),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: bcBorder, width: 1.5),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: bcAmber, width: 2),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: bcDanger, width: 1),
-            ),
-            contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-          ),
-          validator: (v) => label.contains('*') && (v == null || v.isEmpty) ? 'Required' : null,
+          style: const TextStyle(fontSize: 14, color: bcNavy),
+          decoration: _inputDecoration(hint),
+          validator: (v) => v == null || v.isEmpty ? 'Required' : null,
         ),
       ],
     );
   }
 
-  Widget _buildCategoryDropdown() {
+  Widget _buildAutocompleteField(String label, TextEditingController ctrl, List<String> suggestions) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Category *', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: bcTextSecondary, letterSpacing: 0.5)),
-        const SizedBox(height: 10),
-        DropdownButtonFormField<MaterialCategory>(
-          initialValue: _category,
-          style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w600, fontSize: 15),
-          decoration: InputDecoration(
-            prefixIcon: const Icon(Icons.category_rounded, color: bcNavy, size: 20),
-            filled: true,
-            fillColor: Colors.grey[50],
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: bcBorder, width: 1.5),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: bcAmber, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-          ),
-          items: MaterialCategory.values.map((c) => DropdownMenuItem(value: c, child: Text(c.displayName))).toList(),
-          onChanged: (v) => setState(() => _category = v!),
+        Text(label, style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w700, fontSize: 13)),
+        const SizedBox(height: 6),
+        RawAutocomplete<String>(
+          textEditingController: ctrl,
+          focusNode: FocusNode(),
+          optionsBuilder: (TextEditingValue value) {
+            if (value.text.isEmpty) return const Iterable<String>.empty();
+            return suggestions.where((s) => s.toLowerCase().contains(value.text.toLowerCase()));
+          },
+          fieldViewBuilder: (context, controller, node, onSubmitted) {
+            return TextFormField(
+              controller: controller,
+              focusNode: node,
+              style: const TextStyle(fontSize: 14, color: bcNavy),
+              decoration: _inputDecoration('Search or type...'),
+            );
+          },
+          optionsViewBuilder: (context, onSelected, options) {
+            return Align(
+              alignment: Alignment.topLeft,
+              child: Material(
+                elevation: 4,
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  width: 160,
+                  constraints: const BoxConstraints(maxHeight: 200),
+                  child: ListView.builder(
+                    padding: EdgeInsets.zero,
+                    shrinkWrap: true,
+                    itemCount: options.length,
+                    itemBuilder: (ctx, i) => ListTile(
+                      title: Text(options.elementAt(i), style: const TextStyle(fontSize: 13)),
+                      onTap: () => onSelected(options.elementAt(i)),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ],
     );
   }
 
-  Widget _buildSiteDropdown() {
-    final siteRepo = context.watch<SiteRepository>();
+  Widget _buildVariantEntry(int index, _VariantEntry entry) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: bcSurface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: entry.variantCtrl,
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                  decoration: InputDecoration(
+                    hintText: 'Variant Name (${_getVariantHint()})',
+                    hintStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
+                    isDense: true, border: InputBorder.none,
+                  ),
+                ),
+              ),
+              if (_variants.length > 1 && widget.materialId == null)
+                IconButton(
+                  icon: const Icon(Icons.delete_outline_rounded, color: bcDanger, size: 20),
+                  onPressed: () => setState(() => _variants.removeAt(index)),
+                ),
+            ],
+          ),
+          const Divider(height: 16),
+          Row(
+            children: [
+              Expanded(child: _buildMiniNumField('Op. Stock', entry.stockCtrl)),
+              const SizedBox(width: 8),
+              Expanded(child: _buildMiniNumField('Op. Rate', entry.rateCtrl)),
+              const SizedBox(width: 8),
+              Expanded(child: _buildMiniNumField('Min Limit', entry.limitCtrl)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMiniNumField(String label, TextEditingController ctrl) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Assigned Site *', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: bcTextSecondary, letterSpacing: 0.5)),
-        const SizedBox(height: 10),
-        DropdownButtonFormField<String>(
-          initialValue: _selectedSiteId,
-          style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w600, fontSize: 15),
+        Text(label, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 10, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 4),
+        TextFormField(
+          controller: ctrl,
+          keyboardType: TextInputType.number,
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: bcNavy),
           decoration: InputDecoration(
-            prefixIcon: const Icon(Icons.business_rounded, color: bcNavy, size: 20),
-            filled: true,
-            fillColor: Colors.grey[50],
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: bcBorder, width: 1.5),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: bcAmber, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+            isDense: true,
+            filled: true, fillColor: Colors.white,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
           ),
-          items: siteRepo.sites.map((s) => DropdownMenuItem(value: s.id, child: Text(s.name))).toList(),
-          onChanged: (v) => setState(() => _selectedSiteId = v),
-          validator: (v) => v == null ? 'Site is required' : null,
         ),
       ],
     );
   }
 
-  Widget _buildUnitButton(String label, UnitType unit, VoidCallback onTap, {IconData? icon}) {
+  Widget _buildNumberField(String label, {required String initialValue, required ValueChanged<String> onChanged}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: bcTextSecondary, letterSpacing: 0.5)),
-        const SizedBox(height: 10),
-        InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-            decoration: BoxDecoration(
-              color: Colors.grey[50],
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: bcBorder, width: 1.5),
-            ),
+        Text(label, style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w700, fontSize: 13)),
+        const SizedBox(height: 6),
+        TextFormField(
+          initialValue: initialValue,
+          onChanged: onChanged,
+          keyboardType: TextInputType.number,
+          style: const TextStyle(fontSize: 14, color: bcNavy),
+          decoration: _inputDecoration('%'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildUnitSelector() {
+    return GestureDetector(
+      onTap: () async {
+        final res = await showModalBottomSheet<String>(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (_) => UnitPickerSheet(initialUnit: _unit),
+        );
+        if (res != null) setState(() => _unit = res);
+      },
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: bcSurface, borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.scale_rounded, color: bcPrimary, size: 20),
+            const SizedBox(width: 12),
+            const Expanded(child: Text('Base Unit', style: TextStyle(color: bcNavy, fontWeight: FontWeight.w700, fontSize: 13))),
+            Text(_unit.toUpperCase(), style: const TextStyle(color: bcPrimary, fontWeight: FontWeight.w900, fontSize: 14)),
+            const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTaxToggle() {
+    return Row(
+      children: [
+        const Icon(Icons.receipt_long_rounded, color: bcSuccess, size: 20),
+        const SizedBox(width: 12),
+        const Expanded(child: Text('Include Taxation (GST)', style: TextStyle(color: bcNavy, fontWeight: FontWeight.w700, fontSize: 13))),
+        Switch.adaptive(
+          value: _includeTax,
+          onChanged: (v) => setState(() => _includeTax = v),
+          activeColor: bcSuccess,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSubmitButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 54,
+      child: ElevatedButton(
+        onPressed: _isLoading ? null : _submit,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: bcNavy,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          elevation: 4, shadowColor: bcNavy.withValues(alpha: 0.3),
+        ),
+        child: _isLoading 
+            ? const CircularProgressIndicator(color: Colors.white)
+            : Text(widget.materialId == null ? 'CREATE PRODUCT(S)' : 'SAVE CHANGES', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration(String hint) {
+    return InputDecoration(
+      hintText: hint, hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+      filled: true, fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: bcPrimary, width: 2)),
+    );
+  }
+
+  String _getVariantHint() {
+    final u = _unit.toLowerCase();
+    if (['kgs', 'ton', 'mtr'].contains(u)) return 'e.g. 12mm';
+    if (u == 'bag') return 'e.g. 53 Grade / OPC';
+    if (['sqf', 'sqm', 'cft'].contains(u)) return 'e.g. 2x2 or Size';
+    if (u == 'ltr') return 'e.g. Shade / Color';
+    if (['nos', 'pcs', 'box', 'bdl'].contains(u)) return 'e.g. Size or Model';
+    return 'e.g. Type / Size';
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    
+    setState(() => _isLoading = true);
+    
+    try {
+      final invRepo  = context.read<InventoryRepository>();
+      final siteId   = context.read<SiteRepository>().selectedSiteId ?? 'S-001';
+      final now      = DateTime.now();
+      
+      final brand    = _brandCtrl.text.trim();
+      final name     = _nameCtrl.text.trim();
+      final subType  = _subTypeCtrl.text.trim();
+      final hsn      = _hsnCtrl.text.trim();
+      
+      // If editing, we only have one variant in the list
+      if (widget.materialId != null) {
+        final v = _variants.first;
+        final updated = ConstructionMaterial(
+          id: widget.materialId!,
+          siteId: siteId,
+          name: name,
+          subType: subType,
+          brand: brand,
+          variant: v.variantCtrl.text.trim(),
+          pricePerUnit: double.tryParse(v.rateCtrl.text) ?? 0,
+          purchasePrice: double.tryParse(v.rateCtrl.text) ?? 0,
+          salePrice: (double.tryParse(v.rateCtrl.text) ?? 0) * 1.1, // dummy
+          unitType: _unit,
+          currentStock: double.tryParse(v.stockCtrl.text) ?? 0,
+          minimumStockLimit: double.tryParse(v.limitCtrl.text) ?? 0,
+          hsnCode: hsn,
+          gstPercentage: _includeTax ? _taxPercent : 0,
+          updatedAt: now,
+          createdAt: now,
+        );
+        await invRepo.updateMaterial(updated);
+      } else {
+        // Create multiple materials for variants
+        for (var v in _variants) {
+          final m = ConstructionMaterial(
+            id: const Uuid().v4(),
+            siteId: siteId,
+            name: name,
+            subType: subType,
+            brand: brand,
+            variant: v.variantCtrl.text.trim(),
+            pricePerUnit: double.tryParse(v.rateCtrl.text) ?? 0,
+            purchasePrice: double.tryParse(v.rateCtrl.text) ?? 0,
+            salePrice: (double.tryParse(v.rateCtrl.text) ?? 0) * 1.1,
+            unitType: _unit,
+            currentStock: double.tryParse(v.stockCtrl.text) ?? 0,
+            minimumStockLimit: double.tryParse(v.limitCtrl.text) ?? 0,
+            hsnCode: hsn,
+            gstPercentage: _includeTax ? _taxPercent : 0,
+            createdAt: now,
+            updatedAt: now,
+          );
+          await invRepo.addMaterial(m);
+        }
+      }
+      
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+}
+
+class _SectionCard extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final Widget? trailing;
+  final Widget child;
+  const _SectionCard({required this.title, required this.icon, this.trailing, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
             child: Row(
               children: [
-                if (icon != null) ...[
-                  Icon(icon, color: bcNavy, size: 20),
-                  const SizedBox(width: 12),
-                ],
-                Text(
-                  unit == UnitType.none ? 'Select Unit' : unit.label,
-                  style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w600, fontSize: 16),
-                ),
-                const Spacer(),
-                const Icon(Icons.keyboard_arrow_down_rounded, color: bcTextSecondary),
+                Icon(icon, size: 16, color: bcNavy.withValues(alpha: 0.5)),
+                const SizedBox(width: 8),
+                Expanded(child: Text(title, style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1))),
+                if (trailing != null) trailing!,
               ],
             ),
           ),
-        ),
-      ],
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: child,
+          ),
+        ],
+      ),
     );
   }
+}
 
-  Future<void> _save() async {
-    if (!_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fill all required fields'),
-          backgroundColor: bcDanger,
-        ),
-      );
-      return;
-    }
+class _VariantEntry {
+  final TextEditingController variantCtrl = TextEditingController();
+  final TextEditingController stockCtrl   = TextEditingController();
+  final TextEditingController rateCtrl    = TextEditingController();
+  final TextEditingController limitCtrl   = TextEditingController();
 
-    try {
-      final repo = context.read<InventoryRepository>();
-      final material = ConstructionMaterial(
-        id: widget.materialId ?? 'mat_${DateTime.now().millisecondsSinceEpoch}',
-        name: _nameCtrl.text,
-        category: _category,
-        unitType: _primaryUnit,
-        minimumStockLimit: double.tryParse(_lowStockCtrl.text) ?? 10.0,
-        currentStock: double.tryParse(_openingStockCtrl.text) ?? 0.0,
-        siteId: _selectedSiteId ?? '',
-        subType: '',
-        brand: '',
-        pricePerUnit: double.tryParse(_purchasePriceCtrl.text) ?? 0.0,
-        totalAmount: 0,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-        salePrice: double.tryParse(_salePriceCtrl.text) ?? 0.0,
-        purchasePrice: double.tryParse(_purchasePriceCtrl.text) ?? 0.0,
-        taxIncluded: _taxIncluded,
-        hsnCode: _hsnCtrl.text,
-        secondaryUnit: _hasSecondaryUnit ? _secondaryUnit : null,
-        conversionFactor: double.tryParse(_conversionCtrl.text) ?? 1.0,
-      );
+  _VariantEntry({String? variantName, double? stock, double? rate, double? limit}) {
+    if (variantName != null) variantCtrl.text = variantName;
+    if (stock != null) stockCtrl.text = stock.toString();
+    if (rate != null) rateCtrl.text = rate.toString();
+    if (limit != null) limitCtrl.text = limit.toString();
+  }
 
-      if (widget.materialId == null) {
-        await repo.addMaterial(material);
-      } else {
-        await repo.updateMaterial(material);
-      }
-
-      if (mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Item saved successfully'),
-            backgroundColor: bcSuccess,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error saving item: ${e.toString()}'),
-            backgroundColor: bcDanger,
-          ),
-        );
-      }
-    }
+  void dispose() {
+    variantCtrl.dispose();
+    stockCtrl.dispose();
+    rateCtrl.dispose();
+    limitCtrl.dispose();
   }
 }

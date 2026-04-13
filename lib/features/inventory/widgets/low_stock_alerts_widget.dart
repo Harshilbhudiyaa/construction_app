@@ -1,4 +1,4 @@
-﻿import 'package:construction_app/data/models/material_model.dart';
+import 'package:construction_app/data/models/material_model.dart';
 import 'package:construction_app/data/repositories/inventory_repository.dart';
 import 'package:construction_app/core/theme/aesthetic_tokens.dart';
 import 'package:flutter/material.dart';
@@ -15,20 +15,6 @@ class _LowStockAlertsWidgetState extends State<LowStockAlertsWidget>
     with SingleTickerProviderStateMixin {
   bool _collapsed = false;
 
-  Color _categoryColor(MaterialCategory cat) {
-    const colors = [
-      Color(0xFFE67E22), // cement
-      Color(0xFF5D6D7E), // steel
-      Color(0xFFF0B429), // sand
-      Color(0xFFE74C3C), // bricks
-      Color(0xFFF39C12), // electrical
-      Color(0xFF2980B9), // plumbing
-      Color(0xFF8E44AD), // paint
-      Color(0xFF27AE60), // tools
-      Color(0xFF95A5A6), // other
-    ];
-    return colors[cat.index % colors.length];
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -139,14 +125,13 @@ class _LowStockAlertsWidgetState extends State<LowStockAlertsWidget>
                                     Container(
                                       padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
-                                        color: _categoryColor(material.category)
-                                            .withValues(alpha: 0.1),
+                                        color: bcDanger.withValues(alpha: 0.1),
                                         borderRadius:
                                             BorderRadius.circular(8),
                                       ),
-                                      child: Icon(material.category.icon,
+                                      child: const Icon(Icons.inventory_2_rounded,
                                           size: 14,
-                                          color: _categoryColor(material.category)),
+                                          color: bcDanger),
                                     ),
                                     const SizedBox(width: 12),
                                     Expanded(
@@ -188,7 +173,7 @@ class _LowStockAlertsWidgetState extends State<LowStockAlertsWidget>
                                           CrossAxisAlignment.end,
                                       children: [
                                         Text(
-                                          '${remaining.toStringAsFixed(0)} ${material.unitType.label}',
+                                          '${remaining.toStringAsFixed(0)} ${material.unitType}',
                                           style: const TextStyle(
                                             fontWeight: FontWeight.w900,
                                             fontSize: 12,

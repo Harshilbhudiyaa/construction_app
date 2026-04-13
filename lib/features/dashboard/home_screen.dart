@@ -125,7 +125,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   delay: const Duration(milliseconds: 100),
                   child: _KpiGrid(
                     kpis: [
-                      _KpiData('Material Value', _fmt.format(materialValue), Icons.layers_rounded, bcAmber, () => widget.onNavigateTo(1)),
+                      _KpiData('Material Value', _fmt.format(materialValue), Icons.layers_rounded, bcAmber, () => Navigator.pushNamed(context, AppRoutes.materialCatalog, arguments: {'inStock': true})),
                       _KpiData('Supplier Due', _fmt.format(supplierPending), Icons.people_alt_rounded, bcDanger, () => Navigator.pushNamed(context, AppRoutes.supplierList)),
                       _KpiData('Worker Salary', _fmt.format(workerSalaryDue), Icons.engineering_rounded, bcInfo, () => widget.onNavigateTo(2)),
                       _KpiData('Contractor Due', _fmt.format(contractorPending), Icons.handyman_rounded, bcSuccess, () => widget.onNavigateTo(3)),

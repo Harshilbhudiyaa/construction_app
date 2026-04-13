@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:construction_app/core/theme/professional_theme.dart';
 import 'package:construction_app/core/theme/aesthetic_tokens.dart';
@@ -135,7 +135,7 @@ class PartyCardScreen extends StatelessWidget {
                       color: bcNavy.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Icon(m.category.icon, color: bcNavy, size: 20),
+                    child: const Icon(Icons.foundation_rounded, color: bcNavy, size: 20),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -144,7 +144,7 @@ class PartyCardScreen extends StatelessWidget {
                       children: [
                         Text(m.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                         Text(
-                          'Stock: ${m.currentStock} ${m.unitType.label}',
+                          'Stock: ${m.currentStock} ${m.unitType}',
                           style: const TextStyle(color: Colors.grey, fontSize: 12),
                         ),
                       ],

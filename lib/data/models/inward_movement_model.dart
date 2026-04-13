@@ -16,7 +16,6 @@ class InwardMovementModel {
   
   final String? materialId; // Specific ConstructionMaterial ID
   final String materialName;
-  final MaterialCategory category;
   final double quantity;
   final String unit;
   
@@ -45,7 +44,6 @@ class InwardMovementModel {
     required this.driverLicense,
     this.materialId,
     required this.materialName,
-    required this.category,
     required this.quantity,
     required this.unit,
     required this.photoProofs,
@@ -83,7 +81,6 @@ class InwardMovementModel {
       driverLicense: driverLicense,
       materialId: materialId ?? this.materialId,
       materialName: materialName,
-      category: category,
       quantity: quantity,
       unit: unit,
       photoProofs: photoProofs,
@@ -112,7 +109,6 @@ class InwardMovementModel {
       'driverLicense': driverLicense,
       'materialId': materialId,
       'materialName': materialName,
-      'category': category.name,
       'quantity': quantity,
       'unit': unit,
       'photoProofs': photoProofs.map((e) => e.toJson()).toList(),
@@ -130,35 +126,28 @@ class InwardMovementModel {
 
   factory InwardMovementModel.fromJson(Map<String, dynamic> json) {
     return InwardMovementModel(
-      id: json['id'],
-      vehicleType: json['vehicleType'],
-      vehicleNumber: json['vehicleNumber'],
-      vehicleCapacity: json['vehicleCapacity'],
-      transporterName: json['transporterName'],
+      id: json['id'] ?? '',
+      vehicleType: json['vehicleType'] ?? '',
+      vehicleNumber: json['vehicleNumber'] ?? '',
+      vehicleCapacity: json['vehicleCapacity'] ?? '',
+      transporterName: json['transporterName'] ?? '',
       siteId: json['siteId'] ?? 'S-001',
-      driverName: json['driverName'],
-      driverMobile: json['driverMobile'],
-      driverLicense: json['driverLicense'],
+      driverName: json['driverName'] ?? '',
+      driverMobile: json['driverMobile'] ?? '',
+      driverLicense: json['driverLicense'] ?? '',
       materialId: json['materialId'], // Can be null for old logs
-      materialName: json['materialName'],
-      category: () {
-        try {
-          return MaterialCategory.values.byName(json['category'] ?? 'civilStructural');
-        } catch (_) {
-          return MaterialCategory.civilStructural;
-        }
-      }(),
-      quantity: (json['quantity'] as num).toDouble(),
-      unit: json['unit'],
+      materialName: json['materialName'] ?? 'Unknown Material',
+      quantity: (json['quantity'] as num? ?? 0).toDouble(),
+      unit: json['unit'] ?? 'unit',
       photoProofs: (json['photoProofs'] as List? ?? [])
           .map((e) => InwardPhotoProof.fromJson(Map<String, dynamic>.from(e)))
           .toList(),
-      ratePerUnit: (json['ratePerUnit'] as num).toDouble(),
-      transportCharges: (json['transportCharges'] as num).toDouble(),
-      taxPercentage: (json['taxPercentage'] as num).toDouble(),
-      totalAmount: (json['totalAmount'] as num).toDouble(),
-      status: InwardStatus.values.byName(json['status']),
-      createdAt: DateTime.parse(json['createdAt']),
+      ratePerUnit: (json['ratePerUnit'] as num? ?? 0).toDouble(),
+      transportCharges: (json['transportCharges'] as num? ?? 0).toDouble(),
+      taxPercentage: (json['taxPercentage'] as num? ?? 0).toDouble(),
+      totalAmount: (json['totalAmount'] as num? ?? 0).toDouble(),
+      status: InwardStatus.values.byName(json['status'] ?? 'pendingApproval'),
+      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : DateTime.now(),
       approvedBy: json['approvedBy'],
       approvedAt: json['approvedAt'] != null ? DateTime.parse(json['approvedAt']) : null,
       availableSizes: List<String>.from(json['availableSizes'] ?? []),
