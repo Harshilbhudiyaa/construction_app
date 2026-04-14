@@ -18,21 +18,16 @@ class AddEditItemScreen extends StatefulWidget {
 class _AddEditItemScreenState extends State<AddEditItemScreen> {
   final _formKey = GlobalKey<FormState>();
   
-  // Controllers
   final _nameCtrl     = TextEditingController();
   final _brandCtrl    = TextEditingController();
-
   final _subTypeCtrl  = TextEditingController();
   final _hsnCtrl      = TextEditingController();
   
-  // Variation Data
   final List<_VariantEntry> _variants = [];
   
-  // Shared Data
   String _unit = 'pcs';
   double _taxPercent = 18.0;
   bool _includeTax = false;
-  
   bool _isLoading = false;
 
   @override
@@ -41,7 +36,6 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
     if (widget.materialId != null) {
       _loadExisting();
     } else {
-      // Default one variant for new product
       _addVariant();
     }
   }
@@ -51,7 +45,6 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
     final m = repo.materials.firstWhere((e) => e.id == widget.materialId);
     _nameCtrl.text     = m.name;
     _brandCtrl.text    = m.brand ?? '';
-
     _subTypeCtrl.text  = m.subType;
     _hsnCtrl.text      = m.hsnCode ?? '';
     _unit            = m.unitType;
@@ -61,7 +54,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
     _variants.add(_VariantEntry(
       variantName: m.variant,
       stock: m.currentStock,
-      rate: m.pricePerUnit,
+      rate: m.purchasePrice,
       limit: m.minimumStockLimit,
     ));
   }
@@ -85,17 +78,16 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
   @override
   Widget build(BuildContext context) {
     final invRepo = context.watch<InventoryRepository>();
-    
-    // Autocomplete suggestions
-    final brands     = invRepo.materials.map((m) => m.brand ?? '').where((b) => b.isNotEmpty).toSet().toList();
+    final brands = invRepo.materials.map((m) => m.brand ?? '').where((b) => b.isNotEmpty).toSet().toList();
 
     return Scaffold(
       backgroundColor: bcSurface,
       appBar: AppBar(
-        title: Text(widget.materialId == null ? 'New Product' : 'Edit Product', 
-            style: const TextStyle(fontWeight: FontWeight.w900, color: bcNavy)),
+        title: Text(widget.materialId == null ? 'NEW PRODUCT' : 'EDIT PRODUCT', 
+            style: const TextStyle(fontWeight: FontWeight.w900, color: bcNavy, fontSize: 16, letterSpacing: 0.5)),
         backgroundColor: Colors.white,
         elevation: 0,
+        centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: bcNavy, size: 20),
           onPressed: () => Navigator.pop(context),
@@ -104,11 +96,11 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          physics: const BouncingScrollPhysics(),
           children: [
-            // ─── Basic Info Card ──────────────────────────────────────────
             _SectionCard(
-              title: 'BASIC INFORMATION',
+              title: 'BASIC CATALOG INFO',
               icon: Icons.info_outline_rounded,
               child: Column(
                 children: [
@@ -121,10 +113,9 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
               ),
             ),
 
-            // ─── Units & Tax ──────────────────────────────────────────────
             _SectionCard(
               title: 'UNITS & TAXATION',
-              icon: Icons.settings_outlined,
+              icon: Icons.tune_rounded,
               child: Column(
                 children: [
                   _buildUnitSelector(),
@@ -136,7 +127,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                       children: [
                         Expanded(child: _buildNumberField('GST %', initialValue: _taxPercent.toString(), onChanged: (v) => _taxPercent = double.tryParse(v) ?? 18)),
                         const SizedBox(width: 12),
-                        Expanded(child: _buildTextField('HSN Code (Optional)', _hsnCtrl, 'XXXX')),
+                        Expanded(child: _buildTextField('HSN Code', _hsnCtrl, 'XXXX')),
                       ],
                     ),
                   ],
@@ -144,18 +135,18 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
               ),
             ),
 
-            // ─── Variants Card ────────────────────────────────────────────
             _SectionCard(
-              title: 'PRODUCT VARIATIONS',
+              title: 'INVENTORY VARIATIONS',
               icon: Icons.layers_outlined,
               trailing: widget.materialId == null ? GestureDetector(
                 onTap: _addVariant,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(color: bcPrimary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
                   child: const Row(children: [
                     Icon(Icons.add_rounded, color: bcPrimary, size: 16),
-                    Text('ADD', style: TextStyle(color: bcPrimary, fontWeight: FontWeight.bold, fontSize: 11)),
+                    SizedBox(width: 4),
+                    Text('ADD', style: TextStyle(color: bcPrimary, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 0.5)),
                   ]),
                 ),
               ) : null,
@@ -166,9 +157,9 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
               ),
             ),
 
-            const SizedBox(height: 32),
+            const SizedBox(height: 12),
             _buildSubmitButton(),
-            const SizedBox(height: 40),
+            const SizedBox(height: 48),
           ],
         ),
       ),
@@ -179,11 +170,13 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w700, fontSize: 13)),
-        const SizedBox(height: 6),
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 8),
+          child: Text(label.toUpperCase(), style: const TextStyle(color: bcTextSecondary, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 0.5)),
+        ),
         TextFormField(
           controller: ctrl,
-          style: const TextStyle(fontSize: 14, color: bcNavy),
+          style: const TextStyle(fontSize: 14, color: bcNavy, fontWeight: FontWeight.w700),
           decoration: _inputDecoration(hint),
           validator: (v) => v == null || v.isEmpty ? 'Required' : null,
         ),
@@ -195,8 +188,10 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w700, fontSize: 13)),
-        const SizedBox(height: 6),
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 8),
+          child: Text(label.toUpperCase(), style: const TextStyle(color: bcTextSecondary, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 0.5)),
+        ),
         RawAutocomplete<String>(
           textEditingController: ctrl,
           focusNode: FocusNode(),
@@ -208,7 +203,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
             return TextFormField(
               controller: controller,
               focusNode: node,
-              style: const TextStyle(fontSize: 14, color: bcNavy),
+              style: const TextStyle(fontSize: 14, color: bcNavy, fontWeight: FontWeight.w700),
               decoration: _inputDecoration('Search or type...'),
             );
           },
@@ -216,17 +211,17 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
             return Align(
               alignment: Alignment.topLeft,
               child: Material(
-                elevation: 4,
-                borderRadius: BorderRadius.circular(12),
+                elevation: 8,
+                borderRadius: BorderRadius.circular(16),
                 child: Container(
-                  width: 160,
-                  constraints: const BoxConstraints(maxHeight: 200),
+                  width: 200,
+                  constraints: const BoxConstraints(maxHeight: 250),
                   child: ListView.builder(
                     padding: EdgeInsets.zero,
                     shrinkWrap: true,
                     itemCount: options.length,
                     itemBuilder: (ctx, i) => ListTile(
-                      title: Text(options.elementAt(i), style: const TextStyle(fontSize: 13)),
+                      title: Text(options.elementAt(i), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: bcNavy)),
                       onTap: () => onSelected(options.elementAt(i)),
                     ),
                   ),
@@ -242,11 +237,11 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
   Widget _buildVariantEntry(int index, _VariantEntry entry) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: bcSurface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: bcBorder.withValues(alpha: 0.5)),
       ),
       child: Column(
         children: [
@@ -255,29 +250,29 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
               Expanded(
                 child: TextFormField(
                   controller: entry.variantCtrl,
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: bcNavy),
                   decoration: InputDecoration(
-                    hintText: 'Variant Name (${_getVariantHint()})',
-                    hintStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
+                    hintText: 'VARIANT: ${_getVariantHint()}',
+                    hintStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF94A3B8)),
                     isDense: true, border: InputBorder.none,
                   ),
                 ),
               ),
               if (_variants.length > 1 && widget.materialId == null)
-                IconButton(
-                  icon: const Icon(Icons.delete_outline_rounded, color: bcDanger, size: 20),
-                  onPressed: () => setState(() => _variants.removeAt(index)),
+                GestureDetector(
+                  onTap: () => setState(() => _variants.removeAt(index)),
+                  child: const Icon(Icons.delete_outline_rounded, color: bcDanger, size: 20),
                 ),
             ],
           ),
-          const Divider(height: 16),
+          const Divider(height: 20),
           Row(
             children: [
-              Expanded(child: _buildMiniNumField('Op. Stock', entry.stockCtrl)),
+              Expanded(child: _buildMiniNumField('OP. STOCK', entry.stockCtrl)),
               const SizedBox(width: 8),
-              Expanded(child: _buildMiniNumField('Op. Rate', entry.rateCtrl)),
+              Expanded(child: _buildMiniNumField('OP. RATE', entry.rateCtrl)),
               const SizedBox(width: 8),
-              Expanded(child: _buildMiniNumField('Min Limit', entry.limitCtrl)),
+              Expanded(child: _buildMiniNumField('MIN LIMIT', entry.limitCtrl)),
             ],
           ),
         ],
@@ -289,17 +284,18 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 10, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 4),
+        Text(label, style: const TextStyle(color: bcTextSecondary, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+        const SizedBox(height: 6),
         TextFormField(
           controller: ctrl,
           keyboardType: TextInputType.number,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: bcNavy),
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: bcNavy, letterSpacing: -0.5),
           decoration: InputDecoration(
             isDense: true,
             filled: true, fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: bcBorder.withValues(alpha: 0.6))),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: bcBorder.withValues(alpha: 0.6))),
           ),
         ),
       ],
@@ -310,13 +306,15 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w700, fontSize: 13)),
-        const SizedBox(height: 6),
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 8),
+          child: Text(label.toUpperCase(), style: const TextStyle(color: bcTextSecondary, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 0.5)),
+        ),
         TextFormField(
           initialValue: initialValue,
           onChanged: onChanged,
           keyboardType: TextInputType.number,
-          style: const TextStyle(fontSize: 14, color: bcNavy),
+          style: const TextStyle(fontSize: 14, color: bcNavy, fontWeight: FontWeight.w700),
           decoration: _inputDecoration('%'),
         ),
       ],
@@ -335,18 +333,18 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
         if (res != null) setState(() => _unit = res);
       },
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: bcSurface, borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
+          color: bcSurface, borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: bcBorder.withValues(alpha: 0.6)),
         ),
         child: Row(
           children: [
-            const Icon(Icons.scale_rounded, color: bcPrimary, size: 20),
+            const Icon(Icons.scale_rounded, color: bcAmber, size: 20),
             const SizedBox(width: 12),
-            const Expanded(child: Text('Base Unit', style: TextStyle(color: bcNavy, fontWeight: FontWeight.w700, fontSize: 13))),
-            Text(_unit.toUpperCase(), style: const TextStyle(color: bcPrimary, fontWeight: FontWeight.w900, fontSize: 14)),
-            const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8)),
+            const Expanded(child: Text('BASE MEASUREMENT UNIT', style: TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 0.2))),
+            Text(_unit.toUpperCase(), style: const TextStyle(color: bcPrimary, fontWeight: FontWeight.w900, fontSize: 13)),
+            const Icon(Icons.chevron_right_rounded, color: bcTextSecondary),
           ],
         ),
       ),
@@ -354,63 +352,69 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
   }
 
   Widget _buildTaxToggle() {
-    return Row(
-      children: [
-        const Icon(Icons.receipt_long_rounded, color: bcSuccess, size: 20),
-        const SizedBox(width: 12),
-        const Expanded(child: Text('Include Taxation (GST)', style: TextStyle(color: bcNavy, fontWeight: FontWeight.w700, fontSize: 13))),
-        Switch.adaptive(
-          value: _includeTax,
-          onChanged: (v) => setState(() => _includeTax = v),
-          activeColor: bcSuccess,
-        ),
-      ],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: bcSurface, borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: bcBorder.withValues(alpha: 0.6)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.receipt_long_rounded, color: bcSuccess, size: 20),
+          const SizedBox(width: 12),
+          const Expanded(child: Text('INCLUDE TAXATION (GST)', style: TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 0.2))),
+          Switch.adaptive(
+            value: _includeTax,
+            onChanged: (v) => setState(() => _includeTax = v),
+            activeColor: bcSuccess,
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildSubmitButton() {
     return SizedBox(
       width: double.infinity,
-      height: 54,
+      height: 56,
       child: ElevatedButton(
         onPressed: _isLoading ? null : _submit,
         style: ElevatedButton.styleFrom(
           backgroundColor: bcNavy,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          elevation: 4, shadowColor: bcNavy.withValues(alpha: 0.3),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          elevation: 0,
         ),
         child: _isLoading 
             ? const CircularProgressIndicator(color: Colors.white)
-            : Text(widget.materialId == null ? 'CREATE PRODUCT(S)' : 'SAVE CHANGES', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
+            : Text(widget.materialId == null ? 'CONFIRM & CREATE PRODUCT' : 'SAVE CHANGES', 
+                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, letterSpacing: 0.5)),
       ),
     );
   }
 
   InputDecoration _inputDecoration(String hint) {
     return InputDecoration(
-      hintText: hint, hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+      hintText: hint, hintStyle: const TextStyle(color: Color(0xFFCBD5E1), fontSize: 13, fontWeight: FontWeight.normal),
       filled: true, fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: bcPrimary, width: 2)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: bcBorder.withValues(alpha: 0.6))),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: bcBorder.withValues(alpha: 0.6))),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: bcPrimary, width: 2)),
     );
   }
 
   String _getVariantHint() {
     final u = _unit.toLowerCase();
-    if (['kgs', 'ton', 'mtr'].contains(u)) return 'e.g. 12mm';
-    if (u == 'bag') return 'e.g. 53 Grade / OPC';
-    if (['sqf', 'sqm', 'cft'].contains(u)) return 'e.g. 2x2 or Size';
-    if (u == 'ltr') return 'e.g. Shade / Color';
-    if (['nos', 'pcs', 'box', 'bdl'].contains(u)) return 'e.g. Size or Model';
-    return 'e.g. Type / Size';
+    if (['kgs', 'ton', 'mtr'].contains(u)) return '12MM / 8MM';
+    if (u == 'bag') return 'OPC / 53G';
+    if (['sqft', 'sqm', 'cft'].contains(u)) return '2X2 / SIZE';
+    if (u == 'ltr') return 'SHADE / COLOR';
+    return 'SIZE / MODEL';
   }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    
     setState(() => _isLoading = true);
     
     try {
@@ -418,12 +422,11 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
       final siteId   = context.read<SiteRepository>().selectedSiteId ?? 'S-001';
       final now      = DateTime.now();
       
-      final brand    = _brandCtrl.text.trim();
       final name     = _nameCtrl.text.trim();
+      final brand    = _brandCtrl.text.trim();
       final subType  = _subTypeCtrl.text.trim();
       final hsn      = _hsnCtrl.text.trim();
       
-      // If editing, we only have one variant in the list
       if (widget.materialId != null) {
         final v = _variants.first;
         final updated = ConstructionMaterial(
@@ -435,7 +438,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
           variant: v.variantCtrl.text.trim(),
           pricePerUnit: double.tryParse(v.rateCtrl.text) ?? 0,
           purchasePrice: double.tryParse(v.rateCtrl.text) ?? 0,
-          salePrice: (double.tryParse(v.rateCtrl.text) ?? 0) * 1.1, // dummy
+          salePrice: (double.tryParse(v.rateCtrl.text) ?? 0) * 1.1,
           unitType: _unit,
           currentStock: double.tryParse(v.stockCtrl.text) ?? 0,
           minimumStockLimit: double.tryParse(v.limitCtrl.text) ?? 0,
@@ -446,7 +449,6 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
         );
         await invRepo.updateMaterial(updated);
       } else {
-        // Create multiple materials for variants
         for (var v in _variants) {
           final m = ConstructionMaterial(
             id: const Uuid().v4(),
@@ -469,7 +471,6 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
           await invRepo.addMaterial(m);
         }
       }
-      
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
@@ -492,17 +493,18 @@ class _SectionCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [BoxShadow(color: bcNavy.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
+        border: Border.all(color: bcBorder.withValues(alpha: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+            padding: const EdgeInsets.fromLTRB(16, 18, 16, 14),
             child: Row(
               children: [
-                Icon(icon, size: 16, color: bcNavy.withValues(alpha: 0.5)),
+                Icon(icon, size: 16, color: bcAmber),
                 const SizedBox(width: 8),
                 Expanded(child: Text(title, style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1))),
                 if (trailing != null) trailing!,
@@ -511,7 +513,7 @@ class _SectionCard extends StatelessWidget {
           ),
           const Divider(height: 1),
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
             child: child,
           ),
         ],
@@ -528,9 +530,9 @@ class _VariantEntry {
 
   _VariantEntry({String? variantName, double? stock, double? rate, double? limit}) {
     if (variantName != null) variantCtrl.text = variantName;
-    if (stock != null) stockCtrl.text = stock.toString();
-    if (rate != null) rateCtrl.text = rate.toString();
-    if (limit != null) limitCtrl.text = limit.toString();
+    if (stock != null) stockCtrl.text = stock.toStringAsFixed(0);
+    if (rate != null) rateCtrl.text = rate.toStringAsFixed(0);
+    if (limit != null) limitCtrl.text = limit.toStringAsFixed(0);
   }
 
   void dispose() {

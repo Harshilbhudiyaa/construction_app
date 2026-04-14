@@ -74,64 +74,45 @@ class _WorkerProfileScreenState extends State<WorkerProfileScreen> with SingleTi
                 ],
                 flexibleSpace: FlexibleSpaceBar(
                   stretchModes: const [StretchMode.zoomBackground, StretchMode.blurBackground],
-                  background: Stack(
-                    children: [
-                      // Architectural Mesh
-                      Positioned.fill(
-                        child: CustomPaint(
-                          painter: BlueprintGridPainter(opacity: 0.15, gridColor: bcAmber.withValues(alpha: 0.1)),
-                        ),
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              bcNavy,
-                              bcNavy.withValues(alpha: 0.8),
-                              bcSurface,
-                            ],
+                  background: Container(
+                    color: bcNavy,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SizedBox(height: 40),
+                        Container(
+                          width: 100,
+                          height: 100, 
+                          decoration: BoxDecoration(
+                            color: bcAmber.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: bcAmber.withValues(alpha: 0.3), width: 2),
+                          ),
+                          child: Center(
+                            child: Text(
+                              widget.worker.name[0].toUpperCase(),
+                              style: const TextStyle(color: bcAmber, fontSize: 44, fontWeight: FontWeight.w900),
+                            ),
                           ),
                         ),
-                      ),
-                      SafeArea(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const SizedBox(height: 10),
-                            Hero(
-                              tag: 'worker_pfp_${widget.worker.id}',
-                              child: GlassCard(
-                                blur: 20,
-                                opacity: 0.1,
-                                borderRadius: BorderRadius.circular(36),
-                                border: Border.all(color: bcAmber.withValues(alpha: 0.3), width: 2),
-                                padding: const EdgeInsets.all(4),
-                                child: Container(
-                                  width: 100, height: 100,
-                                  decoration: BoxDecoration(
-                                    color: bcNavy.withValues(alpha: 0.5),
-                                    borderRadius: BorderRadius.circular(32),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      widget.worker.name[0].toUpperCase(),
-                                      style: const TextStyle(color: bcAmber, fontSize: 48, fontWeight: FontWeight.w900, letterSpacing: -2),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            Text(widget.worker.name, 
-                                style: const TextStyle(color: bcNavy, fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: -1.5, height: 1)),
-                            const SizedBox(height: 10),
-                            StatusPill(label: widget.worker.occupation.displayName, color: bcInfo),
-                          ],
+                        const SizedBox(height: 20),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Text(widget.worker.name, 
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Colors.white, 
+                                fontSize: 32, 
+                                fontWeight: FontWeight.w900, 
+                                letterSpacing: -1.5, 
+                                height: 1.0,
+                                shadows: [Shadow(color: Colors.black26, offset: Offset(0, 2), blurRadius: 10)],
+                              )),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 10),
+                        StatusPill(label: widget.worker.occupation.displayName, color: bcInfo, onDark: true),
+                      ],
+                    ),
                   ),
                 ),
               ),

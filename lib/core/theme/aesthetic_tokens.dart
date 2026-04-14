@@ -528,37 +528,43 @@ class StatusPill extends StatelessWidget {
   final String label;
   final Color color;
   final IconData? icon;
+  final bool onDark;
 
   const StatusPill({
     super.key,
     required this.label,
     required this.color,
     this.icon,
+    this.onDark = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final effectiveColor = onDark ? Colors.white : color;
+    final bgColor = onDark ? Colors.white.withValues(alpha: 0.15) : color.withValues(alpha: 0.1);
+    final borderColor = onDark ? Colors.white.withValues(alpha: 0.3) : color.withValues(alpha: 0.2);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: bgColor,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
+        border: Border.all(color: borderColor, width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, color: color, size: 12),
+            Icon(icon, color: effectiveColor, size: 12),
             const SizedBox(width: 4),
           ],
           Text(
             label.toUpperCase(),
             style: TextStyle(
-              color: color,
+              color: effectiveColor,
               fontSize: 10,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.5,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.8,
             ),
           ),
         ],

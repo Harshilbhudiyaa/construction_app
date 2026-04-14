@@ -617,7 +617,7 @@ class InventoryRepository extends ChangeNotifier {
         pricePerUnit: 120,
         purchasePrice: 110,
         salePrice: 145,
-        unitType: 'sqf',
+        unitType: 'sqft',
         currentStock: 4200,
         minimumStockLimit: 500,
         storageLocation: 'Warehouse B',

@@ -75,49 +75,60 @@ class _UnitPickerSheetState extends State<UnitPickerSheet> {
                   );
                 }),
                 
-                // Custom Option
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: _isCustom ? bcPrimary.withValues(alpha: 0.05) : bcSurface,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: _isCustom ? bcPrimary : const Color(0xFFE2E8F0)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        GestureDetector(
-                          onTap: () => setState(() => _isCustom = true),
-                          child: Row(
-                            children: [
-                              _buildRadio(_isCustom),
-                              const SizedBox(width: 12),
-                              const Text('CUSTOM UNIT', style: TextStyle(color: bcNavy, fontWeight: FontWeight.bold, fontSize: 13)),
-                            ],
-                          ),
+                // Custom Option - Always at the end
+                Column(
+                  children: [
+                    const Divider(height: 32, indent: 20, endIndent: 20),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: _isCustom ? bcPrimary.withValues(alpha: 0.1) : bcSurface,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: _isCustom ? bcPrimary : Colors.transparent),
                         ),
-                        if (_isCustom) ...[
-                          const SizedBox(height: 12),
-                          TextField(
-                            controller: _customCtrl,
-                            autofocus: true,
-                            decoration: InputDecoration(
-                              hintText: 'Enter unit (e.g. bundle, box, etc.)',
-                              hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
-                              filled: true,
-                              fillColor: Colors.white,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            GestureDetector(
+                              onTap: () => setState(() => _isCustom = true),
+                              child: Row(
+                                children: [
+                                  _buildRadio(_isCustom),
+                                  const SizedBox(width: 12),
+                                  const Text('ANY OTHER UNIT', style: TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 0.5)),
+                                  const Spacer(),
+                                  if (!_isCustom) const Text('ADD CUSTOM', style: TextStyle(color: bcPrimary, fontWeight: FontWeight.bold, fontSize: 10)),
+                                ],
+                              ),
                             ),
-                            style: const TextStyle(fontSize: 14, color: bcNavy),
-                            onChanged: (v) => setState(() => _selectedUnit = v),
-                          ),
-                        ],
-                      ],
+                            if (_isCustom) ...[
+                              const SizedBox(height: 16),
+                              TextField(
+                                controller: _customCtrl,
+                                autofocus: true,
+                                textCapitalization: TextCapitalization.characters,
+                                decoration: InputDecoration(
+                                  hintText: 'WRITE UNIT NAME (e.g. BUNDLE, BOX)',
+                                  hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12, fontWeight: FontWeight.w500),
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: bcPrimary, width: 2)),
+                                ),
+                                style: const TextStyle(fontSize: 14, color: bcNavy, fontWeight: FontWeight.bold),
+                                onChanged: (v) => setState(() => _selectedUnit = v.toLowerCase()),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ],
             ),

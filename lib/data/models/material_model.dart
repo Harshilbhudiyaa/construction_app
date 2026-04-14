@@ -1,6 +1,6 @@
 // Categories and Unit types are now dynamic Strings to allow for custom user entry.
 // Standard Unit presets are provided for the UI.
-const List<String> standardUnits = ['nos', 'pcs', 'kgs', 'bag', 'sqf', 'sqm', 'mtr', 'ton', 'ltr', 'cft', 'box', 'bdl', 'unit'];
+const List<String> standardUnits = ['nos', 'pcs', 'kgs', 'bag', 'sqft', 'sqm', 'mtr', 'ton', 'ltr', 'cft', 'brass'];
 
 class MaterialHistoryLog {
   final String id;
