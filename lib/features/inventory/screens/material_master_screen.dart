@@ -1,11 +1,10 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import 'package:construction_app/core/theme/aesthetic_tokens.dart';
 import 'package:construction_app/data/repositories/inventory_repository.dart';
 import 'package:construction_app/data/models/material_model.dart';
 import 'package:construction_app/data/repositories/site_repository.dart';
-import 'package:construction_app/shared/widgets/staggered_animation.dart';
-import 'package:construction_app/shared/widgets/professional_page.dart';
 import 'package:construction_app/features/inventory/screens/add_edit_item_screen.dart';
 import 'package:construction_app/features/inventory/screens/item_detail_screen.dart';
 import 'package:construction_app/features/inventory/widgets/stock_in_sheet.dart';
@@ -43,102 +42,92 @@ class _MaterialMasterScreenState extends State<MaterialMasterScreen> {
     final totalStockValue = siteMaterials.fold<double>(
         0, (sum, m) => sum + (m.currentStock * m.purchasePrice));
 
-    return ProfessionalPage(
-      title: activeSite?.name ?? 'Material Master',
-      subtitle: activeSite != null
-          ? 'Site Inventory Management'
-          : 'Global Inventory Management',
-      category: 'SmartConstruction STOCK',
-      actions: [
-        _buildSiteSelector(context, siteRepo),
-      ],
-      headerStats: [
-        HeroStatPill(
-          label: 'Stock Value',
-          value: '₹ ${totalStockValue.toStringAsFixed(0)}',
-          icon: Icons.account_balance_wallet_rounded,
-          color: bcAmber,
-          onTap: () {}, // Tactile feedback
-        ),
-        HeroStatPill(
-          label: 'Low Stock',
-          value: lowStockCount.toString(),
-          icon: Icons.warning_amber_rounded,
-          color: bcDanger,
-          showBorder: _showLowStockOnly,
-          onTap: () => setState(() => _showLowStockOnly = !_showLowStockOnly),
-        ),
-      ],
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(60),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            children: [
-              _TabItem(
-                title: 'ALL ITEMS',
-                isActive: !_showLowStockOnly,
-                onTap: () => setState(() => _showLowStockOnly = false),
+    return Scaffold(
+      backgroundColor: bcSurface,
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) => [
+          SmartConstructionSliverAppBar(
+            title: activeSite?.name ?? 'Materials',
+            subtitle: activeSite != null ? 'Site Inventory Catalog' : 'Global Material Hub',
+            category: 'INVENTORY MANAGEMENT',
+            isFull: true,
+            actions: [
+              _buildSiteSelector(context, siteRepo),
+            ],
+            headerStats: [
+              HeroStatPill(
+                label: 'VALUATION',
+                value: '₹${totalStockValue.toStringAsFixed(0)}',
+                icon: Icons.account_balance_wallet_rounded,
+                color: bcAmber,
               ),
-              const SizedBox(width: 24),
-              _TabItem(
-                title: 'LOW STOCK',
-                isActive: _showLowStockOnly,
-                onTap: () => setState(() => _showLowStockOnly = true),
+              HeroStatPill(
+                label: 'LOW STOCK',
+                value: '$lowStockCount',
+                icon: Icons.warning_amber_rounded,
+                color: bcDanger,
+                showBorder: _showLowStockOnly,
+                onTap: () => setState(() => _showLowStockOnly = !_showLowStockOnly),
               ),
             ],
           ),
-        ),
-      ),
-      slivers: [
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                _buildSearchBar(),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _SliverHeaderDelegate(
+              child: Container(
+                color: bcSurface,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                child: Column(
                   children: [
-                    Text('MY ITEMS (${materials.length})',
-                        style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 1,
-                            color: bcTextSecondary)),
-                    const Icon(Icons.swap_vert_rounded,
-                        size: 20, color: bcTextSecondary),
+                    _buildSearchBar(),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        _FilterTab(
+                          label: 'ALL MATERIALS',
+                          icon: Icons.inventory_2_rounded,
+                          isActive: !_showLowStockOnly,
+                          onTap: () => setState(() => _showLowStockOnly = false),
+                        ),
+                        const SizedBox(width: 12),
+                        _FilterTab(
+                          label: 'LOW STOCK',
+                          icon: Icons.notification_important_rounded,
+                          isActive: _showLowStockOnly,
+                          onTap: () => setState(() => _showLowStockOnly = true),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
-              ],
+              ),
+              height: 130,
             ),
           ),
-        ),
-        materials.isEmpty
-            ? SliverFillRemaining(child: _buildEmptyState())
-            : SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) => StaggeredAnimation(
-                    index: index,
-                    child: _MaterialItemCard(
-                      material: materials[index],
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ItemDetailScreen(
-                                materialId: materials[index].id),
-                          ),
-                        );
-                      },
-                    ),
+        ],
+        body: RefreshIndicator(
+          onRefresh: () => repo.refresh(),
+          color: bcAmber,
+          child: materials.isEmpty
+              ? _buildEmptyState()
+              : ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: materials.length,
+                  itemBuilder: (_, i) => _MaterialItemCard(
+                    material: materials[i],
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ItemDetailScreen(materialId: materials[i].id),
+                        ),
+                      );
+                    },
                   ),
-                  childCount: materials.length,
                 ),
-              ),
-        const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
-      ],
+        ),
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.push(
@@ -205,59 +194,90 @@ class _MaterialMasterScreenState extends State<MaterialMasterScreen> {
   }
 
   Widget _buildSearchBar() {
-    return TextField(
-      onChanged: (v) => setState(() => _searchQuery = v),
-      decoration: InputDecoration(
-        hintText: 'Search materials...',
-        prefixIcon: const Icon(Icons.search_rounded, color: bcTextSecondary),
-        suffixIcon: const Icon(Icons.tune_rounded, color: bcTextSecondary),
-        contentPadding: const EdgeInsets.symmetric(vertical: 0),
-        border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-        filled: true,
-        fillColor: Colors.white,
+    return Container(
+      height: 52,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: bcNavy.withValues(alpha: 0.06), blurRadius: 20, offset: const Offset(0, 10)),
+          BoxShadow(color: bcNavy.withValues(alpha: 0.02), blurRadius: 2, offset: const Offset(0, 2)),
+        ],
       ),
-    );
-  }
-}
-
-class _TabItem extends StatelessWidget {
-  final String title;
-  final bool isActive;
-  final VoidCallback onTap;
-
-  const _TabItem(
-      {required this.title, required this.isActive, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      padding: const EdgeInsets.symmetric(horizontal: 18),
+      child: Row(
         children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
-              color: Colors.white.withValues(alpha: isActive ? 1.0 : 0.7),
+          const Icon(Icons.search_rounded, color: bcAmber, size: 22),
+          const SizedBox(width: 16),
+          Expanded(
+            child: TextField(
+              onChanged: (v) => setState(() => _searchQuery = v),
+              style: const TextStyle(fontSize: 15, color: bcNavy, fontWeight: FontWeight.w700, letterSpacing: -0.2),
+              decoration: const InputDecoration(
+                hintText: 'Search material catalog...',
+                border: InputBorder.none,
+                hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 13, fontWeight: FontWeight.w500),
+                contentPadding: EdgeInsets.zero,
+                isDense: true,
+              ),
             ),
           ),
-          if (isActive) ...[
-            const SizedBox(height: 4),
-            Container(
-                height: 3,
-                width: 60,
-                decoration: BoxDecoration(
-                    color: Colors.amber,
-                    borderRadius: BorderRadius.circular(2))),
-          ],
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: bcNavy.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(10)),
+            child: const Icon(Icons.tune_rounded, color: bcNavy, size: 18),
+          ),
         ],
       ),
     );
   }
 }
+
+class _FilterTab extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const _FilterTab({required this.label, required this.icon, required this.isActive, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          decoration: BoxDecoration(
+            color: isActive ? bcNavy : Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: isActive ? bcNavy : const Color(0xFFF1F5F9), width: 1.5),
+            boxShadow: isActive ? [BoxShadow(color: bcNavy.withValues(alpha: 0.25), blurRadius: 15, offset: const Offset(0, 6))] : [],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 16, color: isActive ? bcAmber : bcTextSecondary),
+              const SizedBox(width: 10),
+              Text(
+                label,
+                style: TextStyle(
+                  color: isActive ? Colors.white : bcTextSecondary,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 10,
+                  letterSpacing: 0.8,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 
 class _MaterialItemCard extends StatelessWidget {
   final ConstructionMaterial material;
@@ -267,103 +287,167 @@ class _MaterialItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+    final isCritical = material.isLowStock;
+
+    final stockHealth = material.currentStock / (material.minimumStockLimit > 0 ? material.minimumStockLimit * 2 : 100);
+    final healthColor = isCritical ? bcDanger : (material.currentStock < material.minimumStockLimit * 1.5 ? bcAmber : bcSuccess);
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 2),
-      color: Colors.white,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: material.photoUrl != null
-                        ? Image.network(material.photoUrl!, fit: BoxFit.cover)
-                        : const Icon(Icons.image_outlined, color: Colors.grey),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
+      margin: const EdgeInsets.only(bottom: 20),
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(color: bcNavy.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, 10)),
+        ],
+        border: Border.all(color: isCritical ? bcDanger.withValues(alpha: 0.2) : bcBorder.withValues(alpha: 0.4), width: 1.5),
+      ),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.03,
+              child: CustomPaint(painter: BlueprintGridPainter(gridSize: 20)),
+            ),
+          ),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(28),
+              child: Padding(
+                padding: const EdgeInsets.all(22),
+                child: Column(
+                  children: [
+                    Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          material.name,
-                          style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: bcNavy,
-                              letterSpacing: -0.5),
+                        Hero(
+                          tag: 'mat_img_${material.id}',
+                          child: Container(
+                            width: 64, height: 64,
+                            decoration: BoxDecoration(
+                              color: bcSurface,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: bcBorder.withValues(alpha: 0.5)),
+                              boxShadow: [BoxShadow(color: bcNavy.withValues(alpha: 0.02), blurRadius: 4, offset: const Offset(0, 2))],
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: material.photoUrl != null
+                                  ? Image.network(material.photoUrl!, fit: BoxFit.cover)
+                                  : const Icon(Icons.inventory_2_rounded, color: Color(0xFF94A3B8), size: 28),
+                            ),
+                          ),
                         ),
-                        const SizedBox(height: 12),
-                        Row(
+                        const SizedBox(width: 18),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(material.name, 
+                                style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: -0.8)),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  StatusPill(label: material.subType, color: bcInfo),
+                                  const SizedBox(width: 8),
+                                  StatusPill(label: material.unitType, color: bcAmber),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                const Text('Sale Price (₹)',
-                                    style:
-                                        TextStyle(fontSize: 10, color: Colors.grey)),
-                                Text('₹ ${material.salePrice.toStringAsFixed(0)}',
-                                    style: const TextStyle(
-                                        fontSize: 14, color: bcNavy)),
+                                Text(material.currentStock.toStringAsFixed(0), 
+                                  style: TextStyle(color: isCritical ? bcDanger : bcNavy, fontWeight: FontWeight.w900, fontSize: 26, height: 1.1)),
+                                const SizedBox(width: 4),
+                                Text(material.unitType, 
+                                  style: TextStyle(color: (isCritical ? bcDanger : bcNavy).withValues(alpha: 0.5), fontSize: 13, fontWeight: FontWeight.w800)),
                               ],
                             ),
-                            const Spacer(),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text('Current Stock',
-                                    style:
-                                        TextStyle(fontSize: 10, color: Colors.grey)),
-                                Text(
-                                  material.currentStock.toStringAsFixed(0),
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color:
-                                        material.isLowStock ? Colors.red : bcNavy,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const Spacer(),
+                            const SizedBox(height: 4),
+                            Text('IN STOCK', 
+                              style: TextStyle(color: (isCritical ? bcDanger : bcNavy).withValues(alpha: 0.4), fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.8)),
                           ],
                         ),
                       ],
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 20),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('STOCK HEALTH', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                            Text(isCritical ? 'CRITICAL' : 'OPTIMAL', style: TextStyle(color: healthColor, fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: stockHealth.clamp(0.0, 1.0),
+                            minHeight: 6,
+                            backgroundColor: bcSurface,
+                            valueColor: AlwaysStoppedAnimation<Color>(healthColor),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      decoration: BoxDecoration(
+                        color: bcSurface.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: bcBorder.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _StatColumn('UNIT RATE', fmt.format(material.salePrice), bcNavy),
+                          _StatColumn('MIN LIMIT', material.minimumStockLimit.toStringAsFixed(0), bcTextSecondary),
+                          _StatColumn('TOTAL VALUE', fmt.format(material.currentStock * material.purchasePrice), bcSuccess),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _ActionBtn(
+                            label: 'STOCK IN', 
+                            icon: Icons.add_circle_outline_rounded, 
+                            color: bcSuccess, 
+                            onTap: () => _showStockIn(context, material)
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _ActionBtn(
+                            label: 'STOCK OUT', 
+                            icon: Icons.remove_circle_outline_rounded, 
+                            color: bcDanger, 
+                            onTap: () => _showStockOut(context, material)
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  _QuickActionButton(
-                    label: '+ IN',
-                    color: Colors.teal[700]!,
-                    onTap: () => _showStockIn(context, material),
-                  ),
-                  const SizedBox(width: 8),
-                  _QuickActionButton(
-                    label: '− OUT',
-                    color: Colors.red[700]!,
-                    onTap: () => _showStockOut(context, material),
-                  ),
-                ],
-              ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -387,28 +471,65 @@ class _MaterialItemCard extends StatelessWidget {
   }
 }
 
-class _QuickActionButton extends StatelessWidget {
+
+class _SliverHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+  final double height;
+  _SliverHeaderDelegate({required this.child, required this.height});
+
+  @override
+  double get minExtent => height;
+  @override
+  double get maxExtent => height;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) => child;
+
+  @override
+  bool shouldRebuild(covariant _SliverHeaderDelegate oldDelegate) => true;
+}
+
+class _StatColumn extends StatelessWidget {
+  final String label, value;
+  final Color color;
+  const _StatColumn(this.label, this.value, this.color);
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(label, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+      const SizedBox(height: 2),
+      Text(value, style: TextStyle(color: color, fontWeight: FontWeight.w800, fontSize: 13)),
+    ],
+  );
+}
+
+class _ActionBtn extends StatelessWidget {
   final String label;
+  final IconData icon;
   final Color color;
   final VoidCallback onTap;
-
-  const _QuickActionButton(
-      {required this.label, required this.color, required this.onTap});
+  const _ActionBtn({required this.label, required this.icon, required this.color, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          border: Border.all(color: color.withValues(alpha: 0.3)),
-          borderRadius: BorderRadius.circular(4),
+          color: color.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.15)),
         ),
-        child: Text(
-          label,
-          style:
-              TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 13),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 14),
+            const SizedBox(width: 8),
+            Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 0.5)),
+          ],
         ),
       ),
     );

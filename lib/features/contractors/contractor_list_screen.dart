@@ -57,53 +57,69 @@ class _ContractorListScreenState extends State<ContractorListScreen>
 
     return Scaffold(
       backgroundColor: bcSurface,
-      appBar: AppBar(
-        backgroundColor: bcNavy,
-        foregroundColor: Colors.white,
-        title: const Text('Contractors', style: TextStyle(fontWeight: FontWeight.w900, color: Colors.white)),
-        actions: [
-          if (totalPending > 0)
-            Container(
-              margin: const EdgeInsets.only(right: 12),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(color: bcDanger.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(10)),
-              child: Text('Due: ${fmt.format(totalPending)}',
-                  style: const TextStyle(color: bcDanger, fontWeight: FontWeight.w800, fontSize: 11)),
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) => [
+          SmartConstructionSliverAppBar(
+            title: 'Contractors',
+            subtitle: siteId != null ? 'Site Workforce Management' : 'Global Contractor Console',
+            category: 'LABOUR MANAGEMENT',
+            actions: [
+               IconButton(
+                icon: const Icon(Icons.analytics_outlined, color: bcAmber),
+                onPressed: () {},
+              )
+            ],
+            headerStats: [
+               HeroStatPill(
+                  label: 'TOTAL DUE',
+                  value: fmt.format(totalPending),
+                  icon: Icons.payments_rounded,
+                  color: totalPending > 0 ? bcDanger : bcSuccess,
+               ),
+               HeroStatPill(
+                  label: 'ACTIVE',
+                  value: '${active.length}',
+                  icon: Icons.engineering_rounded,
+                  color: bcInfo,
+               ),
+            ],
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(60),
+              child: Container(
+                color: Colors.transparent,
+                child: TabBar(
+                  controller: _tabCtrl,
+                  indicatorColor: bcAmber,
+                  indicatorWeight: 4,
+                  indicatorSize: TabBarIndicatorSize.label,
+                  labelColor: bcAmber,
+                  unselectedLabelColor: Colors.white.withValues(alpha: 0.5),
+                  labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 0.5),
+                  tabs: [
+                    Tab(text: 'ACTIVE (${active.length})'),
+                    Tab(text: 'DUE (${due.length})'),
+                    Tab(text: 'DONE (${complete.length})'),
+                  ],
+                ),
+              ),
             ),
+          ),
+          SliverToBoxAdapter(
+            child: Container(
+              color: bcSurface,
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: _SearchBar(onChanged: (v) => setState(() => _search = v)),
+            ),
+          ),
         ],
-        bottom: TabBar(
+        body: TabBarView(
           controller: _tabCtrl,
-          indicatorColor: bcAmber,
-          indicatorWeight: 3,
-          labelColor: bcAmber,
-          unselectedLabelColor: Colors.white54,
-          labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12),
-          tabs: [
-            Tab(text: 'Active (${active.length})'),
-            Tab(text: 'Due (${due.length})'),
-            Tab(text: 'Done (${complete.length})'),
+          children: [
+            _ContractorTab(entries: active, fmt: fmt),
+            _ContractorTab(entries: due, fmt: fmt, highlightPending: true),
+            _ContractorTab(entries: complete, fmt: fmt),
           ],
         ),
-      ),
-      body: Column(
-        children: [
-          // Search
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-            child: _SearchBar(onChanged: (v) => setState(() => _search = v)),
-          ),
-          Expanded(
-            child: TabBarView(
-              controller: _tabCtrl,
-              children: [
-                _ContractorTab(entries: active, fmt: fmt),
-                _ContractorTab(entries: due, fmt: fmt, highlightPending: true),
-                _ContractorTab(entries: complete, fmt: fmt),
-              ],
-            ),
-          ),
-        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.pushNamed(context, AppRoutes.labourEntry),
@@ -175,82 +191,89 @@ class _ContractorCard extends StatelessWidget {
     final workTypeLabel = _workTypeLabel(entry.workType);
     final hasPending = entry.pendingAmount > 0;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: hasPending && highlightPending
-                ? bcDanger.withValues(alpha: 0.35)
-                : const Color(0xFFE2E8F0),
-          ),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.025), blurRadius: 8, offset: const Offset(0, 2))],
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(color: bcNavy.withValues(alpha: 0.04), blurRadius: 15, offset: const Offset(0, 10)),
+        ],
+        border: Border.all(
+          color: (hasPending && highlightPending) 
+              ? bcDanger.withValues(alpha: 0.4) 
+              : bcBorder.withValues(alpha: 0.5)
         ),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
-              child: Row(
-                children: [
-                  // Avatar
-                  Container(
-                    width: 44, height: 44,
-                    decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
-                    child: Center(
-                      child: Text(
-                        entry.partyName.isNotEmpty ? entry.partyName[0].toUpperCase() : 'C',
-                        style: TextStyle(color: statusColor, fontWeight: FontWeight.w900, fontSize: 20),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(24),
+          child: Padding(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 52, height: 52,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [statusColor.withValues(alpha: 0.1), statusColor.withValues(alpha: 0.05)],
+                        ),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: statusColor.withValues(alpha: 0.15)),
+                      ),
+                      child: Center(
+                        child: Text(
+                          entry.partyName.isNotEmpty ? entry.partyName[0].toUpperCase() : 'C',
+                          style: TextStyle(color: statusColor, fontWeight: FontWeight.w900, fontSize: 22),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  // Info
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(entry.partyName,
-                            style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w800, fontSize: 14)),
-                        const SizedBox(height: 3),
-                        Row(children: [
-                          _Tag(workTypeLabel, const Color(0xFF60A5FA)),
-                          const SizedBox(width: 6),
-                          _Tag(entry.workDescription.isNotEmpty
-                              ? (entry.workDescription.length > 20 ? '${entry.workDescription.substring(0, 20)}…' : entry.workDescription)
-                              : 'General Work', const Color(0xFFF59E0B)),
-                        ]),
-                      ],
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(entry.partyName,
+                              style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: -0.4)),
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              StatusPill(label: workTypeLabel, color: bcInfo),
+                              const SizedBox(width: 8),
+                              StatusPill(label: _statusLabel(entry.status), color: statusColor),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
+                    const Icon(Icons.chevron_right_rounded, color: Color(0xFFCBD5E1)),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: bcSurface,
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  // Status badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
-                    child: Text(_statusLabel(entry.status),
-                        style: TextStyle(color: statusColor, fontSize: 9.5, fontWeight: FontWeight.w800)),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _AmountItem('CONTRACT', fmt.format(entry.totalContractAmount), bcNavy),
+                      _AmountItem('PAID', fmt.format(entry.totalAdvancePaid), bcSuccess),
+                      _AmountItem('PENDING', fmt.format(entry.pendingAmount), hasPending ? bcDanger : bcTextSecondary),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            // Bottom row: amounts
-            Container(
-              margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(color: bcSurface, borderRadius: BorderRadius.circular(10)),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _AmountPair('Contract', fmt.format(entry.totalContractAmount)),
-                  _AmountPair('Paid', fmt.format(entry.totalAdvancePaid), color: bcSuccess),
-                  _AmountPair('Pending', fmt.format(entry.pendingAmount),
-                      color: hasPending ? bcDanger : const Color(0xFF94A3B8)),
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -260,7 +283,7 @@ class _ContractorCard extends StatelessWidget {
     switch (s) {
       case LabourStatus.ongoing:   return bcInfo;
       case LabourStatus.completed: return bcSuccess;
-      case LabourStatus.settled:   return const Color(0xFF94A3B8);
+      case LabourStatus.settled:   return const Color(0xFF64748B);
     }
   }
 
@@ -275,11 +298,27 @@ class _ContractorCard extends StatelessWidget {
   String _workTypeLabel(LabourWorkType t) {
     switch (t) {
       case LabourWorkType.fixedContract: return 'Fixed';
-      case LabourWorkType.perSqFt:       return 'Per Sq.Ft';
-      case LabourWorkType.perDay:         return 'Per Day';
-      case LabourWorkType.perUnit:        return 'Per Unit';
+      case LabourWorkType.perSqFt:       return 'Sq.Ft';
+      case LabourWorkType.perDay:         return 'Daily';
+      case LabourWorkType.perUnit:        return 'Unit';
     }
   }
+}
+
+class _AmountItem extends StatelessWidget {
+  final String label, value;
+  final Color color;
+  const _AmountItem(this.label, this.value, this.color);
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(label, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+      const SizedBox(height: 2),
+      Text(value, style: TextStyle(color: color, fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: -0.2)),
+    ],
+  );
 }
 
 class _Tag extends StatelessWidget {
@@ -315,26 +354,34 @@ class _SearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    height: 40,
-    padding: const EdgeInsets.symmetric(horizontal: 12),
+    height: 48,
     decoration: BoxDecoration(
-      color: bcSurface, borderRadius: BorderRadius.circular(10),
-      border: Border.all(color: const Color(0xFFE2E8F0)),
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: bcBorder.withValues(alpha: 0.8)),
+      boxShadow: [
+        BoxShadow(color: bcNavy.withValues(alpha: 0.04), blurRadius: 12, offset: const Offset(0, 4)),
+      ],
     ),
-    child: Row(children: [
-      const Icon(Icons.search_rounded, color: Color(0xFF94A3B8), size: 18),
-      const SizedBox(width: 8),
-      Expanded(
-        child: TextField(
-          onChanged: onChanged,
-          style: const TextStyle(fontSize: 13, color: bcNavy),
-          decoration: const InputDecoration(
-            hintText: 'Search contractors…', border: InputBorder.none,
-            hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
-            contentPadding: EdgeInsets.zero, isDense: true,
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: Row(
+      children: [
+        const Icon(Icons.search_rounded, color: bcAmber, size: 20),
+        const SizedBox(width: 12),
+        Expanded(
+          child: TextField(
+            onChanged: onChanged,
+            style: const TextStyle(fontSize: 14, color: bcNavy, fontWeight: FontWeight.w600),
+            decoration: const InputDecoration(
+              hintText: 'Filter contractors by name...',
+              border: InputBorder.none,
+              hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 13, fontWeight: FontWeight.w500),
+              contentPadding: EdgeInsets.zero,
+              isDense: true,
+            ),
           ),
         ),
-      ),
-    ]),
+      ],
+    ),
   );
 }

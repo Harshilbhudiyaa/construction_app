@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -56,13 +57,13 @@ class _WorkerProfileScreenState extends State<WorkerProfileScreen> with SingleTi
           NestedScrollView(
             headerSliverBuilder: (context, innerBoxIsScrolled) => [
               SliverAppBar(
-                expandedHeight: 240,
+                expandedHeight: 300,
                 pinned: true,
                 stretch: true,
                 backgroundColor: bcNavy,
                 elevation: 0,
                 leading: IconButton(
-                  icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded, color: bcAmber, size: 20),
                   onPressed: () => Navigator.pop(context),
                 ),
                 actions: [
@@ -73,68 +74,81 @@ class _WorkerProfileScreenState extends State<WorkerProfileScreen> with SingleTi
                 ],
                 flexibleSpace: FlexibleSpaceBar(
                   stretchModes: const [StretchMode.zoomBackground, StretchMode.blurBackground],
-                  background: Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topRight,
-                        end: Alignment.bottomLeft,
-                        colors: [bcNavy, Color(0xFF1E3A8A), Color(0xFF1E1B4B)],
+                  background: Stack(
+                    children: [
+                      // Architectural Mesh
+                      Positioned.fill(
+                        child: CustomPaint(
+                          painter: BlueprintGridPainter(opacity: 0.15, gridColor: bcAmber.withValues(alpha: 0.1)),
+                        ),
                       ),
-                    ),
-                    child: SafeArea(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const SizedBox(height: 20),
-                          Hero(
-                            tag: 'worker_pfp_${widget.worker.id}',
-                            child: Container(
-                              width: 85, height: 85,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.1),
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 20, offset: const Offset(0, 10)),
-                                ],
-                                border: Border.all(color: bcAmber.withValues(alpha: 0.4), width: 2),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  widget.worker.name[0].toUpperCase(),
-                                  style: const TextStyle(color: bcAmber, fontSize: 38, fontWeight: FontWeight.w900, letterSpacing: -2),
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              bcNavy,
+                              bcNavy.withValues(alpha: 0.8),
+                              bcSurface,
+                            ],
+                          ),
+                        ),
+                      ),
+                      SafeArea(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(height: 10),
+                            Hero(
+                              tag: 'worker_pfp_${widget.worker.id}',
+                              child: GlassCard(
+                                blur: 20,
+                                opacity: 0.1,
+                                borderRadius: BorderRadius.circular(36),
+                                border: Border.all(color: bcAmber.withValues(alpha: 0.3), width: 2),
+                                padding: const EdgeInsets.all(4),
+                                child: Container(
+                                  width: 100, height: 100,
+                                  decoration: BoxDecoration(
+                                    color: bcNavy.withValues(alpha: 0.5),
+                                    borderRadius: BorderRadius.circular(32),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      widget.worker.name[0].toUpperCase(),
+                                      style: const TextStyle(color: bcAmber, fontSize: 48, fontWeight: FontWeight.w900, letterSpacing: -2),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 14),
-                          Text(widget.worker.name, style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
-                          const SizedBox(height: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)),
-                            child: Text(
-                              widget.worker.occupation.displayName.toUpperCase(),
-                              style: const TextStyle(color: bcAmber, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1),
-                            ),
-                          ),
-                        ],
+                            const SizedBox(height: 20),
+                            Text(widget.worker.name, 
+                                style: const TextStyle(color: bcNavy, fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: -1.5, height: 1)),
+                            const SizedBox(height: 10),
+                            StatusPill(label: widget.worker.occupation.displayName, color: bcInfo),
+                          ],
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ),
               SliverToBoxAdapter(
                 child: Container(
-                  color: bcNavy,
+                  color: bcSurface,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
                   child: TabBar(
                     controller: _tabController,
-                    indicator: const UnderlineTabIndicator(
-                      borderSide: BorderSide(color: bcAmber, width: 3),
-                      insets: EdgeInsets.symmetric(horizontal: 40),
+                    indicator: UnderlineTabIndicator(
+                      borderSide: const BorderSide(color: bcAmber, width: 4),
+                      insets: const EdgeInsets.symmetric(horizontal: 60),
+                      borderRadius: BorderRadius.circular(2),
                     ),
-                    labelColor: bcAmber,
-                    unselectedLabelColor: Colors.white54,
-                    labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 1),
+                    labelColor: bcNavy,
+                    unselectedLabelColor: bcTextSecondary,
+                    labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 1.2),
                     tabs: const [
                       Tab(text: 'OVERVIEW'),
                       Tab(text: 'HISTORY'),
@@ -252,70 +266,73 @@ class _OverviewTab extends StatelessWidget {
     );
   }
 
-  Widget _performanceIndicator() => Container(
+  Widget _performanceIndicator() => GlassCard(
+    blur: 10,
+    opacity: 0.02,
+    borderRadius: BorderRadius.circular(28),
+    border: Border.all(color: bcBorder.withValues(alpha: 0.5)),
     padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(24),
-      border: Border.all(color: const Color(0xFFE2E8F0)),
-    ),
     child: Column(
       children: [
-        SizedBox(
-          width: 50, height: 50,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              CircularProgressIndicator(
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            SizedBox(
+              width: 54, height: 54,
+              child: CircularProgressIndicator(
                 value: attendancePct,
                 strokeWidth: 6,
+                strokeCap: StrokeCap.round,
                 backgroundColor: const Color(0xFFF1F5F9),
                 valueColor: AlwaysStoppedAnimation<Color>(attendancePct > 0.8 ? bcSuccess : (attendancePct > 0.5 ? bcAmber : bcDanger)),
               ),
-              Center(
-                child: Text('${(attendancePct * 100).toInt()}%', 
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: bcNavy)),
-              ),
-            ],
-          ),
+            ),
+            Text('${(attendancePct * 100).toInt()}%', 
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: bcNavy, letterSpacing: -0.5)),
+          ],
         ),
-        const SizedBox(height: 8),
-        const Text('Attendance', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 9, fontWeight: FontWeight.w700)),
+        const SizedBox(height: 12),
+        const Text('ATTENDANCE', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
       ],
     ),
   );
 
-  Widget _statCard(String label, String value, Color color, IconData icon) => Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [color.withValues(alpha: 0.1), Colors.white],
-      ),
-      borderRadius: BorderRadius.circular(24),
-      border: Border.all(color: color.withValues(alpha: 0.2)),
-    ),
+  Widget _statCard(String label, String value, Color color, IconData icon) => GlassCard(
+    blur: 5,
+    opacity: 0.03,
+    borderRadius: BorderRadius.circular(28),
+    border: Border.all(color: color.withValues(alpha: 0.15), width: 1.5),
+    padding: const EdgeInsets.all(20),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: color, size: 20),
-        const SizedBox(height: 12),
-        Text(value, style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 20)),
-        Text(label, style: const TextStyle(color: Color(0xFF64748B), fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.5)),
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
+          child: Icon(icon, color: color, size: 18),
+        ),
+        const SizedBox(height: 16),
+        Text(value, style: TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 22, letterSpacing: -0.5)),
+        const SizedBox(height: 2),
+        Text(label.toUpperCase(), style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 1.2)),
       ],
     ),
   );
 
   Widget _miniFstat(String label, String value, Color color) => Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: const Color(0xFFF1F5F9))),
+    padding: const EdgeInsets.all(18),
+    decoration: BoxDecoration(
+      color: Colors.white, 
+      borderRadius: BorderRadius.circular(24), 
+      border: Border.all(color: const Color(0xFFF1F5F9)),
+      boxShadow: [BoxShadow(color: bcNavy.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))],
+    ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 9, fontWeight: FontWeight.w700)),
-        const SizedBox(height: 4),
-        Text(value, style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 15)),
+        Text(label.toUpperCase(), style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+        const SizedBox(height: 6),
+        Text(value, style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 16)),
       ],
     ),
   );
@@ -373,44 +390,63 @@ class _FloatingActionDock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: bcNavy.withValues(alpha: 0.95),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(color: bcNavy.withValues(alpha: 0.3), blurRadius: 20, offset: const Offset(0, 10)),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: GestureDetector(
-              onTap: () => _markAttendance(context),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(18)),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.fact_check_rounded, color: Colors.white, size: 18),
-                    const SizedBox(width: 10),
-                    Text('MARK ATTENDANCE', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 0.5)),
-                  ],
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(32),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: bcNavy.withValues(alpha: 0.85),
+            borderRadius: BorderRadius.circular(32),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1.5),
+            boxShadow: [
+              BoxShadow(color: bcNavy.withValues(alpha: 0.4), blurRadius: 25, offset: const Offset(0, 12)),
+            ],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => _markAttendance(context),
+                    borderRadius: BorderRadius.circular(22),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.08), 
+                        borderRadius: BorderRadius.circular(22),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.fact_check_rounded, color: Colors.white, size: 20),
+                          SizedBox(width: 12),
+                          Text('MARK ATTENDANCE', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 0.8)),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
+              const SizedBox(width: 10),
+              Material(
+                color: bcAmber,
+                borderRadius: BorderRadius.circular(22),
+                child: InkWell(
+                  onTap: () => _giveAdvance(context),
+                  borderRadius: BorderRadius.circular(22),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    child: const Icon(Icons.payments_rounded, color: bcNavy, size: 24),
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
-          GestureDetector(
-            onTap: () => _giveAdvance(context),
-            child: Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(color: bcAmber, borderRadius: BorderRadius.circular(18)),
-              child: const Icon(Icons.payments_rounded, color: bcNavy, size: 22),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

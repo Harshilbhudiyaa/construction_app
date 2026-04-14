@@ -37,8 +37,13 @@ const Color bcBlueprintGrid   = Colors.white;
 class BlueprintGridPainter extends CustomPainter {
   final double opacity;
   final Color? gridColor;
+  final double gridSize;
   
-  BlueprintGridPainter({this.opacity = 0.18, this.gridColor});
+  BlueprintGridPainter({
+    this.opacity = 0.18, 
+    this.gridColor,
+    this.gridSize = 28.0,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -46,18 +51,17 @@ class BlueprintGridPainter extends CustomPainter {
       ..color = (gridColor ?? const Color(0xFF1A3A6B)).withValues(alpha: opacity)
       ..strokeWidth = 0.5;
 
-    const step = 28.0;
-    for (double x = 0; x < size.width; x += step) {
+    for (double x = 0; x < size.width; x += gridSize) {
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
     }
-    for (double y = 0; y < size.height; y += step) {
+    for (double y = 0; y < size.height; y += gridSize) {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
     }
   }
 
   @override
   bool shouldRepaint(covariant BlueprintGridPainter old) =>
-      old.opacity != opacity || old.gridColor != gridColor;
+      old.opacity != opacity || old.gridColor != gridColor || old.gridSize != gridSize;
 }
 
 
@@ -214,52 +218,38 @@ class SmartConstructionSliverAppBar extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                   if (isFull) ...[
-                     const SizedBox(height: 10),
-                   ],
-                    Flexible(
-                      child: Text(
-                        category.toUpperCase(),
-                        style: TextStyle(
-                          color: bcAmber,
-                          fontSize: isWide ? 10 : 9,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 2.5,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                    Text(
+                      category.toUpperCase(),
+                      style: TextStyle(
+                        color: bcAmber.withValues(alpha: 0.7),
+                        fontSize: isWide ? 10 : 9,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 2.2,
                       ),
                     ),
-                  const SizedBox(height: 2),
-                  Flexible(
-                    child: titleWidget ?? Text(
-                      title,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: isWide ? 30 : 26,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.5,
-                        height: 1.1,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                  const SizedBox(height: 6),
+                  titleWidget ?? Text(
+                    title,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: isWide ? 34 : 28,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -1.2,
+                      height: 1.0,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Flexible(
-                    child: Text(
-                      subtitle,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.5),
-                        fontSize: isWide ? 12 : 11,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                  const SizedBox(height: 6),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.2,
                     ),
                   ),
                   if (headerStats != null) ...[
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       physics: const BouncingScrollPhysics(),
@@ -365,10 +355,13 @@ class HeroStatPill extends StatelessWidget {
                             value,
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: !ResponsiveLayout.isMobile(context) ? 28 : 18, 
+                              fontSize: !ResponsiveLayout.isMobile(context) ? 30 : 20, 
                               fontWeight: FontWeight.w900,
-                              letterSpacing: -1.2,
+                              letterSpacing: -1.5,
                               height: 1.0, 
+                              shadows: [
+                                Shadow(color: Colors.black.withValues(alpha: 0.2), offset: const Offset(0, 2), blurRadius: 4),
+                              ],
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,

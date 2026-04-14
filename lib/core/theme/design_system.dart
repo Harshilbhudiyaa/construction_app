@@ -134,7 +134,7 @@ class DesignSystem {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: false,
-        iconTheme: IconThemeData(color: primary, size: 22),
+        iconTheme: IconThemeData(size: 22),
         titleTextStyle: TextStyle(
           color: primary, 
           fontSize: 20, 

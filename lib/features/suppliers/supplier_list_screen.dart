@@ -37,6 +37,10 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
       appBar: AppBar(
         backgroundColor: bcNavy,
         foregroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: bcSuccess),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: const Text('Suppliers', style: TextStyle(fontWeight: FontWeight.w900, color: Colors.white)),
         actions: [
           Container(

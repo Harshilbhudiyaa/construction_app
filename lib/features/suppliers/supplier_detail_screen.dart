@@ -45,6 +45,11 @@ class SupplierDetailScreen extends StatelessWidget {
             expandedHeight: 240,
             pinned: true,
             backgroundColor: bcNavy,
+            foregroundColor: Colors.white,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
             actions: [
               IconButton(
                 icon: const Icon(Icons.edit_rounded, color: bcAmber),

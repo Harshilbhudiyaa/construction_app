@@ -35,77 +35,63 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
 
     return Scaffold(
       backgroundColor: bcSurface,
-      appBar: AppBar(
-        backgroundColor: bcNavy,
-        foregroundColor: Colors.white,
-        title: const Text('Workers', style: TextStyle(fontWeight: FontWeight.w900, color: Colors.white)),
-        actions: [
-          // Attendance button
-          Container(
-            margin: const EdgeInsets.only(right: 8),
-            child: IconButton(
-              icon: const Icon(Icons.fact_check_rounded, color: bcAmber),
-              tooltip: 'Mark Attendance',
-              onPressed: () => _showAttendanceSheet(context, siteId, workers),
-            ),
-          ),
-          if (totalDue > 0)
-            Container(
-              margin: const EdgeInsets.only(right: 12),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(color: bcInfo.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(10)),
-              child: Text('Due: ${fmt.format(totalDue)}', style: const TextStyle(color: bcInfo, fontWeight: FontWeight.w800, fontSize: 11)),
-            ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Search bar
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-            child: _SearchBar(onChanged: (v) => setState(() => _search = v)),
-          ),
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: () => workerRepo.refresh(),
-              color: bcAmber,
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 80),
-                physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                children: [
-                  const SizedBox(height: 12),
-                  _DashboardHeader(siteId: siteId),
-                  const SizedBox(height: 20),
-                  
-                  // Occupation chips (quick filter row)
-                  _OccupationChipRow(workers: workers),
-                  const SizedBox(height: 12),
-
-                  if (workerRepo.isLoading)
-                    const Center(child: Padding(
-                      padding: EdgeInsets.all(40.0),
-                      child: CircularProgressIndicator(color: bcAmber),
-                    ))
-                  else if (workers.isEmpty)
-                    _emptyState(context)
-                  else
-                    ...workers.map((w) {
-                      final salaryDue = workerRepo.getSalaryDue(w.id, now.year, now.month);
-                      final advance   = workerRepo.getTotalAdvancePaid(w.id);
-                      return _WorkerCard(
-                        worker: w,
-                        salaryDue: salaryDue,
-                        advancePaid: advance,
-                        fmt: fmt,
-                        onTap: () => _showWorkerDetail(context, w),
-                      );
-                    }),
-                ],
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) => [
+          SmartConstructionSliverAppBar(
+            title: 'Workers',
+            subtitle: siteId != null ? 'Site ID: ${siteId}' : 'All Projects Management',
+            category: 'WORKFORCE MANAGEMENT',
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.fact_check_rounded, color: bcAmber),
+                tooltip: 'Attendance Sheet',
+                onPressed: () => _showAttendanceSheet(context, siteId, workers),
               ),
+            ],
+          ),
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _SliverHeaderDelegate(
+              child: Container(
+                color: bcSurface,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Column(
+                  children: [
+                    _SearchBar(onChanged: (v) => setState(() => _search = v)),
+                    const SizedBox(height: 12),
+                    _OccupationChipRow(workers: workers),
+                  ],
+                ),
+              ),
+              height: 120,
             ),
           ),
         ],
+        body: RefreshIndicator(
+          onRefresh: () => workerRepo.refresh(),
+          color: bcAmber,
+          child: workerRepo.isLoading
+              ? const Center(child: CircularProgressIndicator(color: bcAmber))
+              : workers.isEmpty
+                  ? _emptyState(context)
+                  : ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: workers.length,
+                      itemBuilder: (_, i) {
+                        final w = workers[i];
+                        final salaryDue = workerRepo.getSalaryDue(w.id, now.year, now.month);
+                        final advance   = workerRepo.getTotalAdvancePaid(w.id);
+                        return _WorkerCard(
+                          worker: w,
+                          salaryDue: salaryDue,
+                          advancePaid: advance,
+                          fmt: fmt,
+                          onTap: () => _showWorkerDetail(context, w),
+                        );
+                      },
+                    ),
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddWorkerSheet(context, siteId),
@@ -174,45 +160,55 @@ class _WorkerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final occColor = _occColor(worker.occupation);
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          BoxShadow(color: bcNavy.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: bcNavy.withValues(alpha: 0.04),
+            blurRadius: 15,
+            offset: const Offset(0, 10),
+          ),
+          BoxShadow(
+            color: occColor.withValues(alpha: 0.02),
+            blurRadius: 20,
+            offset: const Offset(0, 5),
+          ),
         ],
-        border: Border.all(color: const Color(0xFFF1F5F9)),
+        border: Border.all(color: bcBorder.withValues(alpha: 0.5)),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(18),
             child: Row(
-              children: [
+               children: [
                 Hero(
                   tag: 'worker_pfp_${worker.id}',
                   child: Container(
-                    width: 50, height: 50,
+                    width: 54, height: 54,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: [occColor.withValues(alpha: 0.15), occColor.withValues(alpha: 0.05)],
+                        colors: [occColor.withValues(alpha: 0.1), occColor.withValues(alpha: 0.05)],
                       ),
-                      borderRadius: BorderRadius.circular(15),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: occColor.withValues(alpha: 0.15)),
                     ),
                     child: Center(
                       child: Text(
                         worker.name[0].toUpperCase(),
-                        style: TextStyle(color: occColor, fontWeight: FontWeight.w900, fontSize: 20),
+                        style: TextStyle(color: occColor, fontWeight: FontWeight.w900, fontSize: 24),
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -221,30 +217,28 @@ class _WorkerCard extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(worker.name, 
-                              style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 15, letterSpacing: -0.2)),
+                              style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: -0.4)),
                           ),
                           _RecentActivityTracker(workerId: worker.id),
                         ],
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 6),
                       Row(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(color: occColor.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(6)),
-                            child: Text(
-                              worker.occupation == WorkerOccupation.other
-                                  ? (worker.customOccupation?.isNotEmpty == true ? worker.customOccupation! : 'Other')
-                                  : worker.occupation.displayName,
-                              style: TextStyle(color: occColor, fontSize: 9, fontWeight: FontWeight.w800),
-                            ),
+                          StatusPill(
+                            label: worker.occupation == WorkerOccupation.other
+                                ? (worker.customOccupation?.isNotEmpty == true ? worker.customOccupation! : 'Other')
+                                : worker.occupation.displayName,
+                            color: occColor,
                           ),
-                          const SizedBox(width: 6),
+                          const SizedBox(width: 10),
+                          Icon(Icons.payments_outlined, color: bcTextSecondary.withValues(alpha: 0.6), size: 10),
+                          const SizedBox(width: 4),
                           Text(
                             worker.salaryType == SalaryType.daily
                                 ? '₹${worker.salaryAmount.toStringAsFixed(0)}/d'
                                 : '₹${fmt.format(worker.salaryAmount)}/m',
-                            style: const TextStyle(color: Color(0xFF64748B), fontSize: 9, fontWeight: FontWeight.w700),
+                            style: TextStyle(color: bcTextSecondary.withValues(alpha: 0.8), fontSize: 10, fontWeight: FontWeight.w700),
                           ),
                         ],
                       ),
@@ -252,13 +246,21 @@ class _WorkerCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(fmt.format(salaryDue), 
-                      style: TextStyle(color: salaryDue > 0 ? bcSuccess : bcNavy, fontWeight: FontWeight.w900, fontSize: 15)),
-                    const Text('NET DUE', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
-                  ],
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: (salaryDue > 0 ? bcSuccess : bcNavy).withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(fmt.format(salaryDue), 
+                        style: TextStyle(color: salaryDue > 0 ? bcSuccess : bcNavy, fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: -0.5)),
+                      Text('NET DUE', style: TextStyle(color: (salaryDue > 0 ? bcSuccess : bcNavy).withValues(alpha: 0.5), fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 0.8)),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -317,27 +319,39 @@ class _OccupationChipRowState extends State<_OccupationChipRow> {
   @override
   Widget build(BuildContext context) {
     if (_counts.isEmpty) return const SizedBox.shrink();
-    return Container(
-      height: 40,
-      color: Colors.white,
+    return SizedBox(
+      height: 36,
       child: ListView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        padding: EdgeInsets.zero,
+        physics: const BouncingScrollPhysics(),
         children: _counts.entries.map((e) => Container(
-          margin: const EdgeInsets.only(right: 8),
-          padding: const EdgeInsets.symmetric(horizontal: 10),
+          margin: const EdgeInsets.only(right: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
-            color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(8),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: bcBorder.withValues(alpha: 0.6)),
+            boxShadow: [
+              BoxShadow(color: bcNavy.withValues(alpha: 0.02), blurRadius: 4, offset: const Offset(0, 2)),
+            ],
           ),
-          child: Row(children: [
-            Text(e.key, style: const TextStyle(color: Color(0xFF475569), fontWeight: FontWeight.w700, fontSize: 11)),
-            const SizedBox(width: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-              decoration: BoxDecoration(color: bcNavy.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(5)),
-              child: Text('${e.value}', style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 10)),
-            ),
-          ]),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(e.key, style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w800, fontSize: 11, letterSpacing: -0.2)),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: bcNavy.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text('${e.value}', 
+                  style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 10)),
+              ),
+            ],
+          ),
         )).toList(),
       ),
     );
@@ -983,19 +997,39 @@ class _SearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    height: 40,
-    padding: const EdgeInsets.symmetric(horizontal: 12),
-    decoration: BoxDecoration(color: bcSurface, borderRadius: BorderRadius.circular(10), border: Border.all(color: const Color(0xFFE2E8F0))),
-    child: Row(children: [
-      const Icon(Icons.search_rounded, color: Color(0xFF94A3B8), size: 18),
-      const SizedBox(width: 8),
-      Expanded(child: TextField(
-        onChanged: onChanged,
-        style: const TextStyle(fontSize: 13, color: bcNavy),
-        decoration: const InputDecoration(hintText: 'Search workers…', border: InputBorder.none,
-            hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 13), contentPadding: EdgeInsets.zero, isDense: true),
-      )),
-    ]),
+    height: 48,
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: bcBorder.withValues(alpha: 0.8)),
+      boxShadow: [
+        BoxShadow(
+          color: bcNavy.withValues(alpha: 0.04),
+          blurRadius: 12,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    ),
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: Row(
+      children: [
+        const Icon(Icons.search_rounded, color: bcAmber, size: 20),
+        const SizedBox(width: 12),
+        Expanded(
+          child: TextField(
+            onChanged: onChanged,
+            style: const TextStyle(fontSize: 14, color: bcNavy, fontWeight: FontWeight.w600),
+            decoration: const InputDecoration(
+              hintText: 'Filter workers by name...',
+              border: InputBorder.none,
+              hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 13, fontWeight: FontWeight.w500),
+              contentPadding: EdgeInsets.zero,
+              isDense: true,
+            ),
+          ),
+        ),
+      ],
+    ),
   );
 }
 
@@ -1019,108 +1053,6 @@ Widget _formField(String label, TextEditingController ctrl, {String? hint, TextI
 
 // ─── Dashboard Header ────────────────────────────────────────────────────────
 
-class _DashboardHeader extends StatelessWidget {
-  final String? siteId;
-  const _DashboardHeader({this.siteId});
-
-  @override
-  Widget build(BuildContext context) {
-    final workerRepo = context.watch<WorkerRepository>();
-    final stats = workerRepo.getTodayStats(siteId: siteId);
-    final totalDue = siteId != null ? workerRepo.getTotalSalaryDueForSite(siteId!) : 0.0;
-    final fmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
-
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          stops: [0.0, 0.6, 1.0],
-          colors: [bcNavy, Color(0xFF1E3A8A), Color(0xFF1E1B4B)],
-        ),
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: bcNavy.withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-          BoxShadow(
-            color: bcAmber.withValues(alpha: 0.1),
-            blurRadius: 30,
-            offset: const Offset(0, 15),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('TODAY\'S ATTENDANCE', 
-                    style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1.2)),
-                  const SizedBox(height: 6),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text('${stats['present']}', 
-                        style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900, height: 1)),
-                      Text(' / ${stats['total']}', 
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 18, fontWeight: FontWeight.w700)),
-                    ],
-                  ),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text('MONTHLY DUE', 
-                      style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
-                    Text(fmt.format(totalDue), 
-                      style: const TextStyle(color: bcAmber, fontSize: 15, fontWeight: FontWeight.w900)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          Row(
-            children: [
-              _statMini(Icons.check_circle_rounded, '${stats['present']}', 'Present', bcSuccess),
-              _statMini(Icons.timelapse_rounded, '${stats['halfDay']}', 'Half', bcAmber),
-              _statMini(Icons.cancel_rounded, '${stats['absent']}', 'Absent', bcDanger),
-              _statMini(Icons.help_outline_rounded, '${stats['notMarked']}', 'Pending', Colors.white24),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _statMini(IconData icon, String value, String label, Color color) => Expanded(
-    child: Row(
-      children: [
-        Icon(icon, color: color, size: 12),
-        const SizedBox(width: 4),
-        Text(value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12)),
-        const SizedBox(width: 2),
-        Text(label, style: const TextStyle(color: Colors.white38, fontSize: 9, fontWeight: FontWeight.w600)),
-      ],
-    ),
-  );
-}
 
 // ─── Recent Activity Tracker ──────────────────────────────────────────────────
 
@@ -1151,4 +1083,23 @@ class _RecentActivityTracker extends StatelessWidget {
       }).toList(),
     );
   }
+}
+
+class _SliverHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+  final double height;
+  _SliverHeaderDelegate({required this.child, required this.height});
+
+  @override
+  double get minExtent => height;
+  @override
+  double get maxExtent => height;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return child;
+  }
+
+  @override
+  bool shouldRebuild(_SliverHeaderDelegate oldDelegate) => true;
 }

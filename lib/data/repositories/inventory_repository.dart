@@ -71,6 +71,12 @@ class InventoryRepository extends ChangeNotifier {
     await _loadFromPrefs();
   }
 
+  Future<void> refresh() async {
+    _isLoading = true;
+    notifyListeners();
+    await _loadFromPrefs();
+  }
+
   Future<void> _loadFromPrefs() async {
     try {
       final prefs = await SharedPreferences.getInstance();
