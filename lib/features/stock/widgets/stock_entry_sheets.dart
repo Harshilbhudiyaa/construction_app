@@ -1175,18 +1175,22 @@ class _AddBillItemDialogState extends State<_AddBillItemDialog> {
   @override
   void initState() {
     super.initState();
+    _qtyCtrl.addListener(_recalc);
     _rateCtrl.addListener(_recalc);
   }
 
   void _recalc() {
     if (!_autoTotal) return;
+    final qty  = double.tryParse(_qtyCtrl.text) ?? 0;
     final rate = double.tryParse(_rateCtrl.text) ?? 0;
-    if (rate > 0) _totalCtrl.text = rate.toStringAsFixed(0);
+    if (qty > 0 && rate > 0) {
+      _totalCtrl.text = (qty * rate).toStringAsFixed(0);
+    }
   }
 
   @override
   void dispose() {
-    for (final c in [_nameCtrl, _rateCtrl, _totalCtrl, _bagWeightCtrl]) c.dispose();
+    for (final c in [_nameCtrl, _qtyCtrl, _rateCtrl, _totalCtrl, _bagWeightCtrl]) c.dispose();
     super.dispose();
   }
 
@@ -1277,13 +1281,23 @@ class _AddBillItemDialogState extends State<_AddBillItemDialog> {
               if (_unit == 'bag') _bagWeightField(_bagWeightCtrl),
               const SizedBox(height: 14),
 
-              // Rate
-              stockSheetField(
-                'Rate / Amount (₹) *',
-                _rateCtrl,
-                hint: '0',
-                keyboardType: TextInputType.number,
-              ),
+              // Qty & Rate
+              Row(children: [
+                Expanded(child: stockSheetField(
+                  'Qty (${_unitLabel(_unit)})',
+                  _qtyCtrl,
+                  hint: '0',
+                  keyboardType: TextInputType.number,
+                  optional: true,
+                )),
+                const SizedBox(width: 12),
+                Expanded(child: stockSheetField(
+                  'Rate (₹)',
+                  _rateCtrl,
+                  hint: '0',
+                  keyboardType: TextInputType.number,
+                )),
+              ]),
               const SizedBox(height: 14),
 
               // Total override
@@ -1318,28 +1332,29 @@ class _AddBillItemDialogState extends State<_AddBillItemDialog> {
               child: ElevatedButton(
                 onPressed: () {
                   final name  = _nameCtrl.text.trim();
+                  final qty   = double.tryParse(_qtyCtrl.text) ?? 0;
                   final rate  = double.tryParse(_rateCtrl.text) ?? 0;
-                  final total = double.tryParse(_totalCtrl.text) ?? rate;
+                  final total = double.tryParse(_totalCtrl.text) ?? (qty > 0 && rate > 0 ? qty * rate : 0);
                   final bagKg = double.tryParse(_bagWeightCtrl.text);
 
                   if (name.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter item name')));
                     return;
                   }
-                  if (rate <= 0 && total <= 0) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enter a rate or total amount')));
+                  if (total <= 0 && rate <= 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enter rate or total amount')));
                     return;
                   }
 
-                  final effectiveTotal = total > 0 ? total : rate;
-                  final effectiveRate  = rate > 0 ? rate : effectiveTotal;
+                  final effectiveTotal = total > 0 ? total : (qty > 0 ? qty * rate : rate);
+                  final effectiveRate  = rate > 0 ? rate : (qty > 0 && effectiveTotal > 0 ? effectiveTotal / qty : effectiveTotal);
 
                   widget.onAdd(_BillItem(
                     materialId: _mat?.id ?? '',
                     name: name,
                     subtype: _mat?.subType ?? '',
                     unit: _unit,
-                    qty: 0,
+                    qty: qty,
                     rate: effectiveRate,
                     bagWeightKg: _unit == 'bag' ? bagKg : null,
                     isInventoryItem: _fromInventory,
