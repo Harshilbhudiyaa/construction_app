@@ -33,6 +33,7 @@ class StockEntryModel {
   final DateTime entryDate;
   final StockEntryType entryType;
   final bool isInventoryItem; // false → misc expense (no stock update)
+  final double? bagWeightKg;  // kg per bag (only when unit == 'bag')
   final String? remarks;
 
   StockEntryModel({
@@ -53,6 +54,7 @@ class StockEntryModel {
     required this.entryDate,
     this.entryType = StockEntryType.directEntry,
     this.isInventoryItem = true,
+    this.bagWeightKg,
     this.remarks,
   });
 
@@ -76,6 +78,7 @@ class StockEntryModel {
     'entryDate': entryDate.toIso8601String(),
     'entryType': entryType.name,
     'isInventoryItem': isInventoryItem,
+    'bagWeightKg': bagWeightKg,
     'remarks': remarks,
   };
 
@@ -104,11 +107,12 @@ class StockEntryModel {
       entryDate: DateTime.tryParse(json['entryDate'] ?? '') ?? DateTime.now(),
       entryType: et,
       isInventoryItem: json['isInventoryItem'] ?? true,
+      bagWeightKg: (json['bagWeightKg'] as num?)?.toDouble(),
       remarks: json['remarks'],
     );
   }
 
-  StockEntryModel copyWith({double? paidAmount, DateTime? dueDate, String? remarks}) =>
+  StockEntryModel copyWith({double? paidAmount, DateTime? dueDate, double? bagWeightKg, String? remarks}) =>
       StockEntryModel(
         id: id,
         siteId: siteId,
@@ -127,6 +131,7 @@ class StockEntryModel {
         entryDate: entryDate,
         entryType: entryType,
         isInventoryItem: isInventoryItem,
+        bagWeightKg: bagWeightKg ?? this.bagWeightKg,
         remarks: remarks ?? this.remarks,
       );
 }

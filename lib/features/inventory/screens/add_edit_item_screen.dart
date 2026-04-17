@@ -141,12 +141,12 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
               trailing: widget.materialId == null ? GestureDetector(
                 onTap: _addVariant,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(color: bcPrimary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
-                  child: const Row(children: [
-                    Icon(Icons.add_rounded, color: bcPrimary, size: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(color: bcAmber.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
+                  child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(Icons.add_rounded, color: bcAmber, size: 16),
                     SizedBox(width: 4),
-                    Text('ADD', style: TextStyle(color: bcPrimary, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 0.5)),
+                    Text('ADD VARIANT', style: TextStyle(color: bcAmber, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 0.5)),
                   ]),
                 ),
               ) : null,
@@ -235,67 +235,140 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
   }
 
   Widget _buildVariantEntry(int index, _VariantEntry entry) {
+    final hint = _getVariantHint();
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: bcSurface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: bcBorder.withValues(alpha: 0.5)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [BoxShadow(color: bcNavy.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: TextFormField(
-                  controller: entry.variantCtrl,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: bcNavy),
-                  decoration: InputDecoration(
-                    hintText: 'VARIANT: ${_getVariantHint()}',
-                    hintStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF94A3B8)),
-                    isDense: true, border: InputBorder.none,
+          // ── Variant header ──────────────────────────────────────────
+          Container(
+            padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
+            decoration: BoxDecoration(
+              color: bcNavy.withValues(alpha: 0.03),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 26, height: 26,
+                  decoration: BoxDecoration(color: bcNavy, borderRadius: BorderRadius.circular(8)),
+                  child: Center(child: Text('${index + 1}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 11))),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TextFormField(
+                    controller: entry.variantCtrl,
+                    textCapitalization: TextCapitalization.words,
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: bcNavy),
+                    decoration: InputDecoration(
+                      hintText: 'Variant — $hint',
+                      hintStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFFCBD5E1)),
+                      isDense: true,
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
+                    ),
                   ),
                 ),
-              ),
-              if (_variants.length > 1 && widget.materialId == null)
-                GestureDetector(
-                  onTap: () => setState(() => _variants.removeAt(index)),
-                  child: const Icon(Icons.delete_outline_rounded, color: bcDanger, size: 20),
-                ),
-            ],
+                if (_variants.length > 1 && widget.materialId == null)
+                  GestureDetector(
+                    onTap: () => setState(() => _variants.removeAt(index)),
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: bcDanger.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.delete_outline_rounded, color: bcDanger, size: 16),
+                    ),
+                  ),
+              ],
+            ),
           ),
-          const Divider(height: 20),
-          Row(
-            children: [
-              Expanded(child: _buildMiniNumField('OP. STOCK', entry.stockCtrl)),
-              const SizedBox(width: 8),
-              Expanded(child: _buildMiniNumField('OP. RATE', entry.rateCtrl)),
-              const SizedBox(width: 8),
-              Expanded(child: _buildMiniNumField('MIN LIMIT', entry.limitCtrl)),
-            ],
+
+          // ── Three fields ─────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                Expanded(child: _buildMiniNumField(
+                  'Opening Stock',
+                  entry.stockCtrl,
+                  icon: Icons.inventory_2_outlined,
+                  hint: '0',
+                  color: bcNavy,
+                  suffix: _unit,
+                )),
+                const SizedBox(width: 10),
+                Expanded(child: _buildMiniNumField(
+                  'Purchase Rate',
+                  entry.rateCtrl,
+                  icon: Icons.currency_rupee_rounded,
+                  hint: '0',
+                  color: bcSuccess,
+                  prefix: '₹',
+                )),
+                const SizedBox(width: 10),
+                Expanded(child: _buildMiniNumField(
+                  'Min Stock Alert',
+                  entry.limitCtrl,
+                  icon: Icons.notifications_outlined,
+                  hint: '0',
+                  color: bcDanger,
+                  suffix: _unit,
+                )),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildMiniNumField(String label, TextEditingController ctrl) {
+  Widget _buildMiniNumField(String label, TextEditingController ctrl, {
+    IconData icon = Icons.edit_rounded,
+    String hint = '0',
+    Color color = bcNavy,
+    String? prefix,
+    String? suffix,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: bcTextSecondary, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+        // Icon + label row
+        Row(children: [
+          Icon(icon, size: 12, color: color),
+          const SizedBox(width: 4),
+          Flexible(child: Text(
+            label,
+            style: TextStyle(color: color, fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 0.5),
+            overflow: TextOverflow.ellipsis,
+          )),
+        ]),
         const SizedBox(height: 6),
         TextFormField(
           controller: ctrl,
           keyboardType: TextInputType.number,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: bcNavy, letterSpacing: -0.5),
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: bcNavy),
           decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: const TextStyle(color: Color(0xFFCBD5E1), fontSize: 13),
+            prefixText: prefix != null ? '$prefix ' : null,
+            suffixText: suffix?.toUpperCase(),
+            prefixStyle: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 13),
+            suffixStyle: const TextStyle(color: Color(0xFF94A3B8), fontWeight: FontWeight.w700, fontSize: 10),
             isDense: true,
             filled: true, fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: bcBorder.withValues(alpha: 0.6))),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: bcBorder.withValues(alpha: 0.6))),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: bcBorder.withValues(alpha: 0.6))),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: bcBorder.withValues(alpha: 0.6))),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: color, width: 2)),
           ),
         ),
       ],
@@ -406,10 +479,12 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
 
   String _getVariantHint() {
     final u = _unit.toLowerCase();
-    if (['kgs', 'ton', 'mtr'].contains(u)) return '12MM / 8MM';
-    if (u == 'bag') return 'OPC / 53G';
-    if (['sqft', 'sqm', 'cft'].contains(u)) return '2X2 / SIZE';
+    if (['kg', 'kgs', 'ton'].contains(u)) return '12MM / 8MM';
+    if (u == 'bag') return 'OPC / PPC / 53G';
+    if (['sqft', 'sqm', 'cft'].contains(u)) return '2×2 / SIZE';
     if (u == 'ltr') return 'SHADE / COLOR';
+    if (u == 'mtr') return 'WIDTH / GRADE';
+    if (u == 'box') return 'SIZE / COLOR';
     return 'SIZE / MODEL';
   }
 

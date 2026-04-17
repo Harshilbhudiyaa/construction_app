@@ -35,7 +35,6 @@ class _LabourEntryFormScreenState extends State<LabourEntryFormScreen> {
   final _quantityCtrl = TextEditingController();
   final _rateCtrl = TextEditingController();
   final _totalAmountCtrl = TextEditingController();
-  final _advanceCtrl = TextEditingController(text: '0');
   final _notesCtrl = TextEditingController();
 
   DateTime _startDate = DateTime.now();
@@ -68,7 +67,6 @@ class _LabourEntryFormScreenState extends State<LabourEntryFormScreen> {
     _quantityCtrl.dispose();
     _rateCtrl.dispose();
     _totalAmountCtrl.dispose();
-    _advanceCtrl.dispose();
     _notesCtrl.dispose();
     super.dispose();
   }
@@ -101,8 +99,7 @@ class _LabourEntryFormScreenState extends State<LabourEntryFormScreen> {
       final labourRepo = context.read<LabourRepository>();
       final authRepo = context.read<AuthRepository>();
 
-      final total = double.parse(_totalAmountCtrl.text);
-      final advance = double.parse(_advanceCtrl.text);
+      final total = double.tryParse(_totalAmountCtrl.text) ?? 0;
 
       if (widget.editingEntry != null) {
         final updated = widget.editingEntry!.copyWith(
@@ -110,7 +107,9 @@ class _LabourEntryFormScreenState extends State<LabourEntryFormScreen> {
           siteName: _selectedSite!.name,
           workType: _workType,
           workDescription: _descriptionCtrl.text,
-          workQuantity: _workType == LabourWorkType.fixedContract ? null : double.tryParse(_quantityCtrl.text),
+          workQuantity: (_workType == LabourWorkType.fixedContract || _workType == LabourWorkType.perSqFt)
+              ? null
+              : double.tryParse(_quantityCtrl.text),
           ratePerUnit: double.parse(_rateCtrl.text),
           totalContractAmount: total,
           startDate: _startDate,
@@ -119,19 +118,6 @@ class _LabourEntryFormScreenState extends State<LabourEntryFormScreen> {
         await labourRepo.updateEntry(updated);
       } else {
         final entryId = 'LAB-${const Uuid().v4().substring(0, 8).toUpperCase()}';
-        
-        // Create Advance Payment if amount > 0
-        List<LabourAdvancePayment> advances = [];
-        if (advance > 0) {
-          advances.add(LabourAdvancePayment(
-            id: 'ADV-${const Uuid().v4().substring(0, 8).toUpperCase()}',
-            amount: advance,
-            date: DateTime.now(),
-            remarks: 'Initial Advance',
-            paidBy: authRepo.userName ?? 'System',
-          ));
-        }
-
         final entry = LabourEntryModel(
           id: entryId,
           partyId: _selectedContractor!.id,
@@ -141,10 +127,13 @@ class _LabourEntryFormScreenState extends State<LabourEntryFormScreen> {
           siteName: _selectedSite!.name,
           workType: _workType,
           workDescription: _descriptionCtrl.text,
-          workQuantity: _workType == LabourWorkType.fixedContract ? null : double.tryParse(_quantityCtrl.text),
+          // For perSqFt contracts: workQuantity is entered at settlement, not here
+          workQuantity: (_workType == LabourWorkType.fixedContract || _workType == LabourWorkType.perSqFt)
+              ? null
+              : double.tryParse(_quantityCtrl.text),
           ratePerUnit: double.parse(_rateCtrl.text),
           totalContractAmount: total,
-          advancePayments: advances,
+          advancePayments: const [],
           startDate: _startDate,
           createdBy: authRepo.userName ?? 'System',
           createdAt: DateTime.now(),
@@ -327,7 +316,7 @@ class _LabourEntryFormScreenState extends State<LabourEntryFormScreen> {
           ),
           child: Column(
             children: [
-              if (_workType != LabourWorkType.fixedContract) ...[
+              if (_workType != LabourWorkType.fixedContract && _workType != LabourWorkType.perSqFt) ...[
                 Row(
                   children: [
                     Expanded(
@@ -353,22 +342,44 @@ class _LabourEntryFormScreenState extends State<LabourEntryFormScreen> {
                 ),
                 const SizedBox(height: 16),
               ],
+              // For perSqFt: only rate, area at settlement time
+              if (_workType == LabourWorkType.perSqFt) ...[
+                HelpfulTextField(
+                  label: 'Rate / Sq.Ft (₹)',
+                  controller: _rateCtrl,
+                  keyboardType: TextInputType.number,
+                  validator: (v) => v!.isEmpty ? 'Required' : null,
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFBF0),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: bcAmber.withValues(alpha: 0.3)),
+                  ),
+                  child: const Row(children: [
+                    Icon(Icons.info_outline_rounded, color: bcAmber, size: 14),
+                    SizedBox(width: 8),
+                    Expanded(child: Text(
+                      'Actual sq.ft area will be entered at final settlement time.',
+                      style: TextStyle(color: Color(0xFF92400E), fontSize: 11),
+                    )),
+                  ]),
+                ),
+                const SizedBox(height: 16),
+              ],
               HelpfulTextField(
-                label: _workType == LabourWorkType.fixedContract ? 'Total Contract Amount (₹)' : 'Estimated Total (₹)',
+                label: _workType == LabourWorkType.fixedContract
+                    ? 'Total Contract Amount (₹)'
+                    : _workType == LabourWorkType.perSqFt
+                        ? 'Estimated Total (₹) — optional'
+                        : 'Estimated Total (₹)',
                 controller: _totalAmountCtrl,
                 keyboardType: TextInputType.number,
-                enabled: _workType == LabourWorkType.fixedContract,
-                validator: (v) => v!.isEmpty ? 'Required' : null,
+                enabled: _workType == LabourWorkType.fixedContract || _workType == LabourWorkType.perSqFt,
+                validator: (v) => (v!.isEmpty && _workType == LabourWorkType.fixedContract) ? 'Required' : null,
               ),
-              if (widget.editingEntry == null) ...[
-                const SizedBox(height: 16),
-                HelpfulTextField(
-                  label: 'Initial Advance Paid (₹)',
-                  controller: _advanceCtrl,
-                  keyboardType: TextInputType.number,
-                  hintText: '0',
-                ),
-              ],
               const SizedBox(height: 16),
               HelpfulTextField(
                 label: 'Notes / Payment Terms',

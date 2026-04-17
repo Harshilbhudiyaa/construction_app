@@ -11,6 +11,24 @@ import 'package:construction_app/data/repositories/stock_entry_repository.dart';
 import 'package:construction_app/data/repositories/inventory_repository.dart';
 import 'package:construction_app/data/repositories/site_repository.dart';
 
+// ─── Unit Helpers ─────────────────────────────────────────────────────────────
+
+const _kPurchaseUnits = ['kg', 'ltr', 'bag', 'box', 'pcs', 'nos', 'mtr', 'ton'];
+
+String _unitLabel(String unit) {
+  switch (unit) {
+    case 'kg':  return 'KG';
+    case 'ltr': return 'LTR';
+    case 'bag': return 'BAG';
+    case 'box': return 'BOX';
+    case 'pcs': return 'PCS';
+    case 'nos': return 'NOS';
+    case 'mtr': return 'MTR';
+    case 'ton': return 'TON';
+    default:    return unit.toUpperCase();
+  }
+}
+
 // ─── Shared Sheet Widgets ─────────────────────────────────────────────────────
 
 class StockSheetWrapper extends StatelessWidget {
@@ -53,10 +71,17 @@ Widget stockSheetField(String label, TextEditingController ctrl, {
   String? hint,
   TextInputType keyboardType = TextInputType.text,
   ValueChanged<String>? onChanged,
+  bool optional = false,
 }) => Column(
   crossAxisAlignment: CrossAxisAlignment.start,
   children: [
-    Text(label, style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w700, fontSize: 13)),
+    Row(children: [
+      Text(label, style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w700, fontSize: 13)),
+      if (optional) ...[
+        const SizedBox(width: 6),
+        const Text('optional', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 10)),
+      ],
+    ]),
     const SizedBox(height: 6),
     TextFormField(
       controller: ctrl, keyboardType: keyboardType, onChanged: onChanged,
@@ -82,7 +107,7 @@ Widget stockDateSheetField(String label, BuildContext context, DateTime? value, 
           final d = await showDatePicker(
             context: context,
             initialDate: value ?? DateTime.now().add(const Duration(days: 7)),
-            firstDate: DateTime.now().subtract(const Duration(days: 30)),
+            firstDate: DateTime.now().subtract(const Duration(days: 365)),
             lastDate: DateTime.now().add(const Duration(days: 365)),
           );
           onChanged(d);
@@ -183,7 +208,243 @@ class StockSupplierSelector extends StatelessWidget {
   }
 }
 
+// ─── Unit Selector Widget ─────────────────────────────────────────────────────
+
+class _UnitSelector extends StatelessWidget {
+  final String selectedUnit;
+  final ValueChanged<String> onChanged;
+  const _UnitSelector({required this.selectedUnit, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    // Show compact unit chips
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Unit', style: TextStyle(color: bcNavy, fontWeight: FontWeight.w700, fontSize: 13)),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 6,
+          children: _kPurchaseUnits.map((u) {
+            final isSelected = selectedUnit == u;
+            return GestureDetector(
+              onTap: () => onChanged(u),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected ? bcNavy : bcSurface,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: isSelected ? bcNavy : const Color(0xFFE2E8F0),
+                    width: isSelected ? 2 : 1,
+                  ),
+                ),
+                child: Text(
+                  _unitLabel(u),
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : const Color(0xFF64748B),
+                    fontWeight: FontWeight.w800,
+                    fontSize: 11,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+}
+
+// ─── Bag Weight Helper ────────────────────────────────────────────────────────
+
+Widget _bagWeightField(TextEditingController ctrl) => Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    const SizedBox(height: 12),
+    Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBF0),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: bcAmber.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(children: [
+            Icon(Icons.scale_rounded, color: bcAmber, size: 14),
+            SizedBox(width: 6),
+            Text('BAG WEIGHT', style: TextStyle(color: bcAmber, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+          ]),
+          const SizedBox(height: 6),
+          TextFormField(
+            controller: ctrl,
+            keyboardType: TextInputType.number,
+            style: const TextStyle(fontSize: 13, color: bcNavy),
+            decoration: InputDecoration(
+              hintText: 'e.g. 50',
+              hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+              suffixText: 'kg / bag',
+              suffixStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
+              filled: true, fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: bcAmber, width: 2)),
+            ),
+          ),
+        ],
+      ),
+    ),
+  ],
+);
+
+// ─── Supplier Payment Sheet ───────────────────────────────────────────────────
+
+class SupplierPaymentSheet extends StatefulWidget {
+  final PartyModel supplier;
+  final double pendingAmount;
+  const SupplierPaymentSheet({super.key, required this.supplier, required this.pendingAmount});
+
+  @override
+  State<SupplierPaymentSheet> createState() => _SupplierPaymentSheetState();
+}
+
+class _SupplierPaymentSheetState extends State<SupplierPaymentSheet> {
+  final _amountCtrl  = TextEditingController();
+  final _remarksCtrl = TextEditingController();
+  String _paymentMode = 'Cash';
+  DateTime _paymentDate = DateTime.now();
+  bool _submitting = false;
+
+  static const _paymentModes = ['Cash', 'UPI', 'Bank Transfer', 'Cheque'];
+
+  @override
+  void initState() {
+    super.initState();
+    _amountCtrl.text = widget.pendingAmount.toStringAsFixed(0);
+  }
+
+  @override
+  void dispose() { _amountCtrl.dispose(); _remarksCtrl.dispose(); super.dispose(); }
+
+  @override
+  Widget build(BuildContext context) {
+    final fmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+
+    return StockSheetWrapper(
+      title: 'Pay Supplier',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Supplier info banner
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: bcNavy.withValues(alpha: 0.04),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: bcNavy.withValues(alpha: 0.08)),
+            ),
+            child: Row(children: [
+              Container(
+                width: 40, height: 40,
+                decoration: BoxDecoration(color: bcNavy, borderRadius: BorderRadius.circular(12)),
+                child: Center(child: Text(
+                  widget.supplier.name[0].toUpperCase(),
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18),
+                )),
+              ),
+              const SizedBox(width: 12),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(widget.supplier.name, style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w800, fontSize: 14)),
+                Text('Due: ${fmt.format(widget.pendingAmount)}',
+                    style: const TextStyle(color: bcDanger, fontWeight: FontWeight.w700, fontSize: 12)),
+              ])),
+            ]),
+          ),
+          const SizedBox(height: 20),
+
+          // Amount
+          stockSheetField('Payment Amount (₹)', _amountCtrl, hint: '0', keyboardType: TextInputType.number),
+          const SizedBox(height: 14),
+
+          // Payment Date
+          stockDateSheetField('Payment Date', context, _paymentDate, (d) {
+            if (d != null) setState(() => _paymentDate = d);
+          }),
+          const SizedBox(height: 14),
+
+          // Payment mode
+          const Text('Payment Mode', style: TextStyle(color: bcNavy, fontWeight: FontWeight.w700, fontSize: 13)),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            children: _paymentModes.map((m) {
+              final isSelected = _paymentMode == m;
+              return GestureDetector(
+                onTap: () => setState(() => _paymentMode = m),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isSelected ? bcSuccess.withValues(alpha: 0.1) : bcSurface,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: isSelected ? bcSuccess : const Color(0xFFE2E8F0), width: isSelected ? 2 : 1),
+                  ),
+                  child: Text(
+                    m,
+                    style: TextStyle(
+                      color: isSelected ? bcSuccess : const Color(0xFF64748B),
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 14),
+
+          // Remarks
+          stockSheetField('Remarks', _remarksCtrl, hint: 'e.g. Partial payment, festival advance', optional: true),
+          const SizedBox(height: 24),
+
+          StockSubmitButton(label: 'Record Payment', submitting: _submitting, onTap: () => _submit(context)),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _submit(BuildContext context) async {
+    final amount = double.tryParse(_amountCtrl.text) ?? 0;
+    if (amount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enter a valid payment amount')));
+      return;
+    }
+    setState(() => _submitting = true);
+    final stockRepo = context.read<StockEntryRepository>();
+    await stockRepo.recordPaymentForSupplier(
+      supplierId: widget.supplier.id,
+      amount: amount,
+    );
+    if (!mounted) return;
+    Navigator.pop(context);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text('Payment of ₹${amount.toStringAsFixed(0)} recorded'),
+      backgroundColor: bcSuccess,
+    ));
+  }
+}
+
 // ─── Direct Entry Sheet ────────────────────────────────────────────────────────
+// Two modes:
+//   fromInventory = true  → pick from material catalog (updates stock)
+//   fromInventory = false → direct purchase description (no stock update)
 
 class DirectEntrySheet extends StatefulWidget {
   final PartyModel? initialSupplier;
@@ -195,18 +456,20 @@ class DirectEntrySheet extends StatefulWidget {
 }
 
 class _DirectEntrySheetState extends State<DirectEntrySheet> {
-  final _descCtrl  = TextEditingController();
-  final _qtyCtrl   = TextEditingController();
-  final _rateCtrl  = TextEditingController();
-  final _totalCtrl = TextEditingController();
-  final _paidCtrl  = TextEditingController();
+  final _descCtrl      = TextEditingController();
+  final _qtyCtrl       = TextEditingController();
+  final _rateCtrl      = TextEditingController();
+  final _totalCtrl     = TextEditingController();
+  final _paidCtrl      = TextEditingController();
+  final _bagWeightCtrl = TextEditingController();
 
   ConstructionMaterial? _selectedMaterial;
   PartyModel?           _selectedSupplier;
   DateTime?             _dueDate;
-  bool _submitting = false;
-
-  bool _autoTotal = true; // when true, total = qty × rate
+  String                _unit = 'pcs';
+  bool                  _fromInventory = false; // default: direct quick entry
+  bool                  _submitting = false;
+  bool                  _autoTotal = true;
 
   @override
   void initState() {
@@ -214,8 +477,10 @@ class _DirectEntrySheetState extends State<DirectEntrySheet> {
     _selectedSupplier = widget.initialSupplier;
     _selectedMaterial = widget.initialMaterial;
     if (_selectedMaterial != null) {
+      _fromInventory = true;
       _rateCtrl.text = _selectedMaterial!.pricePerUnit.toStringAsFixed(0);
       _descCtrl.text = _selectedMaterial!.name;
+      _unit = _selectedMaterial!.unitType;
     }
     _qtyCtrl.addListener(_recalc);
     _rateCtrl.addListener(_recalc);
@@ -230,7 +495,7 @@ class _DirectEntrySheetState extends State<DirectEntrySheet> {
 
   @override
   void dispose() {
-    for (final c in [_descCtrl, _qtyCtrl, _rateCtrl, _totalCtrl, _paidCtrl]) {
+    for (final c in [_descCtrl, _qtyCtrl, _rateCtrl, _totalCtrl, _paidCtrl, _bagWeightCtrl]) {
       c.dispose();
     }
     super.dispose();
@@ -242,73 +507,121 @@ class _DirectEntrySheetState extends State<DirectEntrySheet> {
     final partyRepo = context.watch<PartyRepository>();
 
     return StockSheetWrapper(
-      title: 'Direct Material Entry',
+      title: 'Add Purchase Entry',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (widget.initialMaterial != null)
+
+          // ── Mode toggle ──────────────────────────────────────────────────
+          if (widget.initialMaterial == null) ...[
             Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: bcNavy.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: bcNavy.withValues(alpha: 0.1)),
+                color: const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: Row(
-                children: [
-                  const Icon(Icons.inventory_2_rounded, size: 16, color: bcNavy),
-                  const SizedBox(width: 10),
-                  Text(
-                    widget.initialMaterial!.name,
-                    style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w800, fontSize: 13),
-                  ),
-                  const Spacer(),
-                  const Text('LOCKED', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 10, fontWeight: FontWeight.w900)),
-                ],
+              child: Row(children: [
+                _ModeTab(
+                  label: 'Quick Entry',
+                  icon: Icons.flash_on_rounded,
+                  isActive: !_fromInventory,
+                  onTap: () => setState(() {
+                    _fromInventory = false;
+                    _selectedMaterial = null;
+                  }),
+                ),
+                _ModeTab(
+                  label: 'From Inventory',
+                  icon: Icons.inventory_2_rounded,
+                  isActive: _fromInventory,
+                  onTap: () => setState(() => _fromInventory = true),
+                ),
+              ]),
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          // ── Material selector (inventory mode only) ───────────────────
+          if (_fromInventory) ...[
+            if (widget.initialMaterial != null)
+              _LockedMaterialBanner(material: widget.initialMaterial!)
+            else
+              StockMaterialSelector(
+                materials: invRepo.materials,
+                selected: _selectedMaterial,
+                onSelected: (m) {
+                  setState(() {
+                    _selectedMaterial = m;
+                    if (m != null) {
+                      _rateCtrl.text = m.pricePerUnit.toStringAsFixed(0);
+                      _descCtrl.text = m.name;
+                      _unit = m.unitType;
+                    }
+                  });
+                },
               ),
-            )
-          else
-            StockMaterialSelector(
-              materials: invRepo.materials,
-              selected: _selectedMaterial,
-              onSelected: (m) {
+            const SizedBox(height: 12),
+            _RecentRatesReference(
+              materialId: _selectedMaterial?.id,
+              onRateSelected: (rate) {
                 setState(() {
-                  _selectedMaterial = m;
-                  if (m != null && _rateCtrl.text.isEmpty) {
-                    _rateCtrl.text = m.pricePerUnit.toStringAsFixed(0);
-                    _descCtrl.text = m.name;
-                  }
+                  _rateCtrl.text = rate.toStringAsFixed(0);
+                  _autoTotal = true;
+                  _recalc();
                 });
               },
             ),
-          const SizedBox(height: 12),
-          _RecentRatesReference(
-            materialId: _selectedMaterial?.id,
-            onRateSelected: (rate) {
-              setState(() {
-                _rateCtrl.text = rate.toStringAsFixed(0);
-                _autoTotal = true;
-                _recalc();
-              });
-            },
+            const SizedBox(height: 12),
+          ],
+
+          // ── Description field ─────────────────────────────────────────
+          stockSheetField(
+            _fromInventory ? 'Sub-type / Notes' : 'Item / Description *',
+            _descCtrl,
+            hint: _fromInventory ? 'e.g. OPC 53 Grade, 12mm TMT' : 'e.g. Nails, Binding wire, PVC pipe',
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
 
-          stockSheetField('Description / Sub-type', _descCtrl, hint: 'e.g. OPC 53 Grade, 12mm TMT'),
-          const SizedBox(height: 12),
+          // ── Unit selector ─────────────────────────────────────────────
+          _UnitSelector(
+            selectedUnit: _unit,
+            onChanged: (u) => setState(() => _unit = u),
+          ),
 
+          // ── Bag weight ────────────────────────────────────────────────
+          if (_unit == 'bag') _bagWeightField(_bagWeightCtrl),
+          const SizedBox(height: 14),
+
+          // ── Qty & Rate ────────────────────────────────────────────────
           Row(children: [
-            Expanded(child: stockSheetField('Quantity', _qtyCtrl, hint: '100', keyboardType: TextInputType.number)),
+            Expanded(child: stockSheetField(
+              'Qty (${_unitLabel(_unit)})',
+              _qtyCtrl,
+              hint: '0',
+              keyboardType: TextInputType.number,
+              optional: true,
+            )),
             const SizedBox(width: 10),
-            Expanded(child: stockSheetField('Unit Rate (₹)', _rateCtrl, hint: '450', keyboardType: TextInputType.number)),
+            Expanded(child: stockSheetField(
+              'Rate / ${_unitLabel(_unit)} (₹)',
+              _rateCtrl,
+              hint: '0',
+              keyboardType: TextInputType.number,
+            )),
           ]),
           const SizedBox(height: 12),
 
-          stockSheetField('Total Amount (₹)', _totalCtrl, hint: 'auto-calculated',
-              keyboardType: TextInputType.number, onChanged: (_) => setState(() => _autoTotal = false)),
-          const SizedBox(height: 12),
+          // ── Total ─────────────────────────────────────────────────────
+          stockSheetField(
+            'Total Amount (₹) *',
+            _totalCtrl,
+            hint: 'auto-calculated or enter directly',
+            keyboardType: TextInputType.number,
+            onChanged: (_) => setState(() => _autoTotal = false),
+          ),
+          const SizedBox(height: 14),
 
+          // ── Supplier ─────────────────────────────────────────────────
           const StockSheetLabel('Supplier *'),
           const SizedBox(height: 6),
           StockSupplierSelector(
@@ -318,10 +631,12 @@ class _DirectEntrySheetState extends State<DirectEntrySheet> {
           ),
           const SizedBox(height: 12),
 
+          // ── Paid & Due ────────────────────────────────────────────────
           Row(children: [
-            Expanded(child: stockSheetField('Amount Paid (₹)', _paidCtrl, hint: '0', keyboardType: TextInputType.number)),
+            Expanded(child: stockSheetField('Paid (₹)', _paidCtrl, hint: '0', keyboardType: TextInputType.number, optional: true)),
             const SizedBox(width: 10),
-            Expanded(child: stockDateSheetField('Due Date (optional)', context, _dueDate, (d) => setState(() => _dueDate = d))),
+            Expanded(child: stockDateSheetField('Due Date', context, _dueDate,
+                (d) => setState(() => _dueDate = d))),
           ]),
           const SizedBox(height: 24),
 
@@ -332,14 +647,19 @@ class _DirectEntrySheetState extends State<DirectEntrySheet> {
   }
 
   Future<void> _submit(BuildContext context) async {
-    final desc = _descCtrl.text.trim();
+    final desc  = _descCtrl.text.trim();
     final total = double.tryParse(_totalCtrl.text) ?? 0;
     final qty   = double.tryParse(_qtyCtrl.text) ?? 0;
     final rate  = double.tryParse(_rateCtrl.text) ?? 0;
     final paid  = double.tryParse(_paidCtrl.text) ?? 0;
+    final bagKg = double.tryParse(_bagWeightCtrl.text);
 
-    if (desc.isEmpty && _selectedMaterial == null) {
+    if (_fromInventory && desc.isEmpty && _selectedMaterial == null) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select a material or enter a description')));
+      return;
+    }
+    if (!_fromInventory && desc.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter item description')));
       return;
     }
     if (total <= 0) {
@@ -353,6 +673,8 @@ class _DirectEntrySheetState extends State<DirectEntrySheet> {
 
     setState(() => _submitting = true);
 
+    final effectiveQty = qty > 0 ? qty : (total / (rate > 0 ? rate : 1));
+
     final entry = StockEntryModel(
       id: const Uuid().v4(),
       siteId: context.read<SiteRepository>().selectedSiteId ?? '',
@@ -361,22 +683,24 @@ class _DirectEntrySheetState extends State<DirectEntrySheet> {
       materialId: _selectedMaterial?.id ?? '',
       materialName: _selectedMaterial?.name ?? desc,
       subType: _selectedMaterial?.subType ?? desc,
-      unit: _selectedMaterial?.unitType ?? 'unit',
-      quantity: qty,
+      unit: _unit,
+      quantity: effectiveQty,
       unitPrice: rate,
       totalAmount: total,
       paidAmount: paid,
+      bagWeightKg: _unit == 'bag' ? bagKg : null,
       dueDate: _dueDate,
       entryDate: DateTime.now(),
       entryType: StockEntryType.directEntry,
-      isInventoryItem: true,
+      isInventoryItem: _fromInventory,
     );
 
     final stockRepo = context.read<StockEntryRepository>();
     await stockRepo.addEntry(entry);
     if (!mounted) return;
 
-    if (_selectedMaterial != null) {
+    // Only update stock if from inventory
+    if (_fromInventory && _selectedMaterial != null && qty > 0) {
       final invRepo = context.read<InventoryRepository>();
       final updated = _selectedMaterial!.copyWith(
         currentStock: _selectedMaterial!.currentStock + qty,
@@ -388,6 +712,10 @@ class _DirectEntrySheetState extends State<DirectEntrySheet> {
     }
 
     Navigator.pop(context);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text('Entry saved — ₹${total.toStringAsFixed(0)}'),
+      backgroundColor: bcSuccess,
+    ));
   }
 }
 
@@ -436,7 +764,7 @@ class _SupplierBillSheetState extends State<SupplierBillSheet> {
           ),
           const SizedBox(height: 12),
           Row(children: [
-            Expanded(child: stockSheetField('Bill Number (optional)', _billNoCtrl, hint: 'INV-2024-001')),
+            Expanded(child: stockSheetField('Bill Number', _billNoCtrl, hint: 'INV-001', optional: true)),
             const SizedBox(width: 10),
             Expanded(child: stockDateSheetField('Bill Date', context, _billDate, (d) => setState(() => _billDate = d))),
           ]),
@@ -490,7 +818,7 @@ class _SupplierBillSheetState extends State<SupplierBillSheet> {
           ],
 
           const SizedBox(height: 12),
-          stockSheetField('Amount Paid (₹)', _paidCtrl, hint: '0', keyboardType: TextInputType.number),
+          stockSheetField('Amount Paid (₹)', _paidCtrl, hint: '0', keyboardType: TextInputType.number, optional: true),
           const SizedBox(height: 24),
           StockSubmitButton(label: 'Save Bill', submitting: _submitting, onTap: () => _submit(context)),
         ],
@@ -519,10 +847,10 @@ class _SupplierBillSheetState extends State<SupplierBillSheet> {
     }
 
     setState(() => _submitting = true);
-    final siteId   = context.read<SiteRepository>().selectedSiteId ?? '';
-    final billId   = const Uuid().v4();
-    final paid     = double.tryParse(_paidCtrl.text) ?? 0;
-    final bDate    = _billDate ?? DateTime.now();
+    final siteId = context.read<SiteRepository>().selectedSiteId ?? '';
+    final billId = const Uuid().v4();
+    final paid   = double.tryParse(_paidCtrl.text) ?? 0;
+    final bDate  = _billDate ?? DateTime.now();
 
     final entries = _items.map((item) => StockEntryModel(
       id: const Uuid().v4(),
@@ -538,9 +866,10 @@ class _SupplierBillSheetState extends State<SupplierBillSheet> {
       unitPrice: item.rate,
       totalAmount: item.total,
       paidAmount: 0,
+      bagWeightKg: item.bagWeightKg,
       entryDate: bDate,
       entryType: StockEntryType.supplierBill,
-      isInventoryItem: true,
+      isInventoryItem: item.isInventoryItem,
     )).toList();
 
     final bill = SupplierBill(
@@ -557,6 +886,10 @@ class _SupplierBillSheetState extends State<SupplierBillSheet> {
     await context.read<StockEntryRepository>().addBill(bill);
     if (!mounted) return;
     Navigator.pop(context);
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      content: Text('Bill saved successfully'),
+      backgroundColor: bcSuccess,
+    ));
   }
 
   @override
@@ -570,8 +903,19 @@ class _BillItem {
   final String unit;
   final double qty;
   final double rate;
-  double get total => qty * rate;
-  const _BillItem({required this.materialId, required this.name, required this.subtype, required this.unit, required this.qty, required this.rate});
+  final double? bagWeightKg;
+  final bool isInventoryItem;
+  double get total => qty > 0 ? qty * rate : rate; // if qty=0 treat rate as total amount
+  const _BillItem({
+    required this.materialId,
+    required this.name,
+    required this.subtype,
+    required this.unit,
+    required this.qty,
+    required this.rate,
+    this.bagWeightKg,
+    this.isInventoryItem = true,
+  });
 }
 
 class _BillItemTile extends StatelessWidget {
@@ -582,19 +926,40 @@ class _BillItemTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+    final directPurchase = !item.isInventoryItem;
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
       decoration: BoxDecoration(
-        color: const Color(0xFFF0F8FF),
+        color: directPurchase ? const Color(0xFFF5F3FF) : const Color(0xFFF0F8FF),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFBFDBFE)),
+        border: Border.all(color: directPurchase ? const Color(0xFFDDD6FE) : const Color(0xFFBFDBFE)),
       ),
       child: Row(
         children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: directPurchase ? const Color(0xFF8B5CF6).withValues(alpha: 0.1) : bcNavy.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              directPurchase ? Icons.shopping_cart_rounded : Icons.inventory_2_rounded,
+              size: 14,
+              color: directPurchase ? const Color(0xFF8B5CF6) : bcNavy,
+            ),
+          ),
+          const SizedBox(width: 10),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(item.name, style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w700, fontSize: 12)),
-            Text('${item.qty} ${item.unit} × ₹${item.rate.toStringAsFixed(0)}', style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11)),
+            Text(
+              item.qty > 0
+                  ? '${item.qty} ${item.unit} × ₹${item.rate.toStringAsFixed(0)}'
+                  : '₹${item.rate.toStringAsFixed(0)} (lump sum)',
+              style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
+            ),
+            if (item.unit == 'bag' && item.bagWeightKg != null)
+              Text('${item.bagWeightKg} kg/bag', style: const TextStyle(color: bcAmber, fontSize: 10, fontWeight: FontWeight.w600)),
           ])),
           Text(fmt.format(item.total), style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 13)),
           const SizedBox(width: 8),
@@ -616,12 +981,38 @@ class _AddBillItemDialog extends StatefulWidget {
 
 class _AddBillItemDialogState extends State<_AddBillItemDialog> {
   ConstructionMaterial? _mat;
-  final _nameCtrl = TextEditingController();
-  final _qtyCtrl  = TextEditingController();
-  final _rateCtrl = TextEditingController();
+  bool   _fromInventory = false;
+  String _unit = 'pcs';
+
+  final _nameCtrl     = TextEditingController();
+  final _qtyCtrl      = TextEditingController();
+  final _rateCtrl     = TextEditingController();
+  final _totalCtrl    = TextEditingController();
+  final _bagWeightCtrl = TextEditingController();
+
+  bool _autoTotal = true;
 
   @override
-  void dispose() { _nameCtrl.dispose(); _qtyCtrl.dispose(); _rateCtrl.dispose(); super.dispose(); }
+  void initState() {
+    super.initState();
+    _qtyCtrl.addListener(_recalc);
+    _rateCtrl.addListener(_recalc);
+  }
+
+  void _recalc() {
+    if (!_autoTotal) return;
+    final qty  = double.tryParse(_qtyCtrl.text) ?? 0;
+    final rate = double.tryParse(_rateCtrl.text) ?? 0;
+    if (qty > 0 && rate > 0) {
+      _totalCtrl.text = (qty * rate).toStringAsFixed(0);
+    }
+  }
+
+  @override
+  void dispose() {
+    for (final c in [_nameCtrl, _qtyCtrl, _rateCtrl, _totalCtrl, _bagWeightCtrl]) c.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -650,33 +1041,96 @@ class _AddBillItemDialogState extends State<_AddBillItemDialog> {
         ),
       ),
       content: SizedBox(
-        width: 400, // Makes it feel less "small"
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const StockSheetLabel('Select Material (if applies)'),
-            const SizedBox(height: 8),
-            StockMaterialSelector(materials: widget.materials, selected: _mat, onSelected: (m) {
-              setState(() {
-                _mat = m;
-                if (m != null) {
-                  _nameCtrl.text = m.name;
-                  _rateCtrl.text = m.pricePerUnit.toStringAsFixed(0);
-                }
-              });
-            }),
-            const SizedBox(height: 20),
-            stockSheetField('Name / Description *', _nameCtrl, hint: 'e.g. 12mm Steel Bars'),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(child: stockSheetField('Quantity *', _qtyCtrl, hint: '0', keyboardType: TextInputType.number)),
-                const SizedBox(width: 16),
-                Expanded(child: stockSheetField('Unit Rate (₹)', _rateCtrl, hint: '0', keyboardType: TextInputType.number)),
+        width: 400,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+
+              // Mode toggle
+              Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(10)),
+                child: Row(children: [
+                  _ModeTab(
+                    label: 'Direct Purchase',
+                    icon: Icons.shopping_cart_rounded,
+                    isActive: !_fromInventory,
+                    onTap: () => setState(() { _fromInventory = false; _mat = null; }),
+                  ),
+                  _ModeTab(
+                    label: 'From Inventory',
+                    icon: Icons.inventory_2_rounded,
+                    isActive: _fromInventory,
+                    onTap: () => setState(() => _fromInventory = true),
+                  ),
+                ]),
+              ),
+              const SizedBox(height: 16),
+
+              // Inventory selector
+              if (_fromInventory) ...[
+                const StockSheetLabel('Select Material'),
+                const SizedBox(height: 8),
+                StockMaterialSelector(materials: widget.materials, selected: _mat, onSelected: (m) {
+                  setState(() {
+                    _mat = m;
+                    if (m != null) {
+                      _nameCtrl.text = m.name;
+                      _rateCtrl.text = m.pricePerUnit.toStringAsFixed(0);
+                      _unit = m.unitType;
+                    }
+                  });
+                }),
+                const SizedBox(height: 14),
               ],
-            ),
-          ],
+
+              // Name
+              stockSheetField(
+                _fromInventory ? 'Sub-type / Notes' : 'Item Name *',
+                _nameCtrl,
+                hint: _fromInventory ? 'OPC 53, 12mm TMT' : 'e.g. Nails, PVC elbow 1"',
+              ),
+              const SizedBox(height: 14),
+
+              // Unit selector
+              _UnitSelector(selectedUnit: _unit, onChanged: (u) => setState(() => _unit = u)),
+
+              // Bag weight
+              if (_unit == 'bag') _bagWeightField(_bagWeightCtrl),
+              const SizedBox(height: 14),
+
+              // Qty & Rate
+              Row(children: [
+                Expanded(child: stockSheetField(
+                  'Qty (${_unitLabel(_unit)})',
+                  _qtyCtrl,
+                  hint: '0',
+                  keyboardType: TextInputType.number,
+                  optional: true,
+                )),
+                const SizedBox(width: 12),
+                Expanded(child: stockSheetField(
+                  'Rate (₹)',
+                  _rateCtrl,
+                  hint: '0',
+                  keyboardType: TextInputType.number,
+                )),
+              ]),
+              const SizedBox(height: 14),
+
+              // Total override
+              stockSheetField(
+                'Total Amount (₹)',
+                _totalCtrl,
+                hint: 'auto or enter directly',
+                keyboardType: TextInputType.number,
+                onChanged: (_) => setState(() => _autoTotal = false),
+                optional: true,
+              ),
+            ],
+          ),
         ),
       ),
       actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
@@ -697,17 +1151,33 @@ class _AddBillItemDialogState extends State<_AddBillItemDialog> {
             Expanded(
               child: ElevatedButton(
                 onPressed: () {
-                  final name = _nameCtrl.text.trim();
-                  final qty  = double.tryParse(_qtyCtrl.text) ?? 0;
-                  final rate = double.tryParse(_rateCtrl.text) ?? 0;
-                  if (name.isEmpty || qty <= 0) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter name and valid quantity')));
+                  final name  = _nameCtrl.text.trim();
+                  final qty   = double.tryParse(_qtyCtrl.text) ?? 0;
+                  final rate  = double.tryParse(_rateCtrl.text) ?? 0;
+                  final total = double.tryParse(_totalCtrl.text) ?? (qty > 0 && rate > 0 ? qty * rate : 0);
+                  final bagKg = double.tryParse(_bagWeightCtrl.text);
+
+                  if (name.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter item name')));
                     return;
                   }
+                  if (total <= 0 && rate <= 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enter rate or total amount')));
+                    return;
+                  }
+
+                  final effectiveTotal = total > 0 ? total : (qty > 0 ? qty * rate : rate);
+                  final effectiveRate  = rate > 0 ? rate : (qty > 0 && effectiveTotal > 0 ? effectiveTotal / qty : effectiveTotal);
+
                   widget.onAdd(_BillItem(
                     materialId: _mat?.id ?? '',
-                    name: name, subtype: _mat?.subType ?? '',
-                    unit: _mat?.unitType ?? 'unit', qty: qty, rate: rate,
+                    name: name,
+                    subtype: _mat?.subType ?? '',
+                    unit: _unit,
+                    qty: qty,
+                    rate: effectiveRate,
+                    bagWeightKg: _unit == 'bag' ? bagKg : null,
+                    isInventoryItem: _fromInventory,
                   ));
                   Navigator.pop(context);
                 },
@@ -811,7 +1281,7 @@ class _MiscExpenseSheetState extends State<MiscExpenseSheet> {
       quantity: 1,
       unitPrice: amount,
       totalAmount: amount,
-      paidAmount: amount, // misc expenses are assumed fully paid
+      paidAmount: amount,
       entryDate: DateTime.now(),
       entryType: StockEntryType.miscExpense,
       isInventoryItem: false,
@@ -821,6 +1291,8 @@ class _MiscExpenseSheetState extends State<MiscExpenseSheet> {
     Navigator.pop(context);
   }
 }
+
+// ─── Recent Rates Reference ────────────────────────────────────────────────────
 
 class _RecentRatesReference extends StatelessWidget {
   final String? materialId;
@@ -842,7 +1314,7 @@ class _RecentRatesReference extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('RECENT RATES (TAP TO USE)', 
+        const Text('RECENT RATES (TAP TO USE)',
             style: TextStyle(color: Color(0xFF64748B), fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 1)),
         const SizedBox(height: 8),
         SizedBox(
@@ -867,7 +1339,7 @@ class _RecentRatesReference extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('₹${e.unitPrice.toStringAsFixed(0)}', 
+                      Text('₹${e.unitPrice.toStringAsFixed(0)}',
                           style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 13)),
                       Text(
                         '${DateFormat('d MMM').format(e.entryDate)} • ${e.supplierName}',
@@ -883,6 +1355,80 @@ class _RecentRatesReference extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ─── Reusable Helper Widgets ──────────────────────────────────────────────────
+
+class _ModeTab extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool isActive;
+  final VoidCallback onTap;
+  const _ModeTab({required this.label, required this.icon, required this.isActive, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+          decoration: BoxDecoration(
+            color: isActive ? Colors.white : Colors.transparent,
+            borderRadius: BorderRadius.circular(9),
+            boxShadow: isActive ? [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 4, offset: const Offset(0, 2))] : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 14, color: isActive ? bcNavy : const Color(0xFF94A3B8)),
+              const SizedBox(width: 6),
+              Flexible(child: Text(
+                label,
+                style: TextStyle(
+                  color: isActive ? bcNavy : const Color(0xFF94A3B8),
+                  fontWeight: isActive ? FontWeight.w800 : FontWeight.w600,
+                  fontSize: 11,
+                ),
+                overflow: TextOverflow.ellipsis,
+              )),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LockedMaterialBanner extends StatelessWidget {
+  final ConstructionMaterial material;
+  const _LockedMaterialBanner({required this.material});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: bcNavy.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: bcNavy.withValues(alpha: 0.1)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.inventory_2_rounded, size: 16, color: bcNavy),
+          const SizedBox(width: 10),
+          Text(
+            material.name,
+            style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w800, fontSize: 13),
+          ),
+          const Spacer(),
+          const Text('LOCKED', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 10, fontWeight: FontWeight.w900)),
+        ],
+      ),
     );
   }
 }

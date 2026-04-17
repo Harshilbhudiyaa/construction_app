@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import 'package:construction_app/core/theme/aesthetic_tokens.dart';
 import 'package:construction_app/shared/widgets/professional_page.dart';
-import 'package:construction_app/shared/widgets/helpful_text_field.dart';
 import 'package:construction_app/data/models/labour_entry_model.dart';
 import 'package:construction_app/data/repositories/labour_repository.dart';
 import 'package:construction_app/data/repositories/auth_repository.dart';
@@ -170,27 +169,12 @@ class _LabourDetailScreenState extends State<LabourDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text('PAYMENT LOG',
-                style: TextStyle(
-                    color: bcTextSecondary,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1)),
-            if (entry.status != LabourStatus.settled)
-              GestureDetector(
-                onTap: () => _showAddAdvanceDialog(repo, entry, auth),
-                child: Text('+ ADD ADVANCE',
-                    style: TextStyle(
-                        color: bcNavy,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.5)),
-              ),
-          ],
-        ),
+        const Text('PAYMENT LOG',
+            style: TextStyle(
+                color: bcTextSecondary,
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1)),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(16),
@@ -199,11 +183,21 @@ class _LabourDetailScreenState extends State<LabourDetailScreen> {
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: bcBorder)),
           child: entry.advancePayments.isEmpty && entry.finalSettlementAmount == null
-              ? const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 20),
-                  child: Center(
-                      child: Text('No payments recorded yet',
-                          style: TextStyle(color: bcTextSecondary, fontSize: 13))),
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  child: Center(child: Column(children: [
+                    Icon(Icons.payments_outlined, color: bcTextSecondary.withValues(alpha: 0.4), size: 32),
+                    const SizedBox(height: 8),
+                    const Text('No payments recorded yet',
+                        style: TextStyle(color: bcTextSecondary, fontSize: 13)),
+                    const SizedBox(height: 4),
+                    Text(
+                      entry.status == LabourStatus.ongoing
+                          ? 'Payment will be recorded at final settlement'
+                          : 'Ready for final settlement',
+                      style: const TextStyle(color: bcTextSecondary, fontSize: 11),
+                    ),
+                  ])),
                 )
               : Column(
                   children: [
@@ -299,76 +293,108 @@ class _LabourDetailScreenState extends State<LabourDetailScreen> {
     }
   }
 
-  void _showAddAdvanceDialog(LabourRepository repo, LabourEntryModel entry, AuthRepository auth) {
-    final amtCtrl = TextEditingController();
-    final remCtrl = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (c) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Record Advance Payment', style: TextStyle(fontWeight: FontWeight.w900)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            HelpfulTextField(label: 'Amount (₹)', controller: amtCtrl, keyboardType: TextInputType.number),
-            const SizedBox(height: 16),
-            HelpfulTextField(label: 'Remarks (Optional)', controller: remCtrl, hintText: 'e.g. For festival, part payment'),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(c), child: const Text('CANCEL')),
-          ElevatedButton(
-            onPressed: () async {
-              final val = double.tryParse(amtCtrl.text);
-              if (val != null && val > 0) {
-                final payment = LabourAdvancePayment(
-                  id: 'ADV-${const Uuid().v4().substring(0, 8).toUpperCase()}',
-                  amount: val,
-                  date: DateTime.now(),
-                  remarks: remCtrl.text,
-                  paidBy: auth.userName ?? 'System',
-                );
-                await repo.addAdvancePayment(entry.id, payment);
-                if (!context.mounted) return;
-                Navigator.pop(c);
-              }
-            },
-            child: const Text('PAY ADVANCE'),
-          ),
-        ],
-      ),
-    );
-  }
 
   void _showSettleDialog(LabourRepository repo, LabourEntryModel entry, AuthRepository auth) {
-    final amtCtrl = TextEditingController(text: entry.pendingAmount.toStringAsFixed(0));
+    final isPerSqFt = entry.workType == LabourWorkType.perSqFt;
+    final sqftCtrl  = TextEditingController(text: entry.workQuantity?.toStringAsFixed(0) ?? '');
+    final amtCtrl   = TextEditingController(
+      text: entry.pendingAmount > 0 ? entry.pendingAmount.toStringAsFixed(0) : '',
+    );
+
+    void recalc(StateSetter setDialog) {
+      if (!isPerSqFt) return;
+      final sqft = double.tryParse(sqftCtrl.text) ?? 0;
+      if (sqft > 0) {
+        final computed = sqft * entry.ratePerUnit;
+        amtCtrl.text = computed.toStringAsFixed(0);
+      }
+    }
 
     showDialog(
       context: context,
-      builder: (c) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Final Settlement', style: TextStyle(fontWeight: FontWeight.w900)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Calculated Pending: ${_fmt.format(entry.pendingAmount)}', 
-                 style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: bcTextSecondary)),
-            const SizedBox(height: 16),
-            HelpfulTextField(label: 'Final Settlement Amount (₹)', controller: amtCtrl, keyboardType: TextInputType.number),
-            const SizedBox(height: 8),
-            const Text('Note: This will mark the contract as Settled and create a ledger entry.',
-                style: TextStyle(fontSize: 10, color: bcTextSecondary, fontStyle: FontStyle.italic)),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(c), child: const Text('CANCEL')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: bcSuccess, foregroundColor: Colors.white),
-            onPressed: () async {
-              final val = double.tryParse(amtCtrl.text);
-              if (val != null) {
+      builder: (c) => StatefulBuilder(
+        builder: (c, setDialog) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text('Final Settlement', style: TextStyle(fontWeight: FontWeight.w900)),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Summary row
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: bcNavy.withValues(alpha: 0.04),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(children: [
+                    _SettleRow('Contract Value', _fmt.format(entry.totalContractAmount)),
+                    _SettleRow('Advances Paid', _fmt.format(entry.totalAdvancePaid)),
+                    _SettleRow('Calculated Pending', _fmt.format(entry.pendingAmount), highlight: true),
+                  ]),
+                ),
+                const SizedBox(height: 16),
+
+                // ── Per Sq.Ft: Enter actual area ─────────────────────────
+                if (isPerSqFt) ...[
+                  const Text('ACTUAL AREA',
+                      style: TextStyle(color: bcTextSecondary, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 0.8)),
+                  const SizedBox(height: 6),
+                  TextFormField(
+                    controller: sqftCtrl,
+                    keyboardType: TextInputType.number,
+                    onChanged: (_) => recalc(setDialog),
+                    decoration: InputDecoration(
+                      hintText: 'Enter measured sq.ft',
+                      suffixText: 'sq.ft',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: bcAmber, width: 2)),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Rate: ${_fmt.format(entry.ratePerUnit)} / sq.ft  →  Total = sqft × rate',
+                    style: const TextStyle(color: bcTextSecondary, fontSize: 10),
+                  ),
+                  const SizedBox(height: 14),
+                ],
+
+                // ── Settlement amount ─────────────────────────────────────
+                const Text('SETTLEMENT AMOUNT',
+                    style: TextStyle(color: bcTextSecondary, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 0.8)),
+                const SizedBox(height: 6),
+                TextFormField(
+                  controller: amtCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    hintText: '0',
+                    prefixText: '₹ ',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: bcSuccess, width: 2)),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Confirm amount and tap settle. This marks the contract as fully settled.',
+                  style: TextStyle(fontSize: 10, color: bcTextSecondary, fontStyle: FontStyle.italic),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(c), child: const Text('CANCEL')),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: bcSuccess, foregroundColor: Colors.white),
+              onPressed: () async {
+                final val   = double.tryParse(amtCtrl.text);
+                final sqft  = isPerSqFt ? double.tryParse(sqftCtrl.text) : null;
+                if (val == null || val <= 0) return;
+
                 // ERP Sync: Create Ledger Entry
                 final ledgerRepo = context.read<LedgerRepository>();
                 await ledgerRepo.addEntry(LedgerEntryModel(
@@ -378,10 +404,16 @@ class _LabourDetailScreenState extends State<LabourDetailScreen> {
                   siteId: entry.siteId,
                   siteName: entry.siteName,
                   amount: val,
-                  type: LedgerEntryType.debit, // We are paying
-                  description: 'Labour Settlement: ${entry.workDescription}',
+                  type: LedgerEntryType.debit,
+                  description: 'Labour Settlement: ${entry.workDescription}'
+                      '${sqft != null ? ' ($sqft sq.ft)' : ''}',
                   date: DateTime.now(),
                 ));
+
+                // If perSqFt, update workQuantity with actual area
+                if (isPerSqFt && sqft != null && sqft > 0) {
+                  await repo.updateEntry(entry.copyWith(workQuantity: sqft));
+                }
 
                 await repo.recordSettlement(
                   entryId: entry.id,
@@ -390,11 +422,11 @@ class _LabourDetailScreenState extends State<LabourDetailScreen> {
                 );
                 if (!context.mounted) return;
                 Navigator.pop(c);
-              }
-            },
-            child: const Text('CONFIRM SETTLEMENT'),
-          ),
-        ],
+              },
+              child: const Text('CONFIRM SETTLEMENT'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -481,6 +513,35 @@ class _PaymentHistoryItem extends StatelessWidget {
           Text(fmt.format(amount),
               style: TextStyle(
                   color: isSettlement ? bcSuccess : bcNavy, fontWeight: FontWeight.w900, fontSize: 14)),
+        ],
+      ),
+    );
+  }
+}
+
+class _SettleRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool highlight;
+  const _SettleRow(this.label, this.value, {this.highlight = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: TextStyle(
+            color: highlight ? bcNavy : bcTextSecondary,
+            fontSize: 11,
+            fontWeight: highlight ? FontWeight.w800 : FontWeight.w600,
+          )),
+          Text(value, style: TextStyle(
+            color: highlight ? bcSuccess : bcNavy,
+            fontSize: 11,
+            fontWeight: FontWeight.w900,
+          )),
         ],
       ),
     );

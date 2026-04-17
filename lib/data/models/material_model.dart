@@ -1,6 +1,10 @@
 // Categories and Unit types are now dynamic Strings to allow for custom user entry.
 // Standard Unit presets are provided for the UI.
-const List<String> standardUnits = ['nos', 'pcs', 'kgs', 'bag', 'sqft', 'sqm', 'mtr', 'ton', 'ltr', 'cft', 'brass'];
+/// Primary quick-entry units shown in purchase forms
+const List<String> primaryUnits = ['kg', 'ltr', 'bag', 'box', 'pcs'];
+
+/// All units (used in material master / advanced forms)
+const List<String> standardUnits = ['kg', 'ltr', 'bag', 'box', 'pcs', 'nos', 'sqft', 'sqm', 'mtr', 'ton', 'cft', 'brass'];
 
 class MaterialHistoryLog {
   final String id;

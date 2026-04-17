@@ -142,7 +142,15 @@ class SupplierDetailScreen extends StatelessWidget {
                   SizedBox(
                     width: double.infinity, height: 50,
                     child: ElevatedButton.icon(
-                      onPressed: () => _showPaymentDialog(context, supplier, pending, fmt, stockRepo),
+                      onPressed: () => showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (_) => SupplierPaymentSheet(
+                          supplier: supplier,
+                          pendingAmount: pending,
+                        ),
+                      ),
                       icon: const Icon(Icons.payments_rounded),
                       label: Text('Pay Due: ${fmt.format(pending)}'),
                       style: ElevatedButton.styleFrom(
@@ -198,41 +206,6 @@ class SupplierDetailScreen extends StatelessWidget {
     );
   }
 
-  void _showPaymentDialog(BuildContext context, PartyModel supplier, double pending, NumberFormat fmt, StockEntryRepository stockRepo) {
-    final ctrl = TextEditingController(text: pending.toStringAsFixed(0));
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Pay ${supplier.name}', style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w900)),
-        content: Column(mainAxisSize: MainAxisSize.min, children: [
-          Text('Pending due: ${fmt.format(pending)}', style: const TextStyle(color: bcDanger, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 14),
-          TextFormField(
-            controller: ctrl, keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              labelText: 'Payment Amount (₹)',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: bcAmber, width: 2)),
-            ),
-          ),
-        ]),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: bcNavy),
-            onPressed: () async {
-              final amount = double.tryParse(ctrl.text) ?? 0;
-              if (amount <= 0) return;
-              await stockRepo.recordPaymentForSupplier(supplierId: supplier.id, amount: amount);
-              if (ctx.mounted) Navigator.pop(ctx);
-            },
-            child: const Text('Record Payment', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 // ─── Detail Method Card ──────────────────────────────────────────────────────
