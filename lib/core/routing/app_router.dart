@@ -14,13 +14,11 @@ import 'package:construction_app/features/ledger/screens/payment_history_screen.
 import 'package:construction_app/features/ledger/screens/party_management_screen.dart';
 import 'package:construction_app/features/ledger/screens/ledger_overview_screen.dart';
 
-// Inventory (legacy — keep untouched so existing data still works)
-import 'package:construction_app/features/inventory/screens/inward_management_dashboard_screen.dart';
+// Inventory (keep non-inward screens)
 import 'package:construction_app/features/inventory/screens/stock_operations_screen.dart';
 import 'package:construction_app/features/inventory/screens/material_master_screen.dart';
 import 'package:construction_app/features/inventory/screens/add_edit_item_screen.dart';
 import 'package:construction_app/features/inventory/screens/item_detail_screen.dart';
-import 'package:construction_app/features/inventory/screens/inward_entry_form_screen.dart';
 
 // Reports
 import 'package:construction_app/features/reports/screens/advanced_reports_screen.dart';
@@ -122,7 +120,11 @@ class AppRoutes {
 
     // ── Legacy inventory ────────────────────────────────────────────────────────
     paymentHistory:   (_) => const PaymentHistoryScreen(),
-    inwardManagement: (_) => const InwardManagementDashboardScreen(),
+    inwardManagement: (_) => const _ComingSoonScreen(
+      title: 'Inward Logistics',
+      subtitle: 'Advanced inward tracking with photo proofs,\napproval workflows, and vehicle logs.',
+      icon: Icons.local_shipping_rounded,
+    ),
     stockOperations: (ctx) {
       final args = ModalRoute.of(ctx)!.settings.arguments;
       if (args is Map<String, dynamic>) {
@@ -136,7 +138,11 @@ class AppRoutes {
     materialMaster: (_) => const MaterialMasterScreen(),
     suppliers:      (_) => const PartyManagementScreen(), // legacy alias
     reports:        (_) => const AdvancedReportsScreen(),
-    inwardEntry:    (_) => const InwardEntryFormScreen(),
+    inwardEntry: (_) => const _ComingSoonScreen(
+      title: 'Inward Entry',
+      subtitle: 'Record material arrivals with photo and GPS proofs.',
+      icon: Icons.receipt_long_rounded,
+    ),
     partyLedger:    (_) => const LedgerOverviewScreen(),
     milestones:     (_) => const ProjectMilestonesScreen(),
     financialSummary: (_) => const FinancialSummaryScreen(),
@@ -166,4 +172,72 @@ class AppRoutes {
       return SmartCalculatorWizard(initialType: args as CalculatorType?);
     },
   };
+}
+
+// ── Coming Soon Screen ─────────────────────────────────────────────────────────
+
+class _ComingSoonScreen extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  const _ComingSoonScreen({required this.title, required this.subtitle, required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF0F172A))),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Color(0xFF0F172A)),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(40),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 100, height: 100,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, size: 48, color: const Color(0xFFF59E0B)),
+                ),
+                const SizedBox(height: 28),
+                const Text('Coming Soon', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Color(0xFF0F172A))),
+                const SizedBox(height: 12),
+                Text(
+                  subtitle,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 14, color: Color(0xFF64748B), height: 1.6),
+                ),
+                const SizedBox(height: 32),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(30),
+                    border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.3)),
+                  ),
+                  child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(Icons.construction_rounded, size: 14, color: Color(0xFFF59E0B)),
+                    SizedBox(width: 8),
+                    Text('Under Development', style: TextStyle(color: Color(0xFFF59E0B), fontWeight: FontWeight.w700, fontSize: 12)),
+                  ]),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
