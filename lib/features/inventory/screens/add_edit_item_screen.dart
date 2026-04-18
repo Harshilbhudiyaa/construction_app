@@ -17,18 +17,20 @@ class AddEditItemScreen extends StatefulWidget {
 
 class _AddEditItemScreenState extends State<AddEditItemScreen> {
   final _formKey = GlobalKey<FormState>();
-  
-  final _nameCtrl     = TextEditingController();
-  final _brandCtrl    = TextEditingController();
-  final _subTypeCtrl  = TextEditingController();
-  final _hsnCtrl      = TextEditingController();
-  
+
+  final _nameCtrl         = TextEditingController();
+  final _brandCtrl        = TextEditingController();
+  final _hsnCtrl          = TextEditingController();
+  final _subTypeInputCtrl = TextEditingController();
+
   final List<_VariantEntry> _variants = [];
-  
+  final List<String> _subTypes = [];
+
   String _unit = 'pcs';
   double _taxPercent = 18.0;
   bool _includeTax = false;
   bool _isLoading = false;
+  bool _showSubTypeInput = false;
 
   @override
   void initState() {
@@ -36,21 +38,22 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
     if (widget.materialId != null) {
       _loadExisting();
     } else {
-      _addVariant();
+      _variants.add(_VariantEntry());
     }
   }
 
   void _loadExisting() {
     final repo = context.read<InventoryRepository>();
     final m = repo.materials.firstWhere((e) => e.id == widget.materialId);
-    _nameCtrl.text     = m.name;
-    _brandCtrl.text    = m.brand ?? '';
-    _subTypeCtrl.text  = m.subType;
-    _hsnCtrl.text      = m.hsnCode ?? '';
-    _unit            = m.unitType;
-    _taxPercent      = m.taxPercentage;
-    _includeTax      = m.taxPercentage > 0;
-    
+    _nameCtrl.text  = m.name;
+    _brandCtrl.text = m.brand ?? '';
+    _hsnCtrl.text   = m.hsnCode ?? '';
+    _unit           = m.unitType;
+    _taxPercent     = m.taxPercentage;
+    _includeTax     = m.taxPercentage > 0;
+    if (m.subType.isNotEmpty) {
+      _subTypes.addAll(m.subType.split(' / ').map((s) => s.trim()).where((s) => s.isNotEmpty));
+    }
     _variants.add(_VariantEntry(
       variantName: m.variant,
       stock: m.currentStock,
@@ -59,18 +62,12 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
     ));
   }
 
-  void _addVariant() {
-    setState(() {
-      _variants.add(_VariantEntry());
-    });
-  }
-
   @override
   void dispose() {
     _nameCtrl.dispose();
     _brandCtrl.dispose();
-    _subTypeCtrl.dispose();
     _hsnCtrl.dispose();
+    _subTypeInputCtrl.dispose();
     for (var v in _variants) { v.dispose(); }
     super.dispose();
   }
@@ -78,13 +75,16 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
   @override
   Widget build(BuildContext context) {
     final invRepo = context.watch<InventoryRepository>();
-    final brands = invRepo.materials.map((m) => m.brand ?? '').where((b) => b.isNotEmpty).toSet().toList();
+    final brands  = invRepo.materials.map((m) => m.brand ?? '').where((b) => b.isNotEmpty).toSet().toList();
+    final isEdit  = widget.materialId != null;
 
     return Scaffold(
       backgroundColor: bcSurface,
       appBar: AppBar(
-        title: Text(widget.materialId == null ? 'NEW PRODUCT' : 'EDIT PRODUCT', 
-            style: const TextStyle(fontWeight: FontWeight.w900, color: bcNavy, fontSize: 16, letterSpacing: 0.5)),
+        title: Text(
+          isEdit ? 'Edit Material' : 'New Material',
+          style: const TextStyle(fontWeight: FontWeight.w900, color: bcNavy, fontSize: 17),
+        ),
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
@@ -92,42 +92,186 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: bcNavy, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: const Color(0xFFE2E8F0)),
+        ),
       ),
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          padding: const EdgeInsets.fromLTRB(16, 24, 16, 120),
           physics: const BouncingScrollPhysics(),
           children: [
-            _SectionCard(
-              title: 'BASIC CATALOG INFO',
-              icon: Icons.info_outline_rounded,
-              child: Column(
-                children: [
-                  _buildTextField('Material / Product Name *', _nameCtrl, 'e.g. TMT Steel Rod'),
-                  const SizedBox(height: 16),
-                  _buildAutocompleteField('Brand (Optional)', _brandCtrl, brands),
-                  const SizedBox(height: 16),
-                  _buildTextField('Sub-type / Quality', _subTypeCtrl, 'e.g. Grade 53'),
-                ],
+
+            // ── SECTION: Identity ──────────────────────────────────────────
+            _groupLabel('Material Identity', Icons.inventory_2_outlined),
+            const SizedBox(height: 12),
+            _buildLabeledField(
+              label: 'Name *',
+              child: TextFormField(
+                controller: _nameCtrl,
+                textCapitalization: TextCapitalization.words,
+                style: _inputTextStyle,
+                decoration: _dec('e.g. TMT Steel Rod, OPC Cement'),
+                validator: (v) => (v == null || v.trim().isEmpty) ? 'Name is required' : null,
+              ),
+            ),
+            const SizedBox(height: 12),
+            _buildLabeledField(
+              label: 'Brand',
+              child: RawAutocomplete<String>(
+                textEditingController: _brandCtrl,
+                focusNode: FocusNode(),
+                optionsBuilder: (v) => v.text.isEmpty
+                    ? const Iterable<String>.empty()
+                    : brands.where((b) => b.toLowerCase().contains(v.text.toLowerCase())),
+                fieldViewBuilder: (_, ctrl, node, onSubmitted) => TextFormField(
+                  controller: ctrl,
+                  focusNode: node,
+                  style: _inputTextStyle,
+                  decoration: _dec('e.g. Ultratech, JSW'),
+                ),
+                optionsViewBuilder: (_, onSelected, options) => Align(
+                  alignment: Alignment.topLeft,
+                  child: Material(
+                    elevation: 8,
+                    borderRadius: BorderRadius.circular(14),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 260, maxHeight: 200),
+                      child: ListView(
+                        padding: EdgeInsets.zero,
+                        shrinkWrap: true,
+                        children: options.map((o) => ListTile(
+                          dense: true,
+                          title: Text(o, style: const TextStyle(fontWeight: FontWeight.w700, color: bcNavy, fontSize: 13)),
+                          onTap: () => onSelected(o),
+                        )).toList(),
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
 
-            _SectionCard(
-              title: 'UNITS & TAXATION',
-              icon: Icons.tune_rounded,
+            // ── SECTION: Sub-types ─────────────────────────────────────────
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                _groupLabel('Grade / Sub-type', Icons.label_outline_rounded),
+                const Spacer(),
+                if (!_showSubTypeInput)
+                  GestureDetector(
+                    onTap: () => setState(() => _showSubTypeInput = true),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: bcAmber.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                        Icon(Icons.add_rounded, color: bcAmber, size: 14),
+                        SizedBox(width: 3),
+                        Text('ADD', style: TextStyle(color: bcAmber, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 0.5)),
+                      ]),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            _buildSubTypeSection(),
+
+            // ── SECTION: Unit ──────────────────────────────────────────────
+            const SizedBox(height: 24),
+            _groupLabel('Measurement Unit', Icons.scale_rounded),
+            const SizedBox(height: 10),
+            GestureDetector(
+              onTap: () async {
+                final res = await showModalBottomSheet<String>(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (_) => UnitPickerSheet(initialUnit: _unit),
+                );
+                if (res != null) setState(() => _unit = res);
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.scale_rounded, color: bcAmber, size: 18),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Text('Unit of Measurement',
+                          style: TextStyle(color: bcNavy, fontWeight: FontWeight.w700, fontSize: 14)),
+                    ),
+                    Text(_unit.toUpperCase(),
+                        style: const TextStyle(color: bcAmber, fontWeight: FontWeight.w900, fontSize: 14)),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 18),
+                  ],
+                ),
+              ),
+            ),
+
+            // ── SECTION: Taxation ──────────────────────────────────────────
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
               child: Column(
                 children: [
-                  _buildUnitSelector(),
-                  const SizedBox(height: 16),
-                  _buildTaxToggle(),
+                  Row(
+                    children: [
+                      const Icon(Icons.receipt_long_rounded, color: bcSuccess, size: 18),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Text('Include GST',
+                            style: TextStyle(color: bcNavy, fontWeight: FontWeight.w700, fontSize: 14)),
+                      ),
+                      Switch.adaptive(
+                        value: _includeTax,
+                        onChanged: (v) => setState(() => _includeTax = v),
+                        activeTrackColor: bcSuccess,
+                      ),
+                    ],
+                  ),
                   if (_includeTax) ...[
-                    const SizedBox(height: 12),
+                    const Divider(height: 16),
                     Row(
                       children: [
-                        Expanded(child: _buildNumberField('GST %', initialValue: _taxPercent.toString(), onChanged: (v) => _taxPercent = double.tryParse(v) ?? 18)),
+                        Expanded(
+                          child: _buildLabeledField(
+                            label: 'GST %',
+                            child: TextFormField(
+                              initialValue: _taxPercent.toStringAsFixed(0),
+                              keyboardType: TextInputType.number,
+                              onChanged: (v) => _taxPercent = double.tryParse(v) ?? 18,
+                              style: _inputTextStyle,
+                              decoration: _dec('18'),
+                            ),
+                          ),
+                        ),
                         const SizedBox(width: 12),
-                        Expanded(child: _buildTextField('HSN Code', _hsnCtrl, 'XXXX')),
+                        Expanded(
+                          child: _buildLabeledField(
+                            label: 'HSN Code',
+                            child: TextFormField(
+                              controller: _hsnCtrl,
+                              style: _inputTextStyle,
+                              decoration: _dec('e.g. 7214'),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -135,131 +279,210 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
               ),
             ),
 
-            _SectionCard(
-              title: 'INVENTORY VARIATIONS',
-              icon: Icons.layers_outlined,
-              trailing: widget.materialId == null ? GestureDetector(
-                onTap: _addVariant,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(color: bcAmber.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
-                  child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                    Icon(Icons.add_rounded, color: bcAmber, size: 16),
-                    SizedBox(width: 4),
-                    Text('ADD VARIANT', style: TextStyle(color: bcAmber, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 0.5)),
-                  ]),
+            // ── SECTION: Variants ──────────────────────────────────────────
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                _groupLabel('Stock & Pricing', Icons.layers_outlined),
+                const Spacer(),
+                if (!isEdit)
+                  GestureDetector(
+                    onTap: () => setState(() => _variants.add(_VariantEntry())),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: bcAmber.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                        Icon(Icons.add_rounded, color: bcAmber, size: 14),
+                        SizedBox(width: 3),
+                        Text('ADD VARIANT', style: TextStyle(color: bcAmber, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 0.5)),
+                      ]),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            ..._variants.asMap().entries.map((e) => _buildVariantCard(e.key, e.value, isEdit)),
+
+            // ── Submit ─────────────────────────────────────────────────────
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              height: 54,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _submit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: bcNavy,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  elevation: 0,
                 ),
-              ) : null,
-              child: Column(
-                children: [
-                  ..._variants.asMap().entries.map((e) => _buildVariantEntry(e.key, e.value)),
-                ],
+                child: _isLoading
+                    ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                    : Text(
+                        isEdit ? 'Save Changes' : 'Create Material',
+                        style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, letterSpacing: 0.3),
+                      ),
               ),
             ),
-
-            const SizedBox(height: 12),
-            _buildSubmitButton(),
-            const SizedBox(height: 48),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController ctrl, String hint) {
+  // ── Section label ──────────────────────────────────────────────────────────
+
+  static Widget _groupLabel(String label, IconData icon) => Row(
+    children: [
+      Icon(icon, size: 14, color: bcAmber),
+      const SizedBox(width: 6),
+      Text(label,
+          style: const TextStyle(
+            color: bcNavy,
+            fontWeight: FontWeight.w900,
+            fontSize: 12,
+            letterSpacing: 0.4,
+          )),
+    ],
+  );
+
+  // ── Labeled field wrapper ──────────────────────────────────────────────────
+
+  Widget _buildLabeledField({required String label, required Widget child}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 8),
-          child: Text(label.toUpperCase(), style: const TextStyle(color: bcTextSecondary, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 0.5)),
+          padding: const EdgeInsets.only(left: 2, bottom: 6),
+          child: Text(label,
+              style: const TextStyle(
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.w700,
+                fontSize: 11,
+                letterSpacing: 0.3,
+              )),
         ),
-        TextFormField(
-          controller: ctrl,
-          style: const TextStyle(fontSize: 14, color: bcNavy, fontWeight: FontWeight.w700),
-          decoration: _inputDecoration(hint),
-          validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-        ),
+        child,
       ],
     );
   }
 
-  Widget _buildAutocompleteField(String label, TextEditingController ctrl, List<String> suggestions) {
+  // ── Sub-type chips section ─────────────────────────────────────────────────
+
+  Widget _buildSubTypeSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 8),
-          child: Text(label.toUpperCase(), style: const TextStyle(color: bcTextSecondary, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 0.5)),
-        ),
-        RawAutocomplete<String>(
-          textEditingController: ctrl,
-          focusNode: FocusNode(),
-          optionsBuilder: (TextEditingValue value) {
-            if (value.text.isEmpty) return const Iterable<String>.empty();
-            return suggestions.where((s) => s.toLowerCase().contains(value.text.toLowerCase()));
-          },
-          fieldViewBuilder: (context, controller, node, onSubmitted) {
-            return TextFormField(
-              controller: controller,
-              focusNode: node,
-              style: const TextStyle(fontSize: 14, color: bcNavy, fontWeight: FontWeight.w700),
-              decoration: _inputDecoration('Search or type...'),
-            );
-          },
-          optionsViewBuilder: (context, onSelected, options) {
-            return Align(
-              alignment: Alignment.topLeft,
-              child: Material(
-                elevation: 8,
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  width: 200,
-                  constraints: const BoxConstraints(maxHeight: 250),
-                  child: ListView.builder(
-                    padding: EdgeInsets.zero,
-                    shrinkWrap: true,
-                    itemCount: options.length,
-                    itemBuilder: (ctx, i) => ListTile(
-                      title: Text(options.elementAt(i), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: bcNavy)),
-                      onTap: () => onSelected(options.elementAt(i)),
+        if (_subTypes.isEmpty && !_showSubTypeInput)
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE2E8F0), style: BorderStyle.solid),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.label_outline_rounded, color: Color(0xFFCBD5E1), size: 16),
+                SizedBox(width: 10),
+                Text('Optional — e.g. OPC 53, Fe500, Grade A',
+                    style: TextStyle(color: Color(0xFFCBD5E1), fontSize: 13)),
+              ],
+            ),
+          ),
+        if (_subTypes.isNotEmpty)
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: _subTypes.asMap().entries.map((e) => Container(
+              padding: const EdgeInsets.fromLTRB(10, 6, 6, 6),
+              decoration: BoxDecoration(
+                color: bcNavy.withValues(alpha: 0.06),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: bcNavy.withValues(alpha: 0.1)),
+              ),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                Text(e.value, style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w800, fontSize: 13)),
+                const SizedBox(width: 6),
+                GestureDetector(
+                  onTap: () => setState(() => _subTypes.removeAt(e.key)),
+                  child: const Icon(Icons.close_rounded, size: 14, color: bcTextSecondary),
+                ),
+              ]),
+            )).toList(),
+          ),
+        if (_showSubTypeInput) ...[
+          if (_subTypes.isNotEmpty) const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _subTypeInputCtrl,
+                  autofocus: true,
+                  textCapitalization: TextCapitalization.words,
+                  style: _inputTextStyle,
+                  decoration: _dec('e.g. OPC 53, 12mm, Fe500').copyWith(
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: bcAmber, width: 2),
                     ),
                   ),
+                  onFieldSubmitted: (_) => _commitSubType(),
                 ),
               ),
-            );
-          },
-        ),
+              const SizedBox(width: 8),
+              _IconBtn(Icons.check_rounded, bcNavy, _commitSubType),
+              const SizedBox(width: 6),
+              _IconBtn(Icons.close_rounded, bcDanger, () => setState(() {
+                _showSubTypeInput = false;
+                _subTypeInputCtrl.clear();
+              })),
+            ],
+          ),
+        ],
       ],
     );
   }
 
-  Widget _buildVariantEntry(int index, _VariantEntry entry) {
+  void _commitSubType() {
+    final val = _subTypeInputCtrl.text.trim();
+    setState(() {
+      if (val.isNotEmpty) _subTypes.add(val);
+      _subTypeInputCtrl.clear();
+      _showSubTypeInput = false;
+    });
+  }
+
+  // ── Variant card ───────────────────────────────────────────────────────────
+
+  Widget _buildVariantCard(int index, _VariantEntry entry, bool isEdit) {
     final hint = _getVariantHint();
+    final canRemove = _variants.length > 1 && !isEdit;
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [BoxShadow(color: bcNavy.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Variant header ──────────────────────────────────────────
-          Container(
-            padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
-            decoration: BoxDecoration(
-              color: bcNavy.withValues(alpha: 0.03),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            ),
+          // Header row
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
             child: Row(
               children: [
                 Container(
-                  width: 26, height: 26,
-                  decoration: BoxDecoration(color: bcNavy, borderRadius: BorderRadius.circular(8)),
-                  child: Center(child: Text('${index + 1}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 11))),
+                  width: 24, height: 24,
+                  decoration: BoxDecoration(color: bcNavy, borderRadius: BorderRadius.circular(6)),
+                  child: Center(
+                    child: Text('${index + 1}',
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 10)),
+                  ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -268,61 +491,33 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                     textCapitalization: TextCapitalization.words,
                     style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: bcNavy),
                     decoration: InputDecoration(
-                      hintText: 'Variant — $hint',
-                      hintStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFFCBD5E1)),
+                      hintText: 'Variant name — $hint',
+                      hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFCBD5E1)),
                       isDense: true,
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.zero,
                     ),
                   ),
                 ),
-                if (_variants.length > 1 && widget.materialId == null)
+                if (canRemove)
                   GestureDetector(
                     onTap: () => setState(() => _variants.removeAt(index)),
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: bcDanger.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(Icons.delete_outline_rounded, color: bcDanger, size: 16),
-                    ),
+                    child: const Icon(Icons.remove_circle_outline_rounded, color: bcDanger, size: 18),
                   ),
               ],
             ),
           ),
-
-          // ── Three fields ─────────────────────────────────────────────
+          const Divider(height: 1, indent: 12, endIndent: 12),
+          // Three numeric fields
           Padding(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
             child: Row(
               children: [
-                Expanded(child: _buildMiniNumField(
-                  'Opening Stock',
-                  entry.stockCtrl,
-                  icon: Icons.inventory_2_outlined,
-                  hint: '0',
-                  color: bcNavy,
-                  suffix: _unit,
-                )),
+                Expanded(child: _miniNumField('Opening Stock', entry.stockCtrl, suffix: _unit, color: bcNavy)),
                 const SizedBox(width: 10),
-                Expanded(child: _buildMiniNumField(
-                  'Purchase Rate',
-                  entry.rateCtrl,
-                  icon: Icons.currency_rupee_rounded,
-                  hint: '0',
-                  color: bcSuccess,
-                  prefix: '₹',
-                )),
+                Expanded(child: _miniNumField('Purchase Rate', entry.rateCtrl, prefix: '₹', color: bcSuccess)),
                 const SizedBox(width: 10),
-                Expanded(child: _buildMiniNumField(
-                  'Min Stock Alert',
-                  entry.limitCtrl,
-                  icon: Icons.notifications_outlined,
-                  hint: '0',
-                  color: bcDanger,
-                  suffix: _unit,
-                )),
+                Expanded(child: _miniNumField('Min Alert', entry.limitCtrl, suffix: _unit, color: bcDanger)),
               ],
             ),
           ),
@@ -331,180 +526,83 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
     );
   }
 
-  Widget _buildMiniNumField(String label, TextEditingController ctrl, {
-    IconData icon = Icons.edit_rounded,
-    String hint = '0',
-    Color color = bcNavy,
-    String? prefix,
-    String? suffix,
+  Widget _miniNumField(String label, TextEditingController ctrl, {
+    Color color = bcNavy, String? prefix, String? suffix,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Icon + label row
-        Row(children: [
-          Icon(icon, size: 12, color: color),
-          const SizedBox(width: 4),
-          Flexible(child: Text(
-            label,
-            style: TextStyle(color: color, fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 0.5),
-            overflow: TextOverflow.ellipsis,
-          )),
-        ]),
-        const SizedBox(height: 6),
+        Text(label,
+            style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: color, letterSpacing: 0.5),
+            overflow: TextOverflow.ellipsis),
+        const SizedBox(height: 5),
         TextFormField(
           controller: ctrl,
           keyboardType: TextInputType.number,
           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: bcNavy),
           decoration: InputDecoration(
-            hintText: hint,
+            hintText: '0',
             hintStyle: const TextStyle(color: Color(0xFFCBD5E1), fontSize: 13),
             prefixText: prefix != null ? '$prefix ' : null,
             suffixText: suffix?.toUpperCase(),
             prefixStyle: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 13),
-            suffixStyle: const TextStyle(color: Color(0xFF94A3B8), fontWeight: FontWeight.w700, fontSize: 10),
+            suffixStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 9, fontWeight: FontWeight.w700),
             isDense: true,
-            filled: true, fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: bcBorder.withValues(alpha: 0.6))),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: bcBorder.withValues(alpha: 0.6))),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: color, width: 2)),
+            filled: true,
+            fillColor: bcSurface,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: color, width: 1.5)),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildNumberField(String label, {required String initialValue, required ValueChanged<String> onChanged}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 8),
-          child: Text(label.toUpperCase(), style: const TextStyle(color: bcTextSecondary, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 0.5)),
-        ),
-        TextFormField(
-          initialValue: initialValue,
-          onChanged: onChanged,
-          keyboardType: TextInputType.number,
-          style: const TextStyle(fontSize: 14, color: bcNavy, fontWeight: FontWeight.w700),
-          decoration: _inputDecoration('%'),
-        ),
-      ],
-    );
-  }
+  // ── Input decoration ───────────────────────────────────────────────────────
 
-  Widget _buildUnitSelector() {
-    return GestureDetector(
-      onTap: () async {
-        final res = await showModalBottomSheet<String>(
-          context: context,
-          isScrollControlled: true,
-          backgroundColor: Colors.transparent,
-          builder: (_) => UnitPickerSheet(initialUnit: _unit),
-        );
-        if (res != null) setState(() => _unit = res);
-      },
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: bcSurface, borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: bcBorder.withValues(alpha: 0.6)),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.scale_rounded, color: bcAmber, size: 20),
-            const SizedBox(width: 12),
-            const Expanded(child: Text('BASE MEASUREMENT UNIT', style: TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 0.2))),
-            Text(_unit.toUpperCase(), style: const TextStyle(color: bcPrimary, fontWeight: FontWeight.w900, fontSize: 13)),
-            const Icon(Icons.chevron_right_rounded, color: bcTextSecondary),
-          ],
-        ),
-      ),
-    );
-  }
+  static const TextStyle _inputTextStyle = TextStyle(fontSize: 14, color: bcNavy, fontWeight: FontWeight.w700);
 
-  Widget _buildTaxToggle() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: bcSurface, borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: bcBorder.withValues(alpha: 0.6)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.receipt_long_rounded, color: bcSuccess, size: 20),
-          const SizedBox(width: 12),
-          const Expanded(child: Text('INCLUDE TAXATION (GST)', style: TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 0.2))),
-          Switch.adaptive(
-            value: _includeTax,
-            onChanged: (v) => setState(() => _includeTax = v),
-            activeColor: bcSuccess,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSubmitButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 56,
-      child: ElevatedButton(
-        onPressed: _isLoading ? null : _submit,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: bcNavy,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          elevation: 0,
-        ),
-        child: _isLoading 
-            ? const CircularProgressIndicator(color: Colors.white)
-            : Text(widget.materialId == null ? 'CONFIRM & CREATE PRODUCT' : 'SAVE CHANGES', 
-                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, letterSpacing: 0.5)),
-      ),
-    );
-  }
-
-  InputDecoration _inputDecoration(String hint) {
-    return InputDecoration(
-      hintText: hint, hintStyle: const TextStyle(color: Color(0xFFCBD5E1), fontSize: 13, fontWeight: FontWeight.normal),
-      filled: true, fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: bcBorder.withValues(alpha: 0.6))),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: bcBorder.withValues(alpha: 0.6))),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: bcPrimary, width: 2)),
-    );
-  }
+  static InputDecoration _dec(String hint) => InputDecoration(
+    hintText: hint,
+    hintStyle: const TextStyle(color: Color(0xFFCBD5E1), fontSize: 13, fontWeight: FontWeight.normal),
+    filled: true,
+    fillColor: Colors.white,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: bcNavy, width: 2)),
+  );
 
   String _getVariantHint() {
     final u = _unit.toLowerCase();
     if (['kg', 'kgs', 'ton'].contains(u)) return '12MM / 8MM';
     if (u == 'bag') return 'OPC / PPC / 53G';
-    if (['sqft', 'sqm', 'cft'].contains(u)) return '2×2 / SIZE';
-    if (u == 'ltr') return 'SHADE / COLOR';
-    if (u == 'mtr') return 'WIDTH / GRADE';
-    if (u == 'box') return 'SIZE / COLOR';
-    return 'SIZE / MODEL';
+    if (['sqft', 'sqm', 'cft'].contains(u)) return '2×2 / Size';
+    if (u == 'ltr') return 'Shade / Color';
+    if (u == 'mtr') return 'Width / Grade';
+    if (u == 'box') return 'Size / Color';
+    return 'Size / Model';
   }
+
+  // ── Submit ─────────────────────────────────────────────────────────────────
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
-    
     try {
       final invRepo  = context.read<InventoryRepository>();
       final siteId   = context.read<SiteRepository>().selectedSiteId ?? 'S-001';
       final now      = DateTime.now();
-      
       final name     = _nameCtrl.text.trim();
       final brand    = _brandCtrl.text.trim();
-      final subType  = _subTypeCtrl.text.trim();
+      final subType  = _subTypes.join(' / ');
       final hsn      = _hsnCtrl.text.trim();
-      
+
       if (widget.materialId != null) {
         final v = _variants.first;
-        final updated = ConstructionMaterial(
+        await invRepo.updateMaterial(ConstructionMaterial(
           id: widget.materialId!,
           siteId: siteId,
           name: name,
@@ -521,11 +619,10 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
           gstPercentage: _includeTax ? _taxPercent : 0,
           updatedAt: now,
           createdAt: now,
-        );
-        await invRepo.updateMaterial(updated);
+        ));
       } else {
-        for (var v in _variants) {
-          final m = ConstructionMaterial(
+        for (final v in _variants) {
+          await invRepo.addMaterial(ConstructionMaterial(
             id: const Uuid().v4(),
             siteId: siteId,
             name: name,
@@ -542,8 +639,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
             gstPercentage: _includeTax ? _taxPercent : 0,
             createdAt: now,
             updatedAt: now,
-          );
-          await invRepo.addMaterial(m);
+          ));
         }
       }
       if (mounted) Navigator.pop(context);
@@ -555,47 +651,30 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
   }
 }
 
-class _SectionCard extends StatelessWidget {
-  final String title;
+// ── Small icon button ──────────────────────────────────────────────────────────
+
+class _IconBtn extends StatelessWidget {
   final IconData icon;
-  final Widget? trailing;
-  final Widget child;
-  const _SectionCard({required this.title, required this.icon, this.trailing, required this.child});
+  final Color color;
+  final VoidCallback onTap;
+  const _IconBtn(this.icon, this.color, this.onTap);
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      width: 44, height: 44,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: bcNavy.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
-        border: Border.all(color: bcBorder.withValues(alpha: 0.5)),
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withValues(alpha: 0.15)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 18, 16, 14),
-            child: Row(
-              children: [
-                Icon(icon, size: 16, color: bcAmber),
-                const SizedBox(width: 8),
-                Expanded(child: Text(title, style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1))),
-                if (trailing != null) trailing!,
-              ],
-            ),
-          ),
-          const Divider(height: 1),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-            child: child,
-          ),
-        ],
-      ),
-    );
-  }
+      child: Icon(icon, color: color, size: 18),
+    ),
+  );
 }
+
+// ── Variant data holder ────────────────────────────────────────────────────────
 
 class _VariantEntry {
   final TextEditingController variantCtrl = TextEditingController();
@@ -605,9 +684,9 @@ class _VariantEntry {
 
   _VariantEntry({String? variantName, double? stock, double? rate, double? limit}) {
     if (variantName != null) variantCtrl.text = variantName;
-    if (stock != null) stockCtrl.text = stock.toStringAsFixed(0);
-    if (rate != null) rateCtrl.text = rate.toStringAsFixed(0);
-    if (limit != null) limitCtrl.text = limit.toStringAsFixed(0);
+    if (stock  != null) stockCtrl.text = stock.toStringAsFixed(0);
+    if (rate   != null) rateCtrl.text  = rate.toStringAsFixed(0);
+    if (limit  != null) limitCtrl.text = limit.toStringAsFixed(0);
   }
 
   void dispose() {

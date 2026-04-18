@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:construction_app/core/theme/aesthetic_tokens.dart';
@@ -22,7 +22,6 @@ class AddLedgerEntrySheet extends StatefulWidget {
 }
 
 class _AddLedgerEntrySheetState extends State<AddLedgerEntrySheet> {
-  late LedgerEntryType _type;
   final _amountCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
   DateTime _date = DateTime.now();
@@ -32,7 +31,6 @@ class _AddLedgerEntrySheetState extends State<AddLedgerEntrySheet> {
   @override
   void initState() {
     super.initState();
-    _type = widget.initialType;
   }
 
   @override
@@ -58,6 +56,60 @@ class _AddLedgerEntrySheetState extends State<AddLedgerEntrySheet> {
     if (picked != null) setState(() => _date = picked);
   }
 
+  void _pickSite(List<SiteModel> sites) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(color: bcBorder, borderRadius: BorderRadius.circular(2)),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text('SELECT SITE',
+                style: TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
+            const SizedBox(height: 12),
+            // Clear option
+            _SiteOption(
+              label: 'No site (unlinked)',
+              icon: Icons.clear_rounded,
+              selected: _selectedSite == null,
+              onTap: () {
+                setState(() => _selectedSite = null);
+                Navigator.pop(context);
+              },
+            ),
+            const SizedBox(height: 6),
+            ...sites.map((s) => Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: _SiteOption(
+                label: s.name,
+                icon: Icons.domain_rounded,
+                selected: _selectedSite?.id == s.id,
+                onTap: () {
+                  setState(() => _selectedSite = s);
+                  Navigator.pop(context);
+                },
+              ),
+            )),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _save() async {
     final amount = double.tryParse(_amountCtrl.text.trim());
     if (amount == null || amount <= 0) {
@@ -81,7 +133,7 @@ class _AddLedgerEntrySheetState extends State<AddLedgerEntrySheet> {
       siteId: _selectedSite?.id,
       siteName: _selectedSite?.name,
       amount: amount,
-      type: _type,
+      type: LedgerEntryType.debit,
       description: _descCtrl.text.trim(),
       date: _date,
     );
@@ -91,9 +143,8 @@ class _AddLedgerEntrySheetState extends State<AddLedgerEntrySheet> {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-              '${_type == LedgerEntryType.credit ? 'Credit' : 'Debit'} of ₹${amount.toStringAsFixed(0)} recorded.'),
-          backgroundColor: _type == LedgerEntryType.credit ? bcSuccess : bcDanger,
+          content: Text('Payment of ₹${amount.toStringAsFixed(0)} recorded for ${widget.party.name}.'),
+          backgroundColor: bcNavy,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
@@ -103,11 +154,7 @@ class _AddLedgerEntrySheetState extends State<AddLedgerEntrySheet> {
 
   @override
   Widget build(BuildContext context) {
-    final siteRepo = context.watch<SiteRepository>();
-    final sites = siteRepo.sites;
-    final isCredit = _type == LedgerEntryType.credit;
-    final typeColor = isCredit ? bcSuccess : bcDanger;
-
+    final sites = context.watch<SiteRepository>().sites;
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -143,12 +190,12 @@ class _AddLedgerEntrySheetState extends State<AddLedgerEntrySheet> {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: typeColor.withValues(alpha: 0.1),
+                  color: bcNavy.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  isCredit ? Icons.call_received_rounded : Icons.call_made_rounded,
-                  color: typeColor,
+                child: const Icon(
+                  Icons.payments_rounded,
+                  color: bcNavy,
                   size: 18,
                 ),
               ),
@@ -157,9 +204,9 @@ class _AddLedgerEntrySheetState extends State<AddLedgerEntrySheet> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      isCredit ? 'Add Credit Entry' : 'Add Debit Entry',
-                      style: const TextStyle(
+                    const Text(
+                      'Pay Supplier',
+                      style: TextStyle(
                           fontWeight: FontWeight.w900, fontSize: 18, color: bcTextPrimary),
                     ),
                     Text(
@@ -173,32 +220,6 @@ class _AddLedgerEntrySheetState extends State<AddLedgerEntrySheet> {
           ),
           const SizedBox(height: 20),
 
-          // Type toggle
-          Row(
-            children: [
-              Expanded(
-                child: _TypeToggle(
-                  label: 'Credit',
-                  icon: Icons.call_received_rounded,
-                  color: bcSuccess,
-                  selected: _type == LedgerEntryType.credit,
-                  onTap: () => setState(() => _type = LedgerEntryType.credit),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _TypeToggle(
-                  label: 'Debit',
-                  icon: Icons.call_made_rounded,
-                  color: bcDanger,
-                  selected: _type == LedgerEntryType.debit,
-                  onTap: () => setState(() => _type = LedgerEntryType.debit),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
           // Amount
           TextField(
             controller: _amountCtrl,
@@ -210,7 +231,7 @@ class _AddLedgerEntrySheetState extends State<AddLedgerEntrySheet> {
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: typeColor, width: 2),
+                borderSide: const BorderSide(color: bcNavy, width: 2),
               ),
             ),
           ),
@@ -225,7 +246,7 @@ class _AddLedgerEntrySheetState extends State<AddLedgerEntrySheet> {
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: typeColor, width: 2),
+                borderSide: const BorderSide(color: bcNavy, width: 2),
               ),
             ),
           ),
@@ -258,18 +279,59 @@ class _AddLedgerEntrySheetState extends State<AddLedgerEntrySheet> {
 
           // Site selector
           if (sites.isNotEmpty)
-            DropdownButtonFormField<SiteModel>(
-              initialValue: _selectedSite,
-              decoration: InputDecoration(
-                labelText: 'Site (Optional)',
-                prefixIcon: const Icon(Icons.domain_rounded, color: bcNavy),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            GestureDetector(
+              onTap: () => _pickSite(sites),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                decoration: BoxDecoration(
+                  color: _selectedSite != null ? bcNavy.withValues(alpha: 0.04) : Colors.white,
+                  border: Border.all(
+                    color: _selectedSite != null ? bcNavy.withValues(alpha: 0.3) : bcBorder,
+                    width: _selectedSite != null ? 1.5 : 1,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.domain_rounded,
+                      color: _selectedSite != null ? bcNavy : bcTextSecondary,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'SITE',
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.8,
+                              color: _selectedSite != null ? bcNavy : bcTextSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _selectedSite?.name ?? 'Select site (optional)',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                              color: _selectedSite != null ? bcTextPrimary : bcTextSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: _selectedSite != null ? bcNavy : bcTextSecondary,
+                      size: 20,
+                    ),
+                  ],
+                ),
               ),
-              items: [
-                const DropdownMenuItem(value: null, child: Text('No site')),
-                ...sites.map((s) => DropdownMenuItem(value: s, child: Text(s.name))),
-              ],
-              onChanged: (v) => setState(() => _selectedSite = v),
             ),
           const SizedBox(height: 24),
 
@@ -280,7 +342,7 @@ class _AddLedgerEntrySheetState extends State<AddLedgerEntrySheet> {
             child: ElevatedButton(
               onPressed: _saving ? null : _save,
               style: ElevatedButton.styleFrom(
-                backgroundColor: typeColor,
+                backgroundColor: bcNavy,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 elevation: 0,
               ),
@@ -290,9 +352,9 @@ class _AddLedgerEntrySheetState extends State<AddLedgerEntrySheet> {
                       height: 20,
                       child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                     )
-                  : Text(
-                      isCredit ? 'SAVE CREDIT' : 'SAVE DEBIT',
-                      style: const TextStyle(
+                  : const Text(
+                      'RECORD PAYMENT',
+                      style: TextStyle(
                           color: Colors.white, fontWeight: FontWeight.w900, fontSize: 15),
                     ),
             ),
@@ -303,45 +365,44 @@ class _AddLedgerEntrySheetState extends State<AddLedgerEntrySheet> {
   }
 }
 
-class _TypeToggle extends StatelessWidget {
+class _SiteOption extends StatelessWidget {
   final String label;
   final IconData icon;
-  final Color color;
   final bool selected;
   final VoidCallback onTap;
-  const _TypeToggle(
-      {required this.label,
-      required this.icon,
-      required this.color,
-      required this.selected,
-      required this.onTap});
+  const _SiteOption({required this.label, required this.icon, required this.selected, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
         decoration: BoxDecoration(
-          color: selected ? color.withValues(alpha: 0.1) : Colors.white,
+          color: selected ? bcNavy.withValues(alpha: 0.06) : Colors.white,
           border: Border.all(
-              color: selected ? color : bcBorder, width: selected ? 1.5 : 1),
+            color: selected ? bcNavy.withValues(alpha: 0.25) : const Color(0xFFE2E8F0),
+            width: selected ? 1.5 : 1,
+          ),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: selected ? color : bcTextSecondary, size: 16),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                color: selected ? color : bcTextSecondary,
-                fontWeight: FontWeight.w800,
-                fontSize: 13,
+            Icon(icon, size: 18, color: selected ? bcNavy : bcTextSecondary),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: selected ? bcNavy : bcTextPrimary,
+                  fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+                  fontSize: 14,
+                ),
               ),
             ),
+            if (selected)
+              const Icon(Icons.check_circle_rounded, color: bcNavy, size: 18),
           ],
         ),
       ),

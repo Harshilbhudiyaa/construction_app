@@ -472,6 +472,7 @@ class _DirectEntrySheetState extends State<DirectEntrySheet> {
   bool                  _autoTotal     = true;
   bool                  _unlockName    = false;
   bool                  _unlockRate    = false;
+  final FocusNode       _qtyFocusNode  = FocusNode();
 
   @override
   void initState() {
@@ -495,6 +496,7 @@ class _DirectEntrySheetState extends State<DirectEntrySheet> {
     _unlockRate       = false;
     _autoTotal        = true;
     _recalc();
+    Future.delayed(const Duration(milliseconds: 100), () => _qtyFocusNode.requestFocus());
   }
 
   void _recalc() {
@@ -506,7 +508,10 @@ class _DirectEntrySheetState extends State<DirectEntrySheet> {
 
   @override
   void dispose() {
-    for (final c in [_descCtrl, _subtypeCtrl, _qtyCtrl, _rateCtrl, _totalCtrl, _paidCtrl, _bagWeightCtrl]) c.dispose();
+    _qtyFocusNode.dispose();
+    for (final c in [_descCtrl, _subtypeCtrl, _qtyCtrl, _rateCtrl, _totalCtrl, _paidCtrl, _bagWeightCtrl]) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -614,6 +619,7 @@ class _DirectEntrySheetState extends State<DirectEntrySheet> {
                 value: _selectedMaterial!.name,
                 isUnlocked: _unlockName,
                 controller: _descCtrl,
+                showEditIcon: false, // Ensure the card cannot be edited from here
                 onUnlock: () => setState(() => _unlockName = true),
               ),
               const SizedBox(height: 12),
@@ -662,6 +668,7 @@ class _DirectEntrySheetState extends State<DirectEntrySheet> {
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _qtyCtrl,
+                    focusNode: _qtyFocusNode,
                     keyboardType: TextInputType.number,
                     autofocus: _selectedMaterial != null,
                     style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: bcNavy),
@@ -694,7 +701,7 @@ class _DirectEntrySheetState extends State<DirectEntrySheet> {
               // Auto-calculated total OR manual entry
               ListenableBuilder(
                 listenable: _totalCtrl,
-                builder: (_, __) => _totalCtrl.text.isNotEmpty
+                builder: (_, child) => _totalCtrl.text.isNotEmpty
                   ? Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       decoration: BoxDecoration(
@@ -853,6 +860,7 @@ class _ReadOnlyAutoField extends StatelessWidget {
   final TextEditingController controller;
   final TextInputType keyboardType;
   final VoidCallback onUnlock;
+  final bool showEditIcon;
 
   const _ReadOnlyAutoField({
     required this.label,
@@ -861,6 +869,7 @@ class _ReadOnlyAutoField extends StatelessWidget {
     required this.controller,
     required this.onUnlock,
     this.keyboardType = TextInputType.text,
+    this.showEditIcon = true,
   });
 
   @override
@@ -880,18 +889,19 @@ class _ReadOnlyAutoField extends StatelessWidget {
         ),
         child: Row(children: [
           Expanded(child: Text(value, style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w700, fontSize: 13))),
-          GestureDetector(
-            onTap: onUnlock,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(color: const Color(0xFFE0F2FE), borderRadius: BorderRadius.circular(6)),
-              child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                Icon(Icons.edit_rounded, size: 11, color: Color(0xFF0284C7)),
-                SizedBox(width: 4),
-                Text('Edit', style: TextStyle(color: Color(0xFF0284C7), fontSize: 10, fontWeight: FontWeight.w700)),
-              ]),
+          if (showEditIcon)
+            GestureDetector(
+              onTap: onUnlock,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(color: const Color(0xFFE0F2FE), borderRadius: BorderRadius.circular(6)),
+                child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                  Icon(Icons.edit_rounded, size: 11, color: Color(0xFF0284C7)),
+                  SizedBox(width: 4),
+                  Text('Edit', style: TextStyle(color: Color(0xFF0284C7), fontSize: 10, fontWeight: FontWeight.w700)),
+                ]),
+              ),
             ),
-          ),
         ]),
       ),
     ]);
@@ -1502,7 +1512,7 @@ class _RecentRatesReference extends StatelessWidget {
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: entries.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            separatorBuilder: (_, child) => const SizedBox(width: 8),
             itemBuilder: (context, index) {
               final e = entries[index];
               return InkWell(

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:construction_app/core/theme/aesthetic_tokens.dart';
@@ -48,30 +48,13 @@ class PartyLedgerScreen extends StatelessWidget {
           color: balanceColor,
         ),
       ],
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            FloatingActionButton.extended(
-              heroTag: 'debit_fab',
-              onPressed: () => _showAddEntry(context, LedgerEntryType.debit),
-              backgroundColor: bcDanger,
-              icon: const Icon(Icons.call_made_rounded, color: Colors.white),
-              label: const Text('Debit',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
-            ),
-            const SizedBox(width: 10),
-            FloatingActionButton.extended(
-              heroTag: 'credit_fab',
-              onPressed: () => _showAddEntry(context, LedgerEntryType.credit),
-              backgroundColor: bcSuccess,
-              icon: const Icon(Icons.call_received_rounded, color: Colors.white),
-              label: const Text('Credit',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
-            ),
-          ],
-        ),
+      floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'pay_supplier_fab',
+        onPressed: () => _showAddEntry(context, LedgerEntryType.debit),
+        backgroundColor: bcNavy,
+        icon: const Icon(Icons.payments_rounded, color: Colors.white),
+        label: const Text('Pay Supplier',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
       ),
       children: [
         if (entries.isEmpty)
@@ -90,7 +73,7 @@ class PartyLedgerScreen extends StatelessWidget {
                           fontSize: 16,
                           fontWeight: FontWeight.w700)),
                   const SizedBox(height: 6),
-                  const Text('Use Credit / Debit buttons to add entries.',
+                  const Text('Tap "Pay Supplier" to record a payment.',
                       style: TextStyle(color: bcTextSecondary, fontSize: 13)),
                 ],
               ),

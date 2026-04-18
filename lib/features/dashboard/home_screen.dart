@@ -211,56 +211,127 @@ class _SiteSelectorPill extends StatelessWidget {
       return GestureDetector(
         onTap: () => Navigator.pushNamed(context, AppRoutes.siteManagement),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.08),
+            color: bcAmber,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: bcAmber.withValues(alpha: 0.4)),
           ),
           child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.add_rounded, color: bcAmber, size: 14),
+              Icon(Icons.add_rounded, color: bcNavy, size: 15),
               SizedBox(width: 4),
-              Text('Add Site', style: TextStyle(color: bcAmber, fontSize: 11, fontWeight: FontWeight.w700)),
+              Text('Add Site', style: TextStyle(color: bcNavy, fontSize: 12, fontWeight: FontWeight.w800)),
             ],
           ),
         ),
       );
     }
 
-    return Theme(
-      data: Theme.of(context).copyWith(canvasColor: bcNavyMid),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: siteRepo.selectedSiteId ?? siteRepo.sites.first.id,
-          dropdownColor: bcNavyMid,
-          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: bcAmber, size: 18),
-          isDense: true,
-          selectedItemBuilder: (_) => siteRepo.sites.map((s) => Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: bcAmber.withValues(alpha: 0.4)),
+    final selected = siteRepo.selectedSite ?? siteRepo.sites.first;
+    final name = selected.name.length > 14 ? '${selected.name.substring(0, 14)}…' : selected.name;
+
+    return GestureDetector(
+      onTap: () => _showSitePicker(context),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: bcAmber,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [BoxShadow(color: bcAmber.withValues(alpha: 0.35), blurRadius: 8, offset: const Offset(0, 3))],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.location_on_rounded, color: bcNavy, size: 13),
+            const SizedBox(width: 5),
+            Text(
+              name,
+              style: const TextStyle(color: bcNavy, fontSize: 12, fontWeight: FontWeight.w900),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.location_on_rounded, color: bcAmber, size: 12),
-                const SizedBox(width: 5),
-                Text(
-                  s.name.length > 12 ? '${s.name.substring(0, 12)}…' : s.name,
-                  style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700),
+            const SizedBox(width: 4),
+            const Icon(Icons.keyboard_arrow_down_rounded, color: bcNavy, size: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showSitePicker(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 36),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 36, height: 4,
+                decoration: BoxDecoration(color: const Color(0xFFE2E8F0), borderRadius: BorderRadius.circular(2)),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text('SELECT SITE',
+                style: TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
+            const SizedBox(height: 12),
+            ...siteRepo.sites.map((s) {
+              final isSelected = siteRepo.selectedSiteId == s.id;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: GestureDetector(
+                  onTap: () {
+                    siteRepo.selectSite(s.id);
+                    Navigator.pop(context);
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    decoration: BoxDecoration(
+                      color: isSelected ? bcAmber.withValues(alpha: 0.1) : const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: isSelected ? bcAmber : const Color(0xFFE2E8F0),
+                        width: isSelected ? 2 : 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: isSelected ? bcAmber.withValues(alpha: 0.15) : const Color(0xFFE2E8F0),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(Icons.location_city_rounded,
+                              size: 18, color: isSelected ? bcAmber : const Color(0xFF94A3B8)),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            s.name,
+                            style: TextStyle(
+                              color: isSelected ? bcNavy : const Color(0xFF334155),
+                              fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        if (isSelected)
+                          const Icon(Icons.check_circle_rounded, color: bcAmber, size: 20),
+                      ],
+                    ),
+                  ),
                 ),
-              ],
-            ),
-          )).toList(),
-          items: siteRepo.sites.map((s) => DropdownMenuItem(
-            value: s.id,
-            child: Text(s.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
-          )).toList(),
-          onChanged: (val) { if (val != null) siteRepo.selectSite(val); },
+              );
+            }),
+          ],
         ),
       ),
     );
