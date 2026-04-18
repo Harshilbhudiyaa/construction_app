@@ -78,33 +78,35 @@ class _MaterialCatalogScreenState extends State<MaterialCatalogScreen> {
 
             // Search + Filter bar
             Container(
-              padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
               color: Colors.white,
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
                     child: Container(
-                      height: 40,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      height: 56,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
-                        color: bcSurface,
-                        borderRadius: BorderRadius.circular(10),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: const Color(0xFFE2E8F0)),
+                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.search_rounded, color: Color(0xFF94A3B8), size: 18),
-                          const SizedBox(width: 8),
+                          const Icon(Icons.search_rounded, color: Color(0xFF94A3B8), size: 22),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: TextField(
                               onChanged: (v) => setState(() => _search = v),
-                              style: const TextStyle(fontSize: 13, color: bcNavy),
+                              style: const TextStyle(fontSize: 15, color: bcNavy, fontWeight: FontWeight.w600),
                               decoration: const InputDecoration(
                                 hintText: 'Search materials…',
                                 border: InputBorder.none,
-                                hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
-                                contentPadding: EdgeInsets.zero,
-                                isDense: true,
+                                hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+                                isDense: false,
+                                contentPadding: EdgeInsets.symmetric(vertical: 14),
                               ),
                             ),
                           ),
@@ -352,22 +354,24 @@ class _InStockFilter extends StatelessWidget {
       onTap: () => onToggled(!active),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        height: 56,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: active ? bcAmber.withValues(alpha: 0.1) : Colors.white,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: active ? bcAmber.withValues(alpha: 0.4) : const Color(0xFFE2E8F0)),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.inventory_2_outlined, size: 14, color: active ? bcAmber : const Color(0xFF94A3B8)),
+            Icon(Icons.inventory_2_outlined, size: 16, color: active ? bcAmber : const Color(0xFF94A3B8)),
             const SizedBox(width: 6),
             Text(
               'In Stock',
               style: TextStyle(
                 color: active ? bcAmber : const Color(0xFF94A3B8),
-                fontSize: 12,
+                fontSize: 13,
                 fontWeight: active ? FontWeight.w800 : FontWeight.w600,
               ),
             ),

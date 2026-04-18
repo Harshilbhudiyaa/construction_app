@@ -69,7 +69,7 @@ class _MaterialMasterScreenState extends State<MaterialMasterScreen> {
                   ],
                 ),
               ),
-              height: subTypes.isNotEmpty ? 120 : 76,
+              height: subTypes.isNotEmpty ? 130 : 80,
             ),
           ),
         ],
@@ -151,7 +151,7 @@ class _MaterialMasterScreenState extends State<MaterialMasterScreen> {
       children: [
         Expanded(
           child: Container(
-            height: 52,
+            height: 56,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
@@ -163,15 +163,16 @@ class _MaterialMasterScreenState extends State<MaterialMasterScreen> {
               children: [
                 const Icon(Icons.search_rounded, color: Color(0xFF94A3B8), size: 20),
                 const SizedBox(width: 12),
-                Expanded(
+                            Expanded(
                   child: TextField(
                     onChanged: (v) => setState(() => _searchQuery = v),
-                    style: const TextStyle(fontSize: 14, color: bcNavy, fontWeight: FontWeight.w700),
+                    style: const TextStyle(fontSize: 15, color: bcNavy, fontWeight: FontWeight.w700),
                     decoration: const InputDecoration(
                       hintText: 'Search materials...',
                       border: InputBorder.none,
-                      hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 13, fontWeight: FontWeight.w500),
-                      isDense: true,
+                      hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 14, fontWeight: FontWeight.w500),
+                      isDense: false,
+                      contentPadding: EdgeInsets.symmetric(vertical: 14),
                     ),
                   ),
                 ),
@@ -183,7 +184,7 @@ class _MaterialMasterScreenState extends State<MaterialMasterScreen> {
         GestureDetector(
           onTap: () => setState(() => _showLowStockOnly = !_showLowStockOnly),
           child: Container(
-            height: 52, width: 90,
+            height: 56, width: 90,
             decoration: BoxDecoration(
               color: _showLowStockOnly ? bcDanger.withValues(alpha: 0.1) : Colors.white,
               borderRadius: BorderRadius.circular(16),

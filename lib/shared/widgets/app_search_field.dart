@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 class AppSearchField extends StatefulWidget {
   final String hint;
@@ -81,7 +81,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOut,
-        height: 52,
+        height: 56,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
           color: _isFocused 
@@ -114,7 +114,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
                 color: _isFocused 
                     ? const Color(0xFF1A237E)
                     : const Color(0xFF1A237E).withValues(alpha: 0.4),
-                size: 20,
+                size: 22,
               ),
             ),
             const SizedBox(width: 12),
@@ -142,9 +142,8 @@ class _AppSearchFieldState extends State<AppSearchField> {
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
                   focusedBorder: InputBorder.none,
-                  isDense: true,
-                  contentPadding: EdgeInsets.zero,
-                  // This removes the underline completely
+                  isDense: false,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 14),
                   filled: false,
                 ),
               ),

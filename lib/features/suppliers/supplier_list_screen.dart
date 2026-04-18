@@ -387,27 +387,28 @@ class _SearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    height: 40,
-    padding: const EdgeInsets.symmetric(horizontal: 12),
+    height: 56,
+    padding: const EdgeInsets.symmetric(horizontal: 16),
     decoration: BoxDecoration(
-      color: bcSurface,
-      borderRadius: BorderRadius.circular(10),
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
       border: Border.all(color: const Color(0xFFE2E8F0)),
+      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
     ),
     child: Row(
       children: [
-        const Icon(Icons.search_rounded, color: Color(0xFF94A3B8), size: 18),
-        const SizedBox(width: 8),
+        const Icon(Icons.search_rounded, color: Color(0xFF94A3B8), size: 22),
+        const SizedBox(width: 12),
         Expanded(
           child: TextField(
             onChanged: onChanged,
-            style: const TextStyle(fontSize: 13, color: bcNavy),
+            style: const TextStyle(fontSize: 15, color: bcNavy, fontWeight: FontWeight.w600),
             decoration: const InputDecoration(
               hintText: 'Search suppliers…',
               border: InputBorder.none,
-              hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
-              contentPadding: EdgeInsets.zero,
-              isDense: true,
+              hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 14, fontWeight: FontWeight.w400),
+              isDense: false,
+              contentPadding: EdgeInsets.symmetric(vertical: 14),
             ),
           ),
         ),
