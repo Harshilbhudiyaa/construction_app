@@ -28,7 +28,7 @@ class _LabourEntryFormScreenState extends State<LabourEntryFormScreen> {
 
   // Form Fields
   SiteModel? _selectedSite;
-  PartyModel? _selectedContractor;
+  final _contractorNameCtrl = TextEditingController();
   LabourWorkType _workType = LabourWorkType.fixedContract;
 
   final _descriptionCtrl = TextEditingController();
@@ -52,6 +52,7 @@ class _LabourEntryFormScreenState extends State<LabourEntryFormScreen> {
 
   void _loadEditingData() {
     final e = widget.editingEntry!;
+    _contractorNameCtrl.text = e.partyName;
     _workType = e.workType;
     _descriptionCtrl.text = e.workDescription;
     _quantityCtrl.text = e.workQuantity?.toString() ?? '';
@@ -63,6 +64,7 @@ class _LabourEntryFormScreenState extends State<LabourEntryFormScreen> {
 
   @override
   void dispose() {
+    _contractorNameCtrl.dispose();
     _descriptionCtrl.dispose();
     _quantityCtrl.dispose();
     _rateCtrl.dispose();
@@ -88,8 +90,9 @@ class _LabourEntryFormScreenState extends State<LabourEntryFormScreen> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select a site')));
       return;
     }
-    if (_selectedContractor == null && widget.editingEntry == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select a contractor')));
+    final contractorName = _contractorNameCtrl.text.trim();
+    if (contractorName.isEmpty && widget.editingEntry == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter a contractor name')));
       return;
     }
 
@@ -117,12 +120,32 @@ class _LabourEntryFormScreenState extends State<LabourEntryFormScreen> {
         );
         await labourRepo.updateEntry(updated);
       } else {
+        final partyRepo = context.read<PartyRepository>();
+        final contractors = partyRepo.parties.where((p) => p.category == PartyCategory.contractor).toList();
+        var existingParty = contractors.where((p) => p.name.toLowerCase() == contractorName.toLowerCase()).firstOrNull;
+        
+        String partyId;
+        String? partyContact;
+        if (existingParty != null) {
+          partyId = existingParty.id;
+          partyContact = existingParty.contactNumber;
+        } else {
+          partyId = 'PTY-${const Uuid().v4().substring(0, 8).toUpperCase()}';
+          partyContact = null;
+          await partyRepo.addParty(PartyModel(
+            id: partyId,
+            name: contractorName,
+            category: PartyCategory.contractor,
+            createdAt: DateTime.now(),
+          ));
+        }
+
         final entryId = 'LAB-${const Uuid().v4().substring(0, 8).toUpperCase()}';
         final entry = LabourEntryModel(
           id: entryId,
-          partyId: _selectedContractor!.id,
-          partyName: _selectedContractor!.name,
-          partyContact: _selectedContractor!.contactNumber,
+          partyId: partyId,
+          partyName: contractorName,
+          partyContact: partyContact,
           siteId: _selectedSite!.id,
           siteName: _selectedSite!.name,
           workType: _workType,
@@ -206,24 +229,12 @@ class _LabourEntryFormScreenState extends State<LabourEntryFormScreen> {
   }
 
   Widget _buildContractorPicker() {
-    if (widget.editingEntry != null) {
-      return HelpfulTextField(
-        label: 'CONTRACTOR',
-        controller: TextEditingController(text: widget.editingEntry!.partyName),
-        enabled: false,
-      );
-    }
-    return Consumer<PartyRepository>(
-      builder: (context, partyRepo, child) {
-        final contractors = partyRepo.parties.where((p) => p.category == PartyCategory.contractor).toList();
-        return HelpfulDropdown<PartyModel?>(
-          label: 'CONTRACTOR / AGENCY',
-          value: _selectedContractor,
-          items: contractors,
-          labelMapper: (p) => p == null ? 'Select Contractor' : '${p.name} (${p.contactNumber ?? "No contact"})',
-          onChanged: (p) => setState(() => _selectedContractor = p),
-        );
-      },
+    return HelpfulTextField(
+      label: 'CONTRACTOR / AGENCY',
+      controller: _contractorNameCtrl,
+      hintText: 'e.g. ABC Constructions',
+      enabled: widget.editingEntry == null,
+      validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
     );
   }
 
