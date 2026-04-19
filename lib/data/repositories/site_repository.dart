@@ -31,7 +31,7 @@ class SiteRepository extends ChangeNotifier {
         final List<dynamic> decoded = jsonDecode(data);
         _sites = decoded.map((item) => SiteModel.fromJson(Map<String, dynamic>.from(item))).toList();
       } else {
-        _sites = _getDemoSites();
+        _sites = [];
         await _saveToPrefs();
       }
       
@@ -90,24 +90,7 @@ class SiteRepository extends ChangeNotifier {
 
 
   List<SiteModel> _getDemoSites() {
-    return [
-      SiteModel(
-        id: 'S-001',
-        name: 'Hillview Apartment',
-        address: 'Sector 5, Gurgaon',
-        hasBudget: true,
-        budgetAmount: 5000000,
-        createdAt: DateTime.now().subtract(const Duration(days: 60)),
-      ),
-      SiteModel(
-        id: 'S-002',
-        name: 'The Villa',
-        address: 'Golf Course Road, Gurgaon',
-        hasBudget: true,
-        budgetAmount: 12000000,
-        createdAt: DateTime.now().subtract(const Duration(days: 45)),
-      ),
-    ];
+    return [];
   }
   String getSiteName(String siteId) {
     return _sites.firstWhere((s) => s.id == siteId, orElse: () => _sites.first).name;

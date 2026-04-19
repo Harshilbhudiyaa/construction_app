@@ -42,7 +42,7 @@ class PartyRepository extends ChangeNotifier {
             .map((item) => PartyModel.fromJson(Map<String, dynamic>.from(item)))
             .toList();
       } else {
-        _parties = _getDemoParties();
+        _parties = [];
         await _savePartiesToPrefs();
       }
 
@@ -207,36 +207,6 @@ class PartyRepository extends ChangeNotifier {
   // ── Demo Data ────────────────────────────────────────────────────────────────
 
   List<PartyModel> _getDemoParties() {
-    return [
-      PartyModel(
-        id: 'P-001',
-        name: 'JSW Steel Ltd',
-        category: PartyCategory.supplier,
-        contactNumber: '9988776655',
-        gstNumber: '07AAAAA0000A1Z5',
-        address: 'Mumbai, Maharashtra',
-        paymentTerms: 'Net 30',
-        createdAt: DateTime.now().subtract(const Duration(days: 30)),
-      ),
-      PartyModel(
-        id: 'P-002',
-        name: 'Ultratech Cement',
-        category: PartyCategory.supplier,
-        contactNumber: '9876543210',
-        gstNumber: '24BBBBB1111B2Z6',
-        address: 'Ahmedabad, Gujarat',
-        paymentTerms: 'On Delivery',
-        createdAt: DateTime.now().subtract(const Duration(days: 20)),
-      ),
-      PartyModel(
-        id: 'P-003',
-        name: 'Ramesh Tile Works',
-        category: PartyCategory.supplier,
-        contactNumber: '9900112233',
-        address: 'Surat, Gujarat',
-        paymentTerms: 'Credit 15 days',
-        createdAt: DateTime.now().subtract(const Duration(days: 40)),
-      ),
-    ];
+    return [];
   }
 }

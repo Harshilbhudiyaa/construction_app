@@ -469,9 +469,8 @@ class _DirectEntrySheetState extends State<DirectEntrySheet> {
   String                _unit    = 'pcs';
   bool                  _fromInventory = false;
   bool                  _submitting    = false;
-  bool                  _autoTotal     = true;
   bool                  _unlockName    = false;
-  bool                  _unlockRate    = false;
+  bool                  _syncingAmounts = false;
   final FocusNode       _qtyFocusNode  = FocusNode();
 
   @override
@@ -483,8 +482,6 @@ class _DirectEntrySheetState extends State<DirectEntrySheet> {
       _fromInventory = true;
       _fillFromMaterial(_selectedMaterial!);
     }
-    _qtyCtrl.addListener(_recalc);
-    _rateCtrl.addListener(_recalc);
   }
 
   void _fillFromMaterial(ConstructionMaterial m) {
@@ -493,17 +490,42 @@ class _DirectEntrySheetState extends State<DirectEntrySheet> {
     _rateCtrl.text    = m.pricePerUnit > 0 ? m.pricePerUnit.toStringAsFixed(0) : '';
     _unit             = m.unitType.isNotEmpty ? m.unitType : 'pcs';
     _unlockName       = false;
-    _unlockRate       = false;
-    _autoTotal        = true;
-    _recalc();
+    _syncFromRateOrQty();
     Future.delayed(const Duration(milliseconds: 100), () => _qtyFocusNode.requestFocus());
   }
 
-  void _recalc() {
-    if (!_autoTotal) return;
-    final qty  = double.tryParse(_qtyCtrl.text) ?? 0;
+  void _syncFromRateOrQty() {
+    if (_syncingAmounts) return;
+    _syncingAmounts = true;
+
+    final qty = double.tryParse(_qtyCtrl.text) ?? 0;
     final rate = double.tryParse(_rateCtrl.text) ?? 0;
-    _totalCtrl.text = (qty > 0 && rate > 0) ? (qty * rate).toStringAsFixed(0) : '';
+
+    if (qty > 0 && rate > 0) {
+      _totalCtrl.text = (qty * rate).toStringAsFixed(0);
+    } else if (qty <= 0 && rate > 0 && _totalCtrl.text.trim().isEmpty) {
+      _totalCtrl.text = rate.toStringAsFixed(0);
+    } else if (qty <= 0 && rate <= 0) {
+      _totalCtrl.clear();
+    }
+
+    _syncingAmounts = false;
+    if (mounted) setState(() {});
+  }
+
+  void _syncFromTotal() {
+    if (_syncingAmounts) return;
+    _syncingAmounts = true;
+
+    final qty = double.tryParse(_qtyCtrl.text) ?? 0;
+    final total = double.tryParse(_totalCtrl.text) ?? 0;
+
+    if (qty > 0 && total > 0) {
+      _rateCtrl.text = (total / qty).toStringAsFixed(2);
+    }
+
+    _syncingAmounts = false;
+    if (mounted) setState(() {});
   }
 
   @override
@@ -544,6 +566,7 @@ class _DirectEntrySheetState extends State<DirectEntrySheet> {
                     _selectedMaterial = null;
                     _descCtrl.clear();
                     _subtypeCtrl.clear();
+                    _qtyCtrl.clear();
                     _rateCtrl.clear();
                     _totalCtrl.clear();
                     _unit = 'pcs';
@@ -603,9 +626,7 @@ class _DirectEntrySheetState extends State<DirectEntrySheet> {
                 materialId: _selectedMaterial!.id,
                 onRateSelected: (rate) => setState(() {
                   _rateCtrl.text = rate.toStringAsFixed(0);
-                  _unlockRate = true;
-                  _autoTotal  = true;
-                  _recalc();
+                  _syncFromRateOrQty();
                 }),
               ),
               if (_selectedMaterial!.id.isNotEmpty) const SizedBox(height: 16),
@@ -665,6 +686,7 @@ class _DirectEntrySheetState extends State<DirectEntrySheet> {
                     focusNode: _qtyFocusNode,
                     keyboardType: TextInputType.number,
                     autofocus: _selectedMaterial != null,
+                    onChanged: (_) => _syncFromRateOrQty(),
                     style: const TextStyle(fontSize: 16, color: bcNavy, fontWeight: FontWeight.w600),
                     decoration: InputDecoration(
                       hintText: 'e.g. 100',
@@ -683,39 +705,38 @@ class _DirectEntrySheetState extends State<DirectEntrySheet> {
               ),
               const SizedBox(height: 12),
 
-              // Rate (read-only unless unlocked)
-              _ReadOnlyAutoField(
-                label: 'Rate / ${_unitLabel(_unit)} (₹)',
-                value: _rateCtrl.text.isNotEmpty ? '₹${_rateCtrl.text}' : 'Not set — tap Edit to add',
-                isUnlocked: _unlockRate,
-                controller: _rateCtrl,
+              // Rate — always editable (no edit button)
+              stockSheetField(
+                'Rate / ${_unitLabel(_unit)} (₹) *',
+                _rateCtrl,
+                hint: '0',
                 keyboardType: TextInputType.number,
-                onUnlock: () => setState(() { _unlockRate = true; _autoTotal = true; }),
+                onChanged: (_) => _syncFromRateOrQty(),
               ),
               if (_unit == 'bag') ...[_bagWeightField(_bagWeightCtrl)],
               const SizedBox(height: 12),
 
-              // Auto-calculated total OR manual entry
-              ListenableBuilder(
-                listenable: _totalCtrl,
-                builder: (_, child) => _totalCtrl.text.isNotEmpty
-                  ? Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: bcNavy.withValues(alpha: 0.04),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(children: [
-                        const Text('TOTAL AMOUNT', style: TextStyle(color: bcNavy, fontWeight: FontWeight.w800, fontSize: 11, letterSpacing: 0.5)),
-                        const Spacer(),
-                        Text('₹${_totalCtrl.text}', style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 20)),
-                      ]),
-                    )
-                  : stockSheetField('Total Amount (₹) *', _totalCtrl,
-                      hint: 'Enter qty × rate or type directly',
-                      keyboardType: TextInputType.number,
-                      onChanged: (_) => setState(() => _autoTotal = false)),
+              stockSheetField(
+                'Total Amount (₹) *',
+                _totalCtrl,
+                hint: 'Enter total amount to auto-calculate rate',
+                keyboardType: TextInputType.number,
+                onChanged: (_) => _syncFromTotal(),
               ),
+              const SizedBox(height: 8),
+              if (_totalCtrl.text.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: bcNavy.withValues(alpha: 0.04),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(children: [
+                    const Text('TOTAL AMOUNT', style: TextStyle(color: bcNavy, fontWeight: FontWeight.w800, fontSize: 11, letterSpacing: 0.5)),
+                    const Spacer(),
+                    Text('₹${_totalCtrl.text}', style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 20)),
+                  ]),
+                ),
             ],
           ],
 
@@ -731,18 +752,23 @@ class _DirectEntrySheetState extends State<DirectEntrySheet> {
             const SizedBox(height: 14),
             Row(children: [
               Expanded(child: stockSheetField(
-                'Qty (${_unitLabel(_unit)})', _qtyCtrl,
-                hint: '0', keyboardType: TextInputType.number, optional: true)),
+                  'Qty (${_unitLabel(_unit)})', _qtyCtrl,
+                  hint: '0',
+                  keyboardType: TextInputType.number,
+                  onChanged: (_) => _syncFromRateOrQty(),
+                  optional: true)),
               const SizedBox(width: 10),
               Expanded(child: stockSheetField(
-                'Rate / ${_unitLabel(_unit)} (₹)', _rateCtrl,
-                hint: '0', keyboardType: TextInputType.number)),
+                  'Rate / ${_unitLabel(_unit)} (₹)', _rateCtrl,
+                  hint: '0',
+                  keyboardType: TextInputType.number,
+                  onChanged: (_) => _syncFromRateOrQty())),
             ]),
             const SizedBox(height: 12),
             stockSheetField('Total Amount (₹) *', _totalCtrl,
-                hint: 'auto-calculated or enter directly',
+                hint: 'enter total amount to auto-calculate rate',
                 keyboardType: TextInputType.number,
-                onChanged: (_) => setState(() => _autoTotal = false)),
+                onChanged: (_) => _syncFromTotal()),
           ],
 
           const SizedBox(height: 16),
@@ -763,7 +789,7 @@ class _DirectEntrySheetState extends State<DirectEntrySheet> {
                 hint: '0', keyboardType: TextInputType.number, optional: true)),
             const SizedBox(width: 10),
             Expanded(child: stockDateSheetField('Due Date', context, _dueDate,
-                (d) => setState(() => _dueDate = d))),
+                    (d) => setState(() => _dueDate = d))),
           ]),
           const SizedBox(height: 24),
           StockSubmitButton(label: 'Save Entry', submitting: _submitting, onTap: () => _submit(context)),
@@ -1177,22 +1203,45 @@ class _AddBillItemDialogState extends State<_AddBillItemDialog> {
   final _totalCtrl    = TextEditingController();
   final _bagWeightCtrl = TextEditingController();
 
-  bool _autoTotal = true;
+  bool _syncingAmounts = false;
 
   @override
   void initState() {
     super.initState();
-    _qtyCtrl.addListener(_recalc);
-    _rateCtrl.addListener(_recalc);
   }
 
-  void _recalc() {
-    if (!_autoTotal) return;
-    final qty  = double.tryParse(_qtyCtrl.text) ?? 0;
+  void _syncFromRateOrQty() {
+    if (_syncingAmounts) return;
+    _syncingAmounts = true;
+
+    final qty = double.tryParse(_qtyCtrl.text) ?? 0;
     final rate = double.tryParse(_rateCtrl.text) ?? 0;
+
     if (qty > 0 && rate > 0) {
       _totalCtrl.text = (qty * rate).toStringAsFixed(0);
+    } else if (qty <= 0 && rate > 0 && _totalCtrl.text.trim().isEmpty) {
+      _totalCtrl.text = rate.toStringAsFixed(0);
+    } else if (qty <= 0 && rate <= 0) {
+      _totalCtrl.clear();
     }
+
+    _syncingAmounts = false;
+    if (mounted) setState(() {});
+  }
+
+  void _syncFromTotal() {
+    if (_syncingAmounts) return;
+    _syncingAmounts = true;
+
+    final qty = double.tryParse(_qtyCtrl.text) ?? 0;
+    final total = double.tryParse(_totalCtrl.text) ?? 0;
+
+    if (qty > 0 && total > 0) {
+      _rateCtrl.text = (total / qty).toStringAsFixed(2);
+    }
+
+    _syncingAmounts = false;
+    if (mounted) setState(() {});
   }
 
   @override
@@ -1267,6 +1316,7 @@ class _AddBillItemDialogState extends State<_AddBillItemDialog> {
                       _nameCtrl.text = m.name;
                       _rateCtrl.text = m.pricePerUnit.toStringAsFixed(0);
                       _unit = m.unitType;
+                      _syncFromRateOrQty();
                     }
                   });
                 }),
@@ -1295,6 +1345,7 @@ class _AddBillItemDialogState extends State<_AddBillItemDialog> {
                   _qtyCtrl,
                   hint: '0',
                   keyboardType: TextInputType.number,
+                  onChanged: (_) => _syncFromRateOrQty(),
                   optional: true,
                 )),
                 const SizedBox(width: 12),
@@ -1303,6 +1354,7 @@ class _AddBillItemDialogState extends State<_AddBillItemDialog> {
                   _rateCtrl,
                   hint: '0',
                   keyboardType: TextInputType.number,
+                  onChanged: (_) => _syncFromRateOrQty(),
                 )),
               ]),
               const SizedBox(height: 14),
@@ -1311,9 +1363,9 @@ class _AddBillItemDialogState extends State<_AddBillItemDialog> {
               stockSheetField(
                 'Total Amount (₹)',
                 _totalCtrl,
-                hint: 'auto or enter directly',
+                hint: 'enter total to auto-calculate rate',
                 keyboardType: TextInputType.number,
-                onChanged: (_) => setState(() => _autoTotal = false),
+                onChanged: (_) => _syncFromTotal(),
                 optional: true,
               ),
             ],

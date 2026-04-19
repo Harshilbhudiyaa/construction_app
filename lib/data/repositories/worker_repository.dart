@@ -43,7 +43,7 @@ class WorkerRepository extends ChangeNotifier {
             .map((e) => WorkerModel.fromJson(Map<String, dynamic>.from(e)))
             .toList();
       } else {
-        _workers = _demoWorkers();
+        _workers = [];
         await _saveWorkers();
       }
 
@@ -62,7 +62,7 @@ class WorkerRepository extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint('WorkerRepository load error: $e');
-      _workers = _demoWorkers();
+      _workers = [];
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -317,38 +317,7 @@ class WorkerRepository extends ChangeNotifier {
   DateTime _normalizeDate(DateTime d) => DateTime(d.year, d.month, d.day);
 
   List<WorkerModel> _demoWorkers() {
-    return [
-      WorkerModel(
-        id: 'W-001',
-        siteId: 'S-001',
-        name: 'Suresh Kumar',
-        phone: '9876501111',
-        occupation: WorkerOccupation.mason,
-        salaryType: SalaryType.daily,
-        salaryAmount: 700,
-        createdAt: DateTime.now().subtract(const Duration(days: 20)),
-      ),
-      WorkerModel(
-        id: 'W-002',
-        siteId: 'S-001',
-        name: 'Ramesh Patel',
-        phone: '9876502222',
-        occupation: WorkerOccupation.helper,
-        salaryType: SalaryType.daily,
-        salaryAmount: 500,
-        createdAt: DateTime.now().subtract(const Duration(days: 20)),
-      ),
-      WorkerModel(
-        id: 'W-003',
-        siteId: 'S-001',
-        name: 'Mukesh Singh',
-        phone: '9876503333',
-        occupation: WorkerOccupation.electrician,
-        salaryType: SalaryType.monthly,
-        salaryAmount: 18000,
-        createdAt: DateTime.now().subtract(const Duration(days: 15)),
-      ),
-    ];
+    return [];
   }
 }
 
