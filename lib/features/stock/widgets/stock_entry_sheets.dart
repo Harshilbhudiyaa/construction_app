@@ -596,9 +596,6 @@ class _DirectEntrySheetState extends State<DirectEntrySheet> {
                 ),
               ),
               const SizedBox(height: 16),
-            ] else ...[
-              _LockedMaterialBanner(material: widget.initialMaterial!),
-              const SizedBox(height: 16),
             ],
 
             if (_selectedMaterial != null) ...[
@@ -651,38 +648,38 @@ class _DirectEntrySheetState extends State<DirectEntrySheet> {
               ]),
               const SizedBox(height: 14),
 
-              // ── Qty — the primary input, large and prominent ───────
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF0FDF4),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xFFBBF7D0), width: 2),
-                ),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Row(children: [
-                    Icon(Icons.edit_rounded, size: 14, color: bcSuccess),
-                    SizedBox(width: 6),
-                    Text('ENTER QUANTITY', style: TextStyle(color: bcSuccess, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 0.5)),
-                  ]),
-                  const SizedBox(height: 8),
+              // ── Qty — the primary input ───────
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text('Quantity', style: TextStyle(color: bcNavy, fontWeight: FontWeight.w700, fontSize: 13)),
+                      const SizedBox(width: 6),
+                      const Text('*', style: TextStyle(color: bcDanger, fontWeight: FontWeight.w900, fontSize: 13)),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
                   TextFormField(
                     controller: _qtyCtrl,
                     focusNode: _qtyFocusNode,
                     keyboardType: TextInputType.number,
                     autofocus: _selectedMaterial != null,
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: bcNavy),
+                    style: const TextStyle(fontSize: 16, color: bcNavy, fontWeight: FontWeight.w600),
                     decoration: InputDecoration(
-                      hintText: '0',
-                      hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
+                      hintText: 'e.g. 100',
+                      hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
                       suffixText: _unit.toUpperCase(),
-                      suffixStyle: const TextStyle(color: Color(0xFF94A3B8), fontWeight: FontWeight.w700, fontSize: 13),
-                      border: InputBorder.none,
-                      isDense: true,
-                      contentPadding: EdgeInsets.zero,
+                      suffixStyle: const TextStyle(color: bcNavy, fontWeight: FontWeight.w800, fontSize: 12),
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: bcAmber, width: 2)),
                     ),
                   ),
-                ]),
+                ],
               ),
               const SizedBox(height: 12),
 
@@ -1593,32 +1590,4 @@ class _ModeTab extends StatelessWidget {
   }
 }
 
-class _LockedMaterialBanner extends StatelessWidget {
-  final ConstructionMaterial material;
-  const _LockedMaterialBanner({required this.material});
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: bcNavy.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: bcNavy.withValues(alpha: 0.1)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.inventory_2_rounded, size: 16, color: bcNavy),
-          const SizedBox(width: 10),
-          Text(
-            material.name,
-            style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w800, fontSize: 13),
-          ),
-          const Spacer(),
-          const Text('LOCKED', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 10, fontWeight: FontWeight.w900)),
-        ],
-      ),
-    );
-  }
-}

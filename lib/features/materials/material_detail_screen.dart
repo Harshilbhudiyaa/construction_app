@@ -10,9 +10,16 @@ import 'package:construction_app/features/stock/widgets/stock_entry_sheets.dart'
 import 'package:construction_app/data/models/stock_entry_model.dart';
 
 /// Material detail screen showing stock stats and full purchase history.
-class MaterialDetailScreen extends StatelessWidget {
+class MaterialDetailScreen extends StatefulWidget {
   final String materialId;
   const MaterialDetailScreen({super.key, required this.materialId});
+
+  @override
+  State<MaterialDetailScreen> createState() => _MaterialDetailScreenState();
+}
+
+class _MaterialDetailScreenState extends State<MaterialDetailScreen> {
+  String? _selectedSubType;
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +27,7 @@ class MaterialDetailScreen extends StatelessWidget {
     final stockRepo = context.watch<StockEntryRepository>();
 
     final material = invRepo.materials.firstWhere(
-      (m) => m.id == materialId,
+      (m) => m.id == widget.materialId,
       orElse: () => ConstructionMaterial(
         id: '', siteId: '', name: 'Unknown',
         subType: '',
@@ -33,10 +40,23 @@ class MaterialDetailScreen extends StatelessWidget {
       return const Scaffold(body: Center(child: Text('Material not found')));
     }
 
-    final entries    = stockRepo.getEntriesForMaterial(materialId);
-    final totalPurch = stockRepo.getTotalQuantityForMaterial(materialId);
-    final avgPrice   = stockRepo.getAvgPriceForMaterial(materialId);
+    var entries = stockRepo.getEntriesForMaterial(widget.materialId);
+
+    // Extract unique subtypes from both the material and entries
+    final allSubTypes = [
+      ...material.subType.split(' / ').map((s) => s.trim()).where((s) => s.isNotEmpty),
+      if (material.variant.trim().isNotEmpty) material.variant.trim(),
+      ...entries.map((e) => e.subType.trim()).where((s) => s.isNotEmpty && s != material.name)
+    ].toSet().toList()..sort();
+
+    if (_selectedSubType != null) {
+      entries = entries.where((e) => e.subType.trim() == _selectedSubType).toList();
+    }
+
+    final totalPurch = entries.fold(0.0, (s, e) => s + e.quantity);
     final totalSpend = entries.fold(0.0, (s, e) => s + e.totalAmount);
+    final avgPrice   = totalPurch > 0 ? totalSpend / totalPurch : 0.0;
+    
     final fmt        = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
     final fmtQty     = (double d) => d.toStringAsFixed(d.truncateToDouble() == d ? 0 : 2);
     final isLow      = material.currentStock <= material.minimumStockLimit && material.minimumStockLimit > 0;
@@ -55,7 +75,7 @@ class MaterialDetailScreen extends StatelessWidget {
             actions: [
               IconButton(
                 icon: const Icon(Icons.edit_outlined, color: Colors.white),
-                onPressed: () => Navigator.pushNamed(context, AppRoutes.editItem, arguments: materialId),
+                onPressed: () => Navigator.pushNamed(context, AppRoutes.editItem, arguments: widget.materialId),
                 tooltip: 'Edit Material',
               ),
               IconButton(
@@ -145,7 +165,47 @@ class MaterialDetailScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                const Text('PURCHASE HISTORY', style: TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.4)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('PURCHASE HISTORY', style: TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.4)),
+                    if (allSubTypes.isNotEmpty)
+                      Container(
+                        height: 32,
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: _selectedSubType,
+                            hint: const Text('All Subtypes', style: TextStyle(fontSize: 12, color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
+                            icon: const Icon(Icons.arrow_drop_down_rounded, color: Color(0xFF94A3B8)),
+                            style: const TextStyle(fontSize: 12, color: bcNavy, fontWeight: FontWeight.w700),
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                _selectedSubType = newValue;
+                              });
+                            },
+                            items: [
+                              const DropdownMenuItem<String>(
+                                value: null,
+                                child: Text('All Subtypes'),
+                              ),
+                              ...allSubTypes.map<DropdownMenuItem<String>>((String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(value),
+                                );
+                              }),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
                 const SizedBox(height: 10),
 
                 if (entries.isEmpty)
