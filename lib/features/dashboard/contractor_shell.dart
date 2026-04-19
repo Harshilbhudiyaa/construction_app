@@ -323,6 +323,7 @@ class _MoreBottomSheet extends StatelessWidget {
       _MoreItem('Sites',       Icons.location_city_rounded,        AppRoutes.siteManagement,    bcAmber),
       _MoreItem('Suppliers',   Icons.people_alt_rounded,           AppRoutes.supplierList,      const Color(0xFF34D399)),
       _MoreItem('Stock Entry', Icons.add_box_rounded,              AppRoutes.stockHub,          const Color(0xFF60A5FA)),
+      _MoreItem('Stock Out',   Icons.output_rounded,               AppRoutes.stockOut,          const Color(0xFFEF4444)),
       _MoreItem('Payments',    Icons.account_balance_wallet_rounded,AppRoutes.paymentHistory,   const Color(0xFFA78BFA)),
       _MoreItem('Inventory',   Icons.inventory_2_rounded,          AppRoutes.materialCatalog,   const Color(0xFF10B981), args: {'inStock': true}),
       _MoreItem('Reports',     Icons.analytics_rounded,            AppRoutes.reports,           const Color(0xFFFB7185)),

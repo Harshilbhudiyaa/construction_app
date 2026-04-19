@@ -19,6 +19,7 @@ import 'package:construction_app/features/inventory/screens/stock_operations_scr
 import 'package:construction_app/features/inventory/screens/material_master_screen.dart';
 import 'package:construction_app/features/inventory/screens/add_edit_item_screen.dart';
 import 'package:construction_app/features/inventory/screens/item_detail_screen.dart';
+import 'package:construction_app/features/inventory/screens/stock_out_screen.dart';
 
 // Reports
 import 'package:construction_app/features/reports/screens/advanced_reports_screen.dart';
@@ -70,6 +71,7 @@ class AppRoutes {
   static const String paymentHistory   = '/payment-history';
   static const String inwardManagement = '/inward-management';
   static const String stockOperations  = '/stock-operations';
+  static const String stockOut         = '/stock-out';
   static const String materialMaster   = '/material-master';
   static const String inwardEntry      = '/inward-entry';
   static const String partyLedger      = '/party-ledger';
@@ -135,6 +137,7 @@ class AppRoutes {
       }
       return const StockOperationsScreen();
     },
+    stockOut: (_) => const StockOutScreen(),
     materialMaster: (_) => const MaterialMasterScreen(),
     suppliers:      (_) => const PartyManagementScreen(), // legacy alias
     reports:        (_) => const AdvancedReportsScreen(),
