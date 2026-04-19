@@ -578,54 +578,7 @@ class _LoginScreenState extends State<LoginScreen>
       key: const ValueKey('phone'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'ACCESS ROLE',
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w800,
-            color: _kNavy,
-            letterSpacing: 2,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: UserRole.values.map((role) {
-            final isSelected = _selectedRole == role;
-            return GestureDetector(
-              onTap: () => setState(() => _selectedRole = role),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: isSelected ? _kAmber : Colors.grey.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: isSelected ? _kAmber : Colors.grey.withValues(alpha: 0.1),
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(role.icon, size: 14, color: isSelected ? _kNavy : Colors.grey[600]),
-                    const SizedBox(width: 6),
-                    Text(
-                      role.label,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        color: isSelected ? _kNavy : Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-        const SizedBox(height: 24),
+
         const Text(
           'PHONE NUMBER',
           style: TextStyle(
