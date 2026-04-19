@@ -80,28 +80,25 @@ class _SupplierDetailScreenState extends State<SupplierDetailScreen> {
           label: const Text('Add Bill Entry',
               style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13.5, letterSpacing: -0.2)),
         ),
-        // ── KEY FIX: Column (hero + scrollable body) instead of SliverAppBar
-        body: Column(
-          children: [
-            // HERO — wraps its own content, zero overflow
-            _HeroSection(
-              supplier: supplier,
-              total: total, paid: paid, pending: pending,
-              stockValue: stockValue,
-              entryCount: entries.length,
-              materialCount: materialSummary.length,
-              fmt: fmt,
-              onEdit: () => showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (_) => _SupplierEditSheet(supplier: supplier),
+        body: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            children: [
+              _HeroSection(
+                supplier: supplier,
+                total: total, paid: paid, pending: pending,
+                stockValue: stockValue,
+                entryCount: entries.length,
+                materialCount: materialSummary.length,
+                fmt: fmt,
+                onEdit: () => showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (_) => _SupplierEditSheet(supplier: supplier),
+                ),
               ),
-            ),
-            // BODY — scrollable
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
+              Padding(
                 padding: const EdgeInsets.fromLTRB(14, 20, 14, 100),
                 child: Column(
                   children: [
@@ -118,8 +115,8 @@ class _SupplierDetailScreenState extends State<SupplierDetailScreen> {
                   ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -198,7 +195,7 @@ class _HeroSection extends StatelessWidget {
                       color: _kAmber.withValues(alpha: 0.04)))),
 
           Padding(
-            padding: EdgeInsets.fromLTRB(16, top + 10, 16, 26),
+            padding: EdgeInsets.fromLTRB(16, top + 10, 16, 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -209,7 +206,7 @@ class _HeroSection extends StatelessWidget {
                   const Spacer(),
                   _HeroBtn(icon: Icons.edit_rounded, iconColor: _kAmber, onTap: onEdit),
                 ]),
-                const SizedBox(height: 22),
+                const SizedBox(height: 16),
 
                 // Profile row
                 Row(
@@ -225,28 +222,28 @@ class _HeroSection extends StatelessWidget {
                               maxLines: 1, overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 color: Colors.white, fontWeight: FontWeight.w900,
-                                fontSize: 22, letterSpacing: -0.5, height: 1.15,
+                                fontSize: 20, letterSpacing: -0.5, height: 1.15,
                               )),
                           if (supplier.contactNumber?.trim().isNotEmpty == true) ...[
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 2),
                             Text(supplier.contactNumber!,
                                 style: TextStyle(
                                   color: Colors.white.withValues(alpha: 0.6),
-                                  fontSize: 13, fontWeight: FontWeight.w500,
+                                  fontSize: 12, fontWeight: FontWeight.w500,
                                 )),
                           ],
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 6),
                           _ActiveBadge(),
                         ],
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
 
                 // Stats
                 _StatsRow(total: total, paid: paid, pending: pending, fmt: fmt),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
 
                 // Pills
                 _PillsRow(
@@ -292,9 +289,9 @@ class _Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    width: 62, height: 62,
+    width: 52, height: 52,
     decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(16),
       color: Colors.white.withValues(alpha: 0.12),
       border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1.5),
     ),
@@ -302,7 +299,7 @@ class _Avatar extends StatelessWidget {
       child: Text(name.isNotEmpty ? name[0].toUpperCase() : 'S',
           style: const TextStyle(
             color: Colors.white, fontWeight: FontWeight.w900,
-            fontSize: 24, letterSpacing: -1,
+            fontSize: 20, letterSpacing: -1,
           )),
     ),
   );
@@ -363,11 +360,11 @@ class _StatCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
     child: Column(children: [
       Text(value, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center,
-          style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 14.5, letterSpacing: -0.3)),
-      const SizedBox(height: 5),
+          style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 13.5, letterSpacing: -0.3)),
+      const SizedBox(height: 3),
       Text(label, textAlign: TextAlign.center,
           style: const TextStyle(color: Colors.white, fontSize: 9.5,
               fontWeight: FontWeight.w600, letterSpacing: 0.3)),
@@ -378,7 +375,7 @@ class _StatCell extends StatelessWidget {
 class _VDiv extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
-      width: 1, margin: const EdgeInsets.symmetric(vertical: 14),
+      width: 1, margin: const EdgeInsets.symmetric(vertical: 10),
       color: Colors.white.withValues(alpha: 0.1));
 }
 
@@ -621,27 +618,11 @@ class _MaterialsCard extends StatelessWidget {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(children: [
-          const Expanded(child: _SHeader(
-            title: 'Materials',
-            subtitle: 'Purchased from this supplier',
-            icon: Icons.category_rounded,
-          )),
-          ElevatedButton.icon(
-            onPressed: () => showModalBottomSheet(
-              context: context, isScrollControlled: true, backgroundColor: Colors.transparent,
-              builder: (_) => SupplierBillSheet(initialSupplier: supplier),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _kNavy, foregroundColor: Colors.white, elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            icon: const Icon(Icons.add_rounded, size: 15),
-            label: const Text('Add Bill'),
-          ),
-        ]),
+        const _SHeader(
+          title: 'Materials',
+          subtitle: 'Purchased from this supplier',
+          icon: Icons.category_rounded,
+        ),
         const SizedBox(height: 16),
         if (materialSummary.isEmpty)
           _EmptyState(icon: Icons.inventory_2_outlined, title: 'No material entries yet',
