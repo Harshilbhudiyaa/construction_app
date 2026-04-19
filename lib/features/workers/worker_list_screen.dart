@@ -164,7 +164,7 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
                   ],
                 ),
               ),
-              height: 146,
+              height: 176,
             ),
           ),
         ],
@@ -174,35 +174,35 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
           child: workerRepo.isLoading
               ? const Center(child: CircularProgressIndicator(color: bcAmber))
               : workers.isEmpty
-              ? _emptyState()
-              : ListView.builder(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-            physics: const BouncingScrollPhysics(),
-            itemCount: workers.length,
-            itemBuilder: (_, i) {
-              final worker = workers[i];
-              final earned = workerRepo.computeEarnedSalary(worker.id, now.year, now.month);
-              final paid = workerRepo.getTotalAdvanceForMonth(worker.id, now.year, now.month);
-              final pending = workerRepo.getSalaryDue(worker.id, now.year, now.month);
-              final attendance = workerRepo.getAttendanceForMonth(worker.id, now.year, now.month);
-              final presentDays = attendance.where((a) => a.status == AttendanceStatus.present).length;
-              final halfDays = attendance.where((a) => a.status == AttendanceStatus.halfDay).length;
+                  ? _emptyState()
+                  : ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: workers.length,
+                      itemBuilder: (_, i) {
+                        final worker = workers[i];
+                        final earned = workerRepo.computeEarnedSalary(worker.id, now.year, now.month);
+                        final paid = workerRepo.getTotalAdvanceForMonth(worker.id, now.year, now.month);
+                        final pending = workerRepo.getSalaryDue(worker.id, now.year, now.month);
+                        final attendance = workerRepo.getAttendanceForMonth(worker.id, now.year, now.month);
+                        final presentDays = attendance.where((a) => a.status == AttendanceStatus.present).length;
+                        final halfDays = attendance.where((a) => a.status == AttendanceStatus.halfDay).length;
 
-              return _WorkerCard(
-                worker: worker,
-                earned: earned,
-                paid: paid,
-                pending: pending,
-                presentDays: presentDays,
-                halfDays: halfDays,
-                fmt: fmt,
-                onOpen: () => _openWorker(context, worker),
-                onAttendance: () => _showMarkAttendance(context, worker),
-                onAdvance: () => _showGiveAdvance(context, worker),
-                onHistory: () => _openHistory(context, worker),
-              );
-            },
-          ),
+                        return _WorkerCard(
+                          worker: worker,
+                          earned: earned,
+                          paid: paid,
+                          pending: pending,
+                          presentDays: presentDays,
+                          halfDays: halfDays,
+                          fmt: fmt,
+                          onOpen: () => _openWorker(context, worker),
+                          onAttendance: () => _showMarkAttendance(context, worker),
+                          onAdvance: () => _showGiveAdvance(context, worker),
+                          onHistory: () => _openHistory(context, worker),
+                        );
+                      },
+                    ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -260,42 +260,42 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
   }
 
   Widget _emptyState() => Center(
-    child: Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 82,
-            height: 82,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: bcNavy.withValues(alpha: 0.05),
-                  blurRadius: 22,
-                  offset: const Offset(0, 10),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 82,
+                height: 82,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: bcNavy.withValues(alpha: 0.05),
+                      blurRadius: 22,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: const Icon(Icons.engineering_outlined, size: 42, color: Color(0xFF94A3B8)),
+                child: const Icon(Icons.engineering_outlined, size: 42, color: Color(0xFF94A3B8)),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'No workers found',
+                style: TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 18),
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'Add workers to start attendance, salary and payment tracking.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          const Text(
-            'No workers found',
-            style: TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 18),
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            'Add workers to start attendance, salary and payment tracking.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
-          ),
-        ],
-      ),
-    ),
-  );
+        ),
+      );
 
   void _showSortSheet() async {
     final result = await showModalBottomSheet<_WorkerSort>(
@@ -367,7 +367,8 @@ class _TopSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.only(top: 15),
       decoration: BoxDecoration(
         gradient: const LinearGradient(colors: [Colors.white, Color(0xFFF8FAFC)]),
         borderRadius: BorderRadius.circular(28),
@@ -1117,13 +1118,13 @@ class _AdvanceDialogState extends State<AdvanceDialog> {
               return;
             }
             await context.read<WorkerRepository>().addAdvance(WorkerAdvance(
-              id: const Uuid().v4(),
-              workerId: widget.worker.id,
-              amount: amount,
-              date: DateTime.now(),
-              remarks: _remarksCtrl.text.trim().isEmpty ? null : _remarksCtrl.text.trim(),
-              paidBy: 'Admin',
-            ));
+                  id: const Uuid().v4(),
+                  workerId: widget.worker.id,
+                  amount: amount,
+                  date: DateTime.now(),
+                  remarks: _remarksCtrl.text.trim().isEmpty ? null : _remarksCtrl.text.trim(),
+                  paidBy: 'Admin',
+                ));
             if (!context.mounted) return;
             Navigator.pop(context);
           },
@@ -1327,11 +1328,11 @@ class _DailyAttendanceSheetState extends State<_DailyAttendanceSheet> {
   Future<void> _submit(BuildContext context) async {
     setState(() => _submitting = true);
     await context.read<WorkerRepository>().markBulkAttendance(
-      siteId: widget.workers.first.siteId,
-      date: _selectedDate,
-      statusByWorkerId: _statusMap,
-      generatedIdPrefix: 'ATT-BULK',
-    );
+          siteId: widget.workers.first.siteId,
+          date: _selectedDate,
+          statusByWorkerId: _statusMap,
+          generatedIdPrefix: 'ATT-BULK',
+        );
     if (!mounted) return;
     Navigator.pop(context);
   }
@@ -1353,7 +1354,8 @@ class _SearchBar extends StatelessWidget {
           BoxShadow(color: bcNavy.withValues(alpha: 0.04), blurRadius: 16, offset: const Offset(0, 8)),
         ],
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 5),
+
       child: Row(
         children: [
           const Icon(Icons.search_rounded, color: bcAmber),

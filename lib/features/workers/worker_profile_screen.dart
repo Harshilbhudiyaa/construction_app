@@ -58,7 +58,7 @@ class _WorkerProfileScreenState extends State<WorkerProfileScreen> with SingleTi
           NestedScrollView(
             headerSliverBuilder: (context, innerBoxIsScrolled) => [
               SliverAppBar(
-                expandedHeight: 315,
+                expandedHeight: 330 + MediaQuery.of(context).padding.top,
                 pinned: true,
                 stretch: true,
                 backgroundColor: bcNavy,
@@ -600,8 +600,8 @@ class _FloatingActionDock extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.fact_check_rounded, color: Colors.white, size: 19),
-                          SizedBox(width: 10),
-                          Text('ATTENDANCE', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 0.7)),
+                          SizedBox(width: 6),
+                          Flexible(child: Text('ATTENDANCE', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 0.7))),
                         ],
                       ),
                     ),
@@ -618,9 +618,10 @@ class _FloatingActionDock extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 15),
                     child: const Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.payments_rounded, color: bcNavy, size: 19),
-                        SizedBox(width: 8),
+                        SizedBox(width: 6),
                         Text('PAYMENT', style: TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 0.7)),
                       ],
                     ),

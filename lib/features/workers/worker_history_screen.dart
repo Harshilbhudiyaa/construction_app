@@ -131,13 +131,12 @@ class _WorkerHistoryScreenState extends State<WorkerHistoryScreen> {
                   ],
                 ),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _KpiStat('Earned', fmt.format(earned), bcNavy),
+                    Expanded(child: _KpiStat('Earned', fmt.format(earned), bcNavy)),
                     _VerticalSep(),
-                    _KpiStat('Paid', fmt.format(paid), bcAmber),
+                    Expanded(child: _KpiStat('Paid', fmt.format(paid), bcAmber)),
                     _VerticalSep(),
-                    _KpiStat('Pending', fmt.format(pending), pending > 0 ? bcDanger : bcSuccess),
+                    Expanded(child: _KpiStat('Pending', fmt.format(pending), pending > 0 ? bcDanger : bcSuccess)),
                   ],
                 ),
               ),
@@ -238,9 +237,9 @@ class _WorkerHistoryScreenState extends State<WorkerHistoryScreen> {
   }
 
   Widget _sectionHeader(String title) => Padding(
-    padding: const EdgeInsets.only(bottom: 12, left: 4),
-    child: Text(title.toUpperCase(), style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.2)),
-  );
+        padding: const EdgeInsets.only(bottom: 12, left: 4),
+        child: Text(title.toUpperCase(), style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.2)),
+      );
 }
 
 class _HeroSummaryCard extends StatelessWidget {
@@ -279,9 +278,9 @@ class _KpiStat extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(value, style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 16)),
+        Text(value, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 16)),
         const SizedBox(height: 4),
-        Text(label, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 10, fontWeight: FontWeight.w600)),
+        Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 10, fontWeight: FontWeight.w600)),
       ],
     );
   }
