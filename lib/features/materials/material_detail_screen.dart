@@ -169,43 +169,50 @@ class _MaterialDetailScreenState extends State<MaterialDetailScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text('PURCHASE HISTORY', style: TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.4)),
-                    if (allSubTypes.isNotEmpty)
-                      Container(
-                        height: 32,
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: _selectedSubType,
-                            hint: const Text('All Subtypes', style: TextStyle(fontSize: 12, color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
-                            icon: const Icon(Icons.arrow_drop_down_rounded, color: Color(0xFF94A3B8)),
-                            style: const TextStyle(fontSize: 12, color: bcNavy, fontWeight: FontWeight.w700),
-                            onChanged: (String? newValue) {
-                              setState(() {
-                                _selectedSubType = newValue;
-                              });
-                            },
-                            items: [
-                              const DropdownMenuItem<String>(
-                                value: null,
-                                child: Text('All Subtypes'),
-                              ),
-                              ...allSubTypes.map<DropdownMenuItem<String>>((String value) {
-                                return DropdownMenuItem<String>(
-                                  value: value,
-                                  child: Text(value),
-                                );
-                              }),
-                            ],
-                          ),
-                        ),
-                      ),
                   ],
                 ),
+                if (allSubTypes.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    height: 48,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
+                      boxShadow: [
+                        BoxShadow(color: bcNavy.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4)),
+                      ],
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: _selectedSubType,
+                        hint: const Text('Filter by Subtype', style: TextStyle(fontSize: 14, color: Color(0xFF94A3B8), fontWeight: FontWeight.w600)),
+                        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: bcNavy, size: 24),
+                        style: const TextStyle(fontSize: 15, color: bcNavy, fontWeight: FontWeight.w800),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _selectedSubType = newValue;
+                          });
+                        },
+                        items: [
+                          const DropdownMenuItem<String>(
+                            value: null,
+                            child: Text('All Subtypes'),
+                          ),
+                          ...allSubTypes.map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 10),
 
                 if (entries.isEmpty)
