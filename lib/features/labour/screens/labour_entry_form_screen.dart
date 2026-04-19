@@ -30,7 +30,7 @@ class _LabourEntryFormScreenState extends State<LabourEntryFormScreen> {
   SiteModel? _selectedSite;
   PartyModel? _selectedContractor;
   LabourWorkType _workType = LabourWorkType.fixedContract;
-  
+
   final _descriptionCtrl = TextEditingController();
   final _quantityCtrl = TextEditingController();
   final _rateCtrl = TextEditingController();
@@ -76,7 +76,7 @@ class _LabourEntryFormScreenState extends State<LabourEntryFormScreen> {
 
     final qty = double.tryParse(_quantityCtrl.text) ?? 0;
     final rate = double.tryParse(_rateCtrl.text) ?? 0;
-    
+
     setState(() {
       _totalAmountCtrl.text = (qty * rate).toStringAsFixed(2);
     });
@@ -146,7 +146,7 @@ class _LabourEntryFormScreenState extends State<LabourEntryFormScreen> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(widget.editingEntry != null ? 'Contract updated' : 'Contract added successfully'),
+            content: Text(widget.editingEntry != null ? 'Deal updated' : 'Deal created successfully'),
             backgroundColor: bcSuccess,
           ),
         );
@@ -165,7 +165,7 @@ class _LabourEntryFormScreenState extends State<LabourEntryFormScreen> {
   @override
   Widget build(BuildContext context) {
     return ProfessionalPage(
-      title: widget.editingEntry != null ? 'Edit Contract' : 'New Labour Contract',
+      title: widget.editingEntry != null ? 'Edit Deal' : 'New Contractor Deal',
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 120),
@@ -231,8 +231,8 @@ class _LabourEntryFormScreenState extends State<LabourEntryFormScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('WORK SPECIFICATIONS', 
-          style: TextStyle(color: bcTextSecondary, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1)),
+        const Text('WORK SPECIFICATIONS',
+            style: TextStyle(color: bcTextSecondary, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1)),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(20),
@@ -244,7 +244,7 @@ class _LabourEntryFormScreenState extends State<LabourEntryFormScreen> {
           child: Column(
             children: [
               HelpfulDropdown<LabourWorkType>(
-                label: 'Payment Model',
+                label: 'Deal Type',
                 value: _workType,
                 items: LabourWorkType.values,
                 labelMapper: (t) => t.displayName,
@@ -264,7 +264,7 @@ class _LabourEntryFormScreenState extends State<LabourEntryFormScreen> {
               HelpfulTextField(
                 label: 'Work Description',
                 controller: _descriptionCtrl,
-                hintText: 'e.g. Painting of Block A, Foundation RCC...',
+                hintText: 'e.g. Slab work, painting, block plaster...',
                 maxLines: 2,
                 validator: (v) => v!.isEmpty ? 'Required' : null,
               ),
@@ -304,8 +304,8 @@ class _LabourEntryFormScreenState extends State<LabourEntryFormScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('FINANCIALS', 
-          style: TextStyle(color: bcTextSecondary, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1)),
+        const Text('RATE & PAYMENT TERMS',
+            style: TextStyle(color: bcTextSecondary, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1)),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(20),
@@ -345,7 +345,7 @@ class _LabourEntryFormScreenState extends State<LabourEntryFormScreen> {
               // For perSqFt: only rate, area at settlement time
               if (_workType == LabourWorkType.perSqFt) ...[
                 HelpfulTextField(
-                  label: 'Rate / Sq.Ft (₹)',
+                  label: 'Rate per Sq.Ft (₹)',
                   controller: _rateCtrl,
                   keyboardType: TextInputType.number,
                   validator: (v) => v!.isEmpty ? 'Required' : null,
@@ -362,7 +362,7 @@ class _LabourEntryFormScreenState extends State<LabourEntryFormScreen> {
                     Icon(Icons.info_outline_rounded, color: bcAmber, size: 14),
                     SizedBox(width: 8),
                     Expanded(child: Text(
-                      'Actual sq.ft area will be entered at final settlement time.',
+                      'Actual measured sq.ft will be entered at final payment time. Advance given earlier will be deducted there.',
                       style: TextStyle(color: Color(0xFF92400E), fontSize: 11),
                     )),
                   ]),
@@ -373,8 +373,8 @@ class _LabourEntryFormScreenState extends State<LabourEntryFormScreen> {
                 label: _workType == LabourWorkType.fixedContract
                     ? 'Total Contract Amount (₹)'
                     : _workType == LabourWorkType.perSqFt
-                        ? 'Estimated Total (₹) — optional'
-                        : 'Estimated Total (₹)',
+                    ? 'Estimated Total (₹) — optional'
+                    : 'Estimated Total (₹)',
                 controller: _totalAmountCtrl,
                 keyboardType: TextInputType.number,
                 enabled: _workType == LabourWorkType.fixedContract || _workType == LabourWorkType.perSqFt,
@@ -382,9 +382,9 @@ class _LabourEntryFormScreenState extends State<LabourEntryFormScreen> {
               ),
               const SizedBox(height: 16),
               HelpfulTextField(
-                label: 'Notes / Payment Terms',
+                label: 'Advance / Payment Terms',
                 controller: _notesCtrl,
-                hintText: 'e.g. 20% on completion of slab...',
+                hintText: 'e.g. Pay ₹5000 when slab is filled, remaining after final measurement',
                 maxLines: 2,
               ),
             ],
@@ -409,9 +409,9 @@ class _LabourEntryFormScreenState extends State<LabourEntryFormScreen> {
         child: _isLoading
             ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
             : Text(
-                widget.editingEntry != null ? 'UPDATE CONTRACT' : 'CREATE CONTRACT',
-                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14, letterSpacing: 1),
-              ),
+          widget.editingEntry != null ? 'UPDATE DEAL' : 'CREATE DEAL',
+          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14, letterSpacing: 1),
+        ),
       ),
     );
   }

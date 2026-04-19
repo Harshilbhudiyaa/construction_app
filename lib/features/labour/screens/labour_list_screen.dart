@@ -79,7 +79,7 @@ class _LabourListScreenState extends State<LabourListScreen>
                       children: [
                         const SizedBox(height: 44),
                         const Text(
-                          'Labour & Contractors',
+                          'Contractor Work',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 24,
@@ -89,7 +89,7 @@ class _LabourListScreenState extends State<LabourListScreen>
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '${allEntries.length} contract${allEntries.length != 1 ? 's' : ''} • ${siteRepo.selectedSite?.name ?? 'All Sites'}',
+                          '${allEntries.length} deal${allEntries.length != 1 ? 's' : ''} • ${siteRepo.selectedSite?.name ?? 'All Sites'}',
                           style: const TextStyle(
                               color: Colors.white54, fontSize: 13),
                         ),
@@ -113,7 +113,7 @@ class _LabourListScreenState extends State<LabourListScreen>
                       fontWeight: FontWeight.w800, fontSize: 12),
                   tabs: [
                     Tab(text: 'ONGOING (${ongoing.length})'),
-                    Tab(text: 'DONE (${completed.length})'),
+                    Tab(text: 'READY TO SETTLE (${completed.length})'),
                     Tab(text: 'SETTLED (${settled.length})'),
                   ],
                 ),
@@ -130,17 +130,17 @@ class _LabourListScreenState extends State<LabourListScreen>
                   if (needSettlement > 0)
                     _AlertBanner(
                       text:
-                          '$needSettlement contractor${needSettlement > 1 ? 's' : ''} awaiting final settlement',
+                      '$needSettlement contractor${needSettlement > 1 ? 's' : ''} ready for final payment',
                       onTap: () => _tabController.animateTo(1),
                     ),
                   const SizedBox(height: 12),
                   _SummaryRow(
                     items: [
-                      _SumItem('Contract Value', _fmt.format(totalContract),
+                      _SumItem('Gross Value', _fmt.format(totalContract),
                           const Color(0xFF6366F1), Icons.handshake_rounded),
-                      _SumItem('Advance Paid', _fmt.format(totalAdvance),
+                      _SumItem('Advance Given', _fmt.format(totalAdvance),
                           bcAmber, Icons.payments_rounded),
-                      _SumItem('Pending', _fmt.format(totalPending),
+                      _SumItem('Final Pending', _fmt.format(totalPending),
                           const Color(0xFFF04438), Icons.pending_actions_rounded),
                     ],
                   ),
@@ -166,13 +166,13 @@ class _LabourListScreenState extends State<LabourListScreen>
       // ── FAB ────────────────────────────────────────────────────────────────
       floatingActionButton: context.watch<AuthRepository>().canManageLabour
           ? FloatingActionButton.extended(
-              backgroundColor: bcAmber,
-              foregroundColor: bcNavy,
-              icon: const Icon(Icons.add_rounded),
-              label: const Text('Add Contract',
-                  style: TextStyle(fontWeight: FontWeight.w800)),
-              onPressed: () => Navigator.pushNamed(context, AppRoutes.labourEntry),
-            )
+        backgroundColor: bcAmber,
+        foregroundColor: bcNavy,
+        icon: const Icon(Icons.add_rounded),
+        label: const Text('New Deal',
+            style: TextStyle(fontWeight: FontWeight.w800)),
+        onPressed: () => Navigator.pushNamed(context, AppRoutes.labourEntry),
+      )
           : null,
     );
   }
@@ -242,7 +242,7 @@ class _SummaryRow extends StatelessWidget {
         return Expanded(
           child: Container(
             margin:
-                EdgeInsets.only(right: entry.key < items.length - 1 ? 8 : 0),
+            EdgeInsets.only(right: entry.key < items.length - 1 ? 8 : 0),
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: Colors.white,
@@ -314,7 +314,7 @@ class _LabourListTab extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                     fontSize: 15)),
             const SizedBox(height: 6),
-            Text('Tap + Add Contract to get started',
+            Text('Tap + New Deal to get started',
                 style: TextStyle(color: Colors.grey[400], fontSize: 12)),
           ],
         ),
@@ -358,8 +358,8 @@ class _LabourCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final progressPct = entry.totalContractAmount > 0
         ? ((entry.totalAdvancePaid + (entry.finalSettlementAmount ?? 0)) /
-                entry.totalContractAmount)
-            .clamp(0.0, 1.0)
+        entry.totalContractAmount)
+        .clamp(0.0, 1.0)
         : 0.0;
 
     return GestureDetector(
@@ -451,7 +451,7 @@ class _LabourCard extends StatelessWidget {
             // ── Work Description ─────────────────────────────────────────
             Padding(
               padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Text(
                 entry.workDescription,
                 style: const TextStyle(
@@ -507,7 +507,7 @@ class _LabourCard extends StatelessWidget {
               child: Row(
                 children: [
                   _FooterStat(
-                    label: 'Pending',
+                    label: 'Final Due',
                     value: fmt.format(entry.pendingAmount.clamp(0, double.infinity)),
                     color: entry.pendingAmount > 0
                         ? const Color(0xFFF04438)
@@ -533,7 +533,7 @@ class _LabourCard extends StatelessWidget {
                         border: Border.all(color: const Color(0xFFFED7AA)),
                       ),
                       child: const Text(
-                        '⚡ Settle Now',
+                        '⚡ Final Pay',
                         style: TextStyle(
                             color: Color(0xFFB45309),
                             fontSize: 10,

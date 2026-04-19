@@ -29,12 +29,12 @@ class _LabourDetailScreenState extends State<LabourDetailScreen> {
     final entry      = labourRepo.entries.firstWhere((e) => e.id == widget.entryId);
 
     return ProfessionalPage(
-      title: 'Contract Detail',
+      title: 'Deal Detail',
       subtitle: entry.partyName,
-      category: 'LABOUR MODULE',
+      category: 'CONTRACTOR FLOW',
       headerStats: [
         HeroStatPill(
-            label: 'Contract',
+            label: 'Gross',
             value: _fmt.format(entry.totalContractAmount),
             color: bcNavy,
             icon: Icons.handshake_rounded),
@@ -44,7 +44,7 @@ class _LabourDetailScreenState extends State<LabourDetailScreen> {
             color: bcSuccess,
             icon: Icons.check_circle_rounded),
         HeroStatPill(
-            label: 'Pending',
+            label: 'Balance',
             value: _fmt.format(entry.pendingAmount),
             color: bcDanger,
             icon: Icons.pending_rounded),
@@ -93,7 +93,7 @@ class _LabourDetailScreenState extends State<LabourDetailScreen> {
               Icon(Icons.info_outline_rounded, color: getStatusColor(), size: 18),
               const SizedBox(width: 10),
               Text(
-                'Current Status: ${entry.status.displayName.toUpperCase()}',
+                'Status: ${entry.status.displayName.toUpperCase()}',
                 style: TextStyle(
                     color: getStatusColor(),
                     fontWeight: FontWeight.w900,
@@ -116,7 +116,7 @@ class _LabourDetailScreenState extends State<LabourDetailScreen> {
           if (entry.status == LabourStatus.completed) ...[
             const SizedBox(height: 12),
             const Text(
-              '⚠️ Work verified as complete. Awaiting final settlement payment.',
+              '⚠️ Work completed. Final payable amount will be calculated after deducting all advances.',
               style: TextStyle(
                   color: Color(0xFF92400E),
                   fontSize: 11,
@@ -132,7 +132,7 @@ class _LabourDetailScreenState extends State<LabourDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('WORK SPECIFICATIONS',
+        const Text('WORK DETAILS',
             style: TextStyle(
                 color: bcTextSecondary,
                 fontSize: 11,
@@ -156,7 +156,7 @@ class _LabourDetailScreenState extends State<LabourDetailScreen> {
               if (entry.completionDate != null)
                 _DetailRow('Completed On', DateFormat('dd MMM yyyy').format(entry.completionDate!)),
               if (entry.workQuantity != null)
-                _DetailRow('Est. Scope', '${entry.workQuantity} ${entry.workType.unitLabel}'),
+                _DetailRow(entry.workType == LabourWorkType.perSqFt ? 'Actual Area' : 'Scope', '${entry.workQuantity} ${entry.workType.unitLabel}'),
               _DetailRow('Rate / Unit', _fmt.format(entry.ratePerUnit)),
             ],
           ),
@@ -169,7 +169,7 @@ class _LabourDetailScreenState extends State<LabourDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('PAYMENT LOG',
+        const Text('PAYMENT HISTORY',
             style: TextStyle(
                 color: bcTextSecondary,
                 fontSize: 11,
@@ -184,38 +184,38 @@ class _LabourDetailScreenState extends State<LabourDetailScreen> {
               border: Border.all(color: bcBorder)),
           child: entry.advancePayments.isEmpty && entry.finalSettlementAmount == null
               ? Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: Center(child: Column(children: [
-                    Icon(Icons.payments_outlined, color: bcTextSecondary.withValues(alpha: 0.4), size: 32),
-                    const SizedBox(height: 8),
-                    const Text('No payments recorded yet',
-                        style: TextStyle(color: bcTextSecondary, fontSize: 13)),
-                    const SizedBox(height: 4),
-                    Text(
-                      entry.status == LabourStatus.ongoing
-                          ? 'Payment will be recorded at final settlement'
-                          : 'Ready for final settlement',
-                      style: const TextStyle(color: bcTextSecondary, fontSize: 11),
-                    ),
-                  ])),
-                )
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: Center(child: Column(children: [
+              Icon(Icons.payments_outlined, color: bcTextSecondary.withValues(alpha: 0.4), size: 32),
+              const SizedBox(height: 8),
+              const Text('No payments recorded yet',
+                  style: TextStyle(color: bcTextSecondary, fontSize: 13)),
+              const SizedBox(height: 4),
+              Text(
+                entry.status == LabourStatus.ongoing
+                    ? 'Record advance payments first, then settle final balance later'
+                    : 'Ready for final payment',
+                style: const TextStyle(color: bcTextSecondary, fontSize: 11),
+              ),
+            ])),
+          )
               : Column(
-                  children: [
-                    ...entry.advancePayments.map((p) => _PaymentHistoryItem(
-                        title: 'Advance Payment',
-                        amount: p.amount,
-                        date: p.date,
-                        isSettlement: false,
-                        fmt: _fmt)),
-                    if (entry.finalSettlementAmount != null)
-                      _PaymentHistoryItem(
-                          title: 'Final Settlement',
-                          amount: entry.finalSettlementAmount!,
-                          date: entry.settledDate ?? DateTime.now(),
-                          isSettlement: true,
-                          fmt: _fmt),
-                  ],
-                ),
+            children: [
+              ...entry.advancePayments.map((p) => _PaymentHistoryItem(
+                  title: 'Advance Payment',
+                  amount: p.amount,
+                  date: p.date,
+                  isSettlement: false,
+                  fmt: _fmt)),
+              if (entry.finalSettlementAmount != null)
+                _PaymentHistoryItem(
+                    title: 'Final Settlement',
+                    amount: entry.finalSettlementAmount!,
+                    date: entry.settledDate ?? DateTime.now(),
+                    isSettlement: true,
+                    fmt: _fmt),
+            ],
+          ),
         ),
       ],
     );
@@ -233,7 +233,7 @@ class _LabourDetailScreenState extends State<LabourDetailScreen> {
             child: ElevatedButton.icon(
               onPressed: () => _showSettleDialog(repo, entry, auth),
               icon: const Icon(Icons.handshake_rounded),
-              label: const Text('RECORD FINAL SETTLEMENT',
+              label: const Text('RECORD FINAL PAYMENT',
                   style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
               style: ElevatedButton.styleFrom(
                   backgroundColor: bcSuccess,
@@ -280,8 +280,8 @@ class _LabourDetailScreenState extends State<LabourDetailScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('Mark Complete?'),
-        content: const Text('This will set work status to "Completed". You can then record final settlement.'),
+        title: const Text('Mark Work Complete?'),
+        content: const Text('This will set the work status to "Completed". After measurement, you can record the final payment.'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('CANCEL')),
           TextButton(onPressed: () => Navigator.pop(c, true), child: const Text('YES, COMPLETED')),
@@ -305,8 +305,11 @@ class _LabourDetailScreenState extends State<LabourDetailScreen> {
       if (!isPerSqFt) return;
       final sqft = double.tryParse(sqftCtrl.text) ?? 0;
       if (sqft > 0) {
-        final computed = sqft * entry.ratePerUnit;
-        amtCtrl.text = computed.toStringAsFixed(0);
+        final gross = sqft * entry.ratePerUnit;
+        final payable = (gross - entry.totalAdvancePaid).clamp(0.0, double.infinity);
+        amtCtrl.text = payable.toStringAsFixed(0);
+      } else {
+        amtCtrl.text = '';
       }
     }
 
@@ -315,7 +318,7 @@ class _LabourDetailScreenState extends State<LabourDetailScreen> {
       builder: (c) => StatefulBuilder(
         builder: (c, setDialog) => AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text('Final Settlement', style: TextStyle(fontWeight: FontWeight.w900)),
+          title: const Text('Final Payment', style: TextStyle(fontWeight: FontWeight.w900)),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -329,9 +332,9 @@ class _LabourDetailScreenState extends State<LabourDetailScreen> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Column(children: [
-                    _SettleRow('Contract Value', _fmt.format(entry.totalContractAmount)),
-                    _SettleRow('Advances Paid', _fmt.format(entry.totalAdvancePaid)),
-                    _SettleRow('Calculated Pending', _fmt.format(entry.pendingAmount), highlight: true),
+                    _SettleRow('Gross Amount', _fmt.format(entry.totalContractAmount)),
+                    _SettleRow('Advance Given', _fmt.format(entry.totalAdvancePaid)),
+                    _SettleRow('Current Balance', _fmt.format(entry.pendingAmount), highlight: true),
                   ]),
                 ),
                 const SizedBox(height: 16),
@@ -346,7 +349,7 @@ class _LabourDetailScreenState extends State<LabourDetailScreen> {
                     keyboardType: TextInputType.number,
                     onChanged: (_) => recalc(setDialog),
                     decoration: InputDecoration(
-                      hintText: 'Enter measured sq.ft',
+                      hintText: 'Enter actual measured sq.ft',
                       suffixText: 'sq.ft',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                       focusedBorder: OutlineInputBorder(
@@ -356,14 +359,19 @@ class _LabourDetailScreenState extends State<LabourDetailScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Rate: ${_fmt.format(entry.ratePerUnit)} / sq.ft  →  Total = sqft × rate',
+                    'Rate: ${_fmt.format(entry.ratePerUnit)} / sq.ft  →  Gross = area × rate',
+                    style: const TextStyle(color: bcTextSecondary, fontSize: 10),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Final payable = gross amount − advance already given',
                     style: const TextStyle(color: bcTextSecondary, fontSize: 10),
                   ),
                   const SizedBox(height: 14),
                 ],
 
                 // ── Settlement amount ─────────────────────────────────────
-                const Text('SETTLEMENT AMOUNT',
+                const Text('FINAL PAYABLE',
                     style: TextStyle(color: bcTextSecondary, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 0.8)),
                 const SizedBox(height: 6),
                 TextFormField(
@@ -380,7 +388,7 @@ class _LabourDetailScreenState extends State<LabourDetailScreen> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Confirm amount and tap settle. This marks the contract as fully settled.',
+                  'For sq.ft deals: final payable = actual area × rate − advance already given.',
                   style: TextStyle(fontSize: 10, color: bcTextSecondary, fontStyle: FontStyle.italic),
                 ),
               ],
@@ -410,9 +418,15 @@ class _LabourDetailScreenState extends State<LabourDetailScreen> {
                   date: DateTime.now(),
                 ));
 
-                // If perSqFt, update workQuantity with actual area
+                // If perSqFt, update actual area and gross amount before settlement
                 if (isPerSqFt && sqft != null && sqft > 0) {
-                  await repo.updateEntry(entry.copyWith(workQuantity: sqft));
+                  final grossAmount = sqft * entry.ratePerUnit;
+                  await repo.updateEntry(
+                    entry.copyWith(
+                      workQuantity: sqft,
+                      totalContractAmount: grossAmount,
+                    ),
+                  );
                 }
 
                 await repo.recordSettlement(
