@@ -37,18 +37,31 @@ class SiteRepository extends ChangeNotifier {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .listen((snap) {
-      _sites = snap.docs
-          .map((d) => SiteModel.fromJson({...d.data(), 'id': d.id}))
-          .toList();
+      try {
+        _sites = snap.docs
+            .map((d) => SiteModel.fromJson({...d.data(), 'id': d.id}))
+            .toList();
+      } catch (e) {
+        debugPrint('SiteRepository: Error parsing sites: $e');
+      }
       _isLoading = false;
       if (_selectedSiteId == null && _sites.isNotEmpty) {
         _selectedSiteId = _sites.first.id;
       }
       notifyListeners();
     }, onError: (e) {
-      debugPrint('SiteRepository stream error: $e');
+      debugPrint('SiteRepository: stream error: $e');
       _isLoading = false;
       notifyListeners();
+    });
+
+    // Safety valve: Ensure loading stops after 8 seconds even if stream hangs
+    Future.delayed(const Duration(seconds: 8), () {
+      if (_isLoading) {
+        debugPrint('SiteRepository: Safety valve triggered, forced isLoading = false');
+        _isLoading = false;
+        notifyListeners();
+      }
     });
   }
 

@@ -27,20 +27,35 @@ class WorkerRepository extends ChangeNotifier {
   }
 
   void _init() {
+    debugPrint('WorkerRepository: Initializing stream listeners...');
     _workersSub = _db
         .collection('workers')
         .orderBy('name')
         .snapshots()
         .listen((snap) {
-      _workers = snap.docs
-          .map((d) => WorkerModel.fromJson({...d.data(), 'id': d.id}))
-          .toList();
+      debugPrint('WorkerRepository: Received workers snapshot (${snap.docs.length} docs, isFromCache: ${snap.metadata.isFromCache})');
+      try {
+        _workers = snap.docs
+            .map((d) => WorkerModel.fromJson({...d.data(), 'id': d.id}))
+            .toList();
+      } catch (e) {
+        debugPrint('WorkerRepository: Error parsing workers: $e');
+      }
       _isLoading = false;
       notifyListeners();
     }, onError: (e) {
-      debugPrint('WorkerRepository workers stream error: $e');
+      debugPrint('WorkerRepository: workers stream error: $e');
       _isLoading = false;
       notifyListeners();
+    });
+
+    // Safety valve: Ensure loading stops after 8 seconds even if stream hangs
+    Future.delayed(const Duration(seconds: 8), () {
+      if (_isLoading) {
+        debugPrint('WorkerRepository: Safety valve triggered, forced isLoading = false');
+        _isLoading = false;
+        notifyListeners();
+      }
     });
 
     _attendanceSub = _db
@@ -48,9 +63,13 @@ class WorkerRepository extends ChangeNotifier {
         .orderBy('date', descending: true)
         .snapshots()
         .listen((snap) {
-      _attendance = snap.docs
-          .map((d) => AttendanceRecord.fromJson({...d.data(), 'id': d.id}))
-          .toList();
+      try {
+        _attendance = snap.docs
+            .map((d) => AttendanceRecord.fromJson({...d.data(), 'id': d.id}))
+            .toList();
+      } catch (e) {
+        debugPrint('WorkerRepository: Error parsing attendance: $e');
+      }
       notifyListeners();
     }, onError: (e) => debugPrint('Attendance stream error: $e'));
 
@@ -59,9 +78,13 @@ class WorkerRepository extends ChangeNotifier {
         .orderBy('date', descending: true)
         .snapshots()
         .listen((snap) {
-      _advances = snap.docs
-          .map((d) => WorkerAdvance.fromJson({...d.data(), 'id': d.id}))
-          .toList();
+      try {
+        _advances = snap.docs
+            .map((d) => WorkerAdvance.fromJson({...d.data(), 'id': d.id}))
+            .toList();
+      } catch (e) {
+        debugPrint('WorkerRepository: Error parsing advances: $e');
+      }
       notifyListeners();
     }, onError: (e) => debugPrint('Advances stream error: $e'));
   }
@@ -78,9 +101,16 @@ class WorkerRepository extends ChangeNotifier {
   // ── Worker CRUD ────────────────────────────────────────────────────────────────
 
   Future<void> addWorker(WorkerModel worker) async {
+    debugPrint('WorkerRepository: Adding worker ${worker.id}...');
     final data = worker.toJson();
     data['createdAt'] = FieldValue.serverTimestamp();
-    await _db.collection('workers').doc(worker.id).set(data);
+    try {
+      await _db.collection('workers').doc(worker.id).set(data).timeout(const Duration(seconds: 15));
+      debugPrint('WorkerRepository: Worker ${worker.id} added successfully');
+    } catch (e) {
+      debugPrint('WorkerRepository: Error adding worker: $e');
+      rethrow;
+    }
   }
 
   Future<void> updateWorker(WorkerModel updated) async {

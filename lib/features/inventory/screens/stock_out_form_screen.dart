@@ -233,7 +233,7 @@ class _StockOutFormScreenState extends State<StockOutFormScreen> {
     setState(() => _isLoading = true);
     
     try {
-      final quantity = double.parse(_quantityController.text);
+      final quantity = double.tryParse(_quantityController.text) ?? 0.0;
       final inventoryService = context.read<InventoryRepository>();
       
       // Update stock using transactional method

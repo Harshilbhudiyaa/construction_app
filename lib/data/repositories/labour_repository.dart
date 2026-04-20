@@ -24,9 +24,13 @@ class LabourRepository extends ChangeNotifier {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .listen((snap) {
-      _entries = snap.docs
-          .map((d) => LabourEntryModel.fromJson({...d.data(), 'id': d.id}))
-          .toList();
+      try {
+        _entries = snap.docs
+            .map((d) => LabourEntryModel.fromJson({...d.data(), 'id': d.id}))
+            .toList();
+      } catch (e) {
+        debugPrint('LabourRepository: Error parsing labour entries: $e');
+      }
       _isLoading = false;
       notifyListeners();
     }, onError: (e) {

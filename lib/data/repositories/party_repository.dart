@@ -33,9 +33,13 @@ class PartyRepository extends ChangeNotifier {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .listen((snap) {
-      _parties = snap.docs
-          .map((d) => PartyModel.fromJson({...d.data(), 'id': d.id}))
-          .toList();
+      try {
+        _parties = snap.docs
+            .map((d) => PartyModel.fromJson({...d.data(), 'id': d.id}))
+            .toList();
+      } catch (e) {
+        debugPrint('PartyRepository: Error parsing parties: $e');
+      }
       _isLoading = false;
       notifyListeners();
     }, onError: (e) {
@@ -49,10 +53,14 @@ class PartyRepository extends ChangeNotifier {
         .orderBy('date', descending: true)
         .snapshots()
         .listen((snap) {
-      _transactions = snap.docs
-          .map((d) =>
-              SupplierTransaction.fromJson({...d.data(), 'id': d.id}))
-          .toList();
+      try {
+        _transactions = snap.docs
+            .map((d) =>
+                SupplierTransaction.fromJson({...d.data(), 'id': d.id}))
+            .toList();
+      } catch (e) {
+        debugPrint('PartyRepository: Error parsing supplier transactions: $e');
+      }
       notifyListeners();
     }, onError: (e) => debugPrint('Supplier transactions stream error: $e'));
   }

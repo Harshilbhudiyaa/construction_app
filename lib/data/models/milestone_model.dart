@@ -1,3 +1,5 @@
+import 'package:construction_app/core/utils/date_parser.dart';
+
 enum MilestoneStatus { upcoming, dueSoon, overdue, paid }
 
 class MilestoneModel {
@@ -50,12 +52,10 @@ class MilestoneModel {
         siteName: json['siteName'] as String,
         title: json['title'] as String,
         description: json['description'] as String?,
-        dueDate: DateTime.parse(json['dueDate'] as String),
+        dueDate: DateParser.parse(json['dueDate']),
         amount: (json['amount'] as num).toDouble(),
         isPaid: json['isPaid'] as bool? ?? false,
-        paidOn: json['paidOn'] != null
-            ? DateTime.parse(json['paidOn'] as String)
-            : null,
+        paidOn: DateParser.parseNullable(json['paidOn']),
       );
 
   MilestoneModel copyWith({

@@ -1,3 +1,5 @@
+import 'package:construction_app/core/utils/date_parser.dart';
+
 enum StockEntryType {
   directEntry,
   supplierBill,
@@ -103,8 +105,8 @@ class StockEntryModel {
       unitPrice: (json['unitPrice'] as num? ?? 0).toDouble(),
       totalAmount: (json['totalAmount'] as num? ?? 0).toDouble(),
       paidAmount: (json['paidAmount'] as num? ?? 0).toDouble(),
-      dueDate: json['dueDate'] != null ? DateTime.tryParse(json['dueDate']) : null,
-      entryDate: DateTime.tryParse(json['entryDate'] ?? '') ?? DateTime.now(),
+      dueDate: DateParser.parseNullable(json['dueDate']),
+      entryDate: DateParser.parse(json['entryDate']),
       entryType: et,
       isInventoryItem: json['isInventoryItem'] ?? true,
       bagWeightKg: (json['bagWeightKg'] as num?)?.toDouble(),
@@ -188,9 +190,9 @@ class SupplierBill {
         .map((e) => StockEntryModel.fromJson(Map<String, dynamic>.from(e)))
         .toList(),
     paidAmount: (json['paidAmount'] as num? ?? 0).toDouble(),
-    billDate: DateTime.tryParse(json['billDate'] ?? '') ?? DateTime.now(),
+    billDate: DateParser.parse(json['billDate']),
     billNumber: json['billNumber'],
-    dueDate: json['dueDate'] != null ? DateTime.tryParse(json['dueDate']) : null,
+    dueDate: DateParser.parseNullable(json['dueDate']),
     remarks: json['remarks'],
   );
 

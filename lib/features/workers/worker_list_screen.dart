@@ -50,12 +50,10 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
       backgroundColor: bcSurface,
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
-          SliverAppBar(
-            pinned: true,
-            expandedHeight: 210,
-            backgroundColor: bcNavy,
-            elevation: 0,
-            foregroundColor: Colors.white,
+          SmartConstructionSliverAppBar(
+            title: 'Workers',
+            subtitle: siteId != null ? 'Site Labor Team' : 'Global Workforce Console',
+            category: 'WORKFORCE MANAGEMENT',
             actions: [
               IconButton(
                 tooltip: 'Bulk Attendance',
@@ -63,71 +61,32 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
                 onPressed: () => _showAttendanceSheet(context, workers),
               ),
             ],
-            flexibleSpace: FlexibleSpaceBar(
-              background: SafeArea(
-                bottom: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(18, 20, 18, 18),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Spacer(),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.09),
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: Text(
-                          siteId != null ? 'SITE: $siteId' : 'ALL SITES',
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Workers',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 28,
-                          letterSpacing: -0.8,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Attendance, payment history and pending amount in one simple workflow',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.72),
-                          fontSize: 12,
-                          height: 1.35,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+            headerStats: [
+              HeroStatPill(
+                label: 'TOTAL',
+                value: '${workers.length}',
+                icon: Icons.groups_rounded,
+                color: bcInfo,
               ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Transform.translate(
-              offset: const Offset(0, -22),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: _TopSummaryCard(
-                  workerCount: workers.length,
-                  totalEarned: totalEarned,
-                  totalPaid: totalPaid,
-                  totalPending: totalPending,
-                  presentUnits: presentUnits,
-                  fmt: fmt,
-                ),
+              HeroStatPill(
+                label: 'PRESENT',
+                value: presentUnits.toStringAsFixed(presentUnits % 1 == 0 ? 0 : 1),
+                icon: Icons.fact_check_rounded,
+                color: bcSuccess,
               ),
-            ),
+              HeroStatPill(
+                label: 'PENDING',
+                value: fmt.format(totalPending),
+                icon: Icons.currency_rupee_rounded,
+                color: totalPending > 0 ? bcDanger : bcSuccess,
+              ),
+              HeroStatPill(
+                label: 'PAID',
+                value: fmt.format(totalPaid),
+                icon: Icons.payments_rounded,
+                color: bcAmber,
+              ),
+            ],
           ),
           SliverPersistentHeader(
             pinned: true,
@@ -347,94 +306,20 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
   }
 }
 
-class _TopSummaryCard extends StatelessWidget {
-  final int workerCount;
-  final double totalEarned;
-  final double totalPaid;
-  final double totalPending;
-  final double presentUnits;
-  final NumberFormat fmt;
-
-  const _TopSummaryCard({
-    required this.workerCount,
-    required this.totalEarned,
-    required this.totalPaid,
-    required this.totalPending,
-    required this.presentUnits,
-    required this.fmt,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      margin: const EdgeInsets.only(top: 15),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(colors: [Colors.white, Color(0xFFF8FAFC)]),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: bcBorder.withValues(alpha: 0.55)),
-        boxShadow: [
-          BoxShadow(
-            color: bcNavy.withValues(alpha: 0.08),
-            blurRadius: 24,
-            offset: const Offset(0, 14),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(child: _SummaryTile(label: 'Workers', value: '$workerCount', icon: Icons.groups_rounded, color: bcInfo)),
-              const SizedBox(width: 10),
-              Expanded(child: _SummaryTile(label: 'Present Units', value: presentUnits.toStringAsFixed(presentUnits % 1 == 0 ? 0 : 1), icon: Icons.fact_check_rounded, color: bcSuccess)),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(child: _SummaryTile(label: 'Earned', value: fmt.format(totalEarned), icon: Icons.account_balance_wallet_rounded, color: bcNavy)),
-              const SizedBox(width: 10),
-              Expanded(child: _SummaryTile(label: 'Paid', value: fmt.format(totalPaid), icon: Icons.payments_rounded, color: bcAmber)),
-              const SizedBox(width: 10),
-              Expanded(child: _SummaryTile(label: 'Pending', value: fmt.format(totalPending), icon: Icons.currency_rupee_rounded, color: totalPending > 0 ? bcDanger : bcSuccess)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SummaryTile extends StatelessWidget {
-  final String label;
-  final String value;
-  final IconData icon;
+class _StatItem extends StatelessWidget {
+  final String label, value;
   final Color color;
-
-  const _SummaryTile({required this.label, required this.value, required this.icon, required this.color});
+  const _StatItem(this.label, this.value, this.color);
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: color.withValues(alpha: 0.12)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: color, size: 18),
-          const SizedBox(height: 10),
-          Text(value, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 15)),
-          const SizedBox(height: 2),
-          Text(label.toUpperCase(), style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w800, fontSize: 9, letterSpacing: 0.8)),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(label, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+      const SizedBox(height: 2),
+      Text(value, style: TextStyle(color: color, fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: -0.2)),
+    ],
+  );
 }
 
 class _QuickHeaderChip extends StatelessWidget {
@@ -519,78 +404,89 @@ class _WorkerCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: bcBorder.withValues(alpha: 0.45)),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          BoxShadow(color: bcNavy.withValues(alpha: 0.05), blurRadius: 22, offset: const Offset(0, 10)),
+          BoxShadow(color: bcNavy.withValues(alpha: 0.04), blurRadius: 15, offset: const Offset(0, 10)),
         ],
+        border: Border.all(color: bcBorder.withValues(alpha: 0.5)),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(26),
+          borderRadius: BorderRadius.circular(24),
           onTap: onOpen,
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(18),
             child: Column(
               children: [
                 Row(
                   children: [
                     Container(
-                      width: 58,
-                      height: 58,
+                      width: 52, height: 52,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(colors: [occColor.withValues(alpha: 0.16), occColor.withValues(alpha: 0.06)]),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [occColor.withValues(alpha: 0.1), occColor.withValues(alpha: 0.05)],
+                        ),
                         borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: occColor.withValues(alpha: 0.18)),
+                        border: Border.all(color: occColor.withValues(alpha: 0.15)),
                       ),
                       child: Center(
                         child: Text(
-                          worker.name.isNotEmpty ? worker.name[0].toUpperCase() : '?',
-                          style: TextStyle(color: occColor, fontSize: 24, fontWeight: FontWeight.w900),
+                          worker.name.isNotEmpty ? worker.name[0].toUpperCase() : 'W',
+                          style: TextStyle(color: occColor, fontWeight: FontWeight.w900, fontSize: 22),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 14),
+                    const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(worker.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 16)),
+                          Text(worker.name,
+                              style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: -0.4)),
                           const SizedBox(height: 6),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
+                          Row(
                             children: [
-                              _TagChip(label: occupationLabel, color: occColor),
-                              _TextPill(icon: Icons.currency_rupee_rounded, text: worker.salaryType == SalaryType.daily ? '${worker.salaryAmount.toStringAsFixed(0)}/day' : '${fmt.format(worker.salaryAmount)}/month'),
+                              StatusPill(label: occupationLabel, color: occColor),
+                              const SizedBox(width: 10),
+                              Icon(Icons.currency_rupee_rounded, color: bcTextSecondary.withValues(alpha: 0.6), size: 10),
+                              const SizedBox(width: 4),
+                              Text(
+                                worker.salaryType == SalaryType.daily ? '${worker.salaryAmount.toStringAsFixed(0)}/day' : '${fmt.format(worker.salaryAmount)}/mo',
+                                style: TextStyle(color: bcTextSecondary.withValues(alpha: 0.8), fontSize: 10, fontWeight: FontWeight.w700),
+                              ),
                             ],
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 10),
                     _PendingBadge(value: pending, fmt: fmt),
                   ],
                 ),
-                const SizedBox(height: 14),
-                Row(
-                  children: [
-                    Expanded(child: _MetricBox(label: 'Earned', value: fmt.format(earned), color: bcNavy, icon: Icons.account_balance_wallet_rounded)),
-                    const SizedBox(width: 10),
-                    Expanded(child: _MetricBox(label: 'Paid', value: fmt.format(paid), color: bcAmber, icon: Icons.payments_rounded)),
-                    const SizedBox(width: 10),
-                    Expanded(child: _MetricBox(label: 'Attendance', value: '$presentDays + ${halfDays}½', color: bcSuccess, icon: Icons.event_available_rounded)),
-                  ],
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: bcSurface,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _StatItem('EARNED', fmt.format(earned), bcNavy),
+                      _StatItem('PAID', fmt.format(paid), bcSuccess),
+                      _StatItem('ATTEND', '$presentDays + ${halfDays}H', bcInfo),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 16),
                 Row(
                   children: [
-                    Expanded(child: _ActionButton(label: 'Attendance', icon: Icons.fact_check_rounded, color: bcInfo, onTap: onAttendance)),
-                    const SizedBox(width: 8),
-                    Expanded(child: _ActionButton(label: 'Payment', icon: Icons.payments_rounded, color: bcAmber, onTap: onAdvance)),
-                    const SizedBox(width: 8),
-                    Expanded(child: _ActionButton(label: 'History', icon: Icons.history_rounded, color: const Color(0xFF64748B), onTap: onHistory)),
+                    Expanded(child: _ActionButton(label: 'Mark Attend', icon: Icons.fact_check_rounded, color: bcInfo, onTap: onAttendance)),
+                    const SizedBox(width: 12),
+                    Expanded(child: _ActionButton(label: 'Pay Advance', icon: Icons.payments_rounded, color: bcAmber, onTap: onAdvance)),
                   ],
                 ),
               ],

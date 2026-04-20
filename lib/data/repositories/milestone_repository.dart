@@ -24,9 +24,13 @@ class MilestoneRepository extends ChangeNotifier {
         .orderBy('dueDate')
         .snapshots()
         .listen((snap) {
-      _milestones = snap.docs
-          .map((d) => MilestoneModel.fromJson({...d.data(), 'id': d.id}))
-          .toList();
+      try {
+        _milestones = snap.docs
+            .map((d) => MilestoneModel.fromJson({...d.data(), 'id': d.id}))
+            .toList();
+      } catch (e) {
+        debugPrint('MilestoneRepository: Error parsing milestones: $e');
+      }
       _isLoading = false;
       notifyListeners();
     }, onError: (e) {

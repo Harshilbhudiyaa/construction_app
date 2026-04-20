@@ -20,6 +20,13 @@ class SiteManagementScreen extends StatefulWidget {
 class _SiteManagementScreenState extends State<SiteManagementScreen> {
   final _searchCtrl = TextEditingController();
   String _query = '';
+  bool _isGrid = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isGrid = false;
+  }
 
   @override
   void dispose() {
@@ -42,7 +49,7 @@ class _SiteManagementScreenState extends State<SiteManagementScreen> {
           headerSliverBuilder: (context, innerBoxIsScrolled) => [
             SmartConstructionSliverAppBar(
               title: 'Site Registry',
-              subtitle: _query.isEmpty ? 'Manage construction sites' : 'Searching: "$_query"',
+              subtitle: (_query.isEmpty == true) ? 'Manage construction sites' : 'Searching: "$_query"',
               category: 'SITE MANAGEMENT',
               isFull: true,
               headerStats: [
@@ -55,7 +62,7 @@ class _SiteManagementScreenState extends State<SiteManagementScreen> {
                 ),
                 HeroStatPill(
                   label: 'With Budget', 
-                  value: '${siteRepo.sites.where((s) => s.hasBudget).length}', 
+                  value: '${siteRepo.sites.where((s) => s.hasBudget == true).length}', 
                   icon: Icons.account_balance_wallet_rounded, 
                   color: bcSuccess,
                   onTap: () {}, 
@@ -72,7 +79,7 @@ class _SiteManagementScreenState extends State<SiteManagementScreen> {
           ],
           body: Builder(
             builder: (context) {
-              if (siteRepo.isLoading) {
+              if (siteRepo.isLoading == true) {
                 return const Center(child: CircularProgressIndicator());
               }
               
@@ -80,71 +87,106 @@ class _SiteManagementScreenState extends State<SiteManagementScreen> {
                 children: [
                    Padding(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                     child: TextField(
-                      controller: _searchCtrl,
-                      style: const TextStyle(fontSize: 15, color: bcTextPrimary, fontWeight: FontWeight.w500),
-                      decoration: InputDecoration(
-                        hintText: 'Search sites...',
-                        hintStyle: TextStyle(color: bcTextSecondary.withValues(alpha: 0.6), fontSize: 14),
-                        prefixIcon: const Icon(Icons.search_rounded, color: bcTextSecondary, size: 22),
-                        suffixIcon: _query.isNotEmpty
-                            ? IconButton(
-                                icon: const Icon(Icons.close_rounded, color: bcTextSecondary),
-                                onPressed: () {
-                                  _searchCtrl.clear();
-                                  setState(() => _query = '');
-                                },
-                              )
-                            : null,
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: const BorderSide(color: bcBorder),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: const BorderSide(color: bcBorder),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: const BorderSide(color: bcNavy, width: 1.5),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      onChanged: (v) => setState(() => _query = v.toLowerCase()),
-                    ),
+                     child: Row(
+                       children: [
+                         Expanded(
+                           child: TextField(
+                            controller: _searchCtrl,
+                            style: const TextStyle(fontSize: 15, color: bcTextPrimary, fontWeight: FontWeight.w500),
+                            decoration: InputDecoration(
+                              hintText: 'Search sites...',
+                              hintStyle: TextStyle(color: bcTextSecondary.withValues(alpha: 0.6), fontSize: 14),
+                              prefixIcon: const Icon(Icons.search_rounded, color: bcTextSecondary, size: 22),
+                              suffixIcon: (_query.isNotEmpty == true)
+                                  ? IconButton(
+                                      icon: const Icon(Icons.close_rounded, color: bcTextSecondary),
+                                      onPressed: () {
+                                        _searchCtrl.clear();
+                                        setState(() => _query = '');
+                                      },
+                                    )
+                                  : null,
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: const BorderSide(color: bcBorder),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: const BorderSide(color: bcBorder),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: const BorderSide(color: bcNavy, width: 1.5),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                            ),
+                            onChanged: (v) => setState(() => _query = v.toLowerCase()),
+                          ),
+                         ),
+                         const SizedBox(width: 12),
+                         GestureDetector(
+                           onTap: () => setState(() => _isGrid = !_isGrid),
+                           child: AnimatedContainer(
+                             duration: const Duration(milliseconds: 200),
+                             height: 52,
+                             width: 52,
+                             decoration: BoxDecoration(
+                               color: (_isGrid == true) ? bcNavy : Colors.white,
+                               borderRadius: BorderRadius.circular(16),
+                               border: Border.all(color: (_isGrid == true) ? bcNavy : bcBorder),
+                               boxShadow: [BoxShadow(color: bcNavy.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                             ),
+                             child: Icon(
+                               (_isGrid == true) ? Icons.view_headline_rounded : Icons.grid_view_rounded,
+                               color: (_isGrid == true) ? Colors.white : bcNavy,
+                               size: 20,
+                             ),
+                           ),
+                         ),
+                       ],
+                     ),
                   ),
                   Expanded(
-                    child: filteredSites.isEmpty
+                    child: (filteredSites.isEmpty == true)
                         ? EmptyState(
                             icon: Icons.business_outlined,
-                            title: _query.isEmpty ? 'No Sites Found' : 'No Results Found',
-                            message: _query.isEmpty 
+                            title: (_query.isEmpty == true) ? 'No Sites Found' : 'No Results Found',
+                            message: (_query.isEmpty == true) 
                                 ? 'Add your first construction site to get started.'
                                 : 'Try searching with a different term.',
                           )
                         : Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            child: ResponsiveGrid(
-                              mobileCrossAxisCount: 1,
-                              tabletCrossAxisCount: 2,
-                              desktopCrossAxisCount: 3,
-                              childAspectRatio: 1.8,
-                              spacing: 16,
-                              runSpacing: 16,
-                              children: List.generate(filteredSites.length, (i) {
-                                final site = filteredSites[i];
-                                return StaggeredAnimation(
-                                  index: i,
-                                  child: _SiteCard(
-                                    site: site,
-                                    onEdit: () => _showSiteFormSheet(context, site, siteRepo),
-                                    onDelete: () => _confirmDelete(context, site, siteRepo),
+                            child: (_isGrid == true) 
+                              ? GridView.builder(
+                                  padding: const EdgeInsets.only(bottom: 100),
+                                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    mainAxisSpacing: 12,
+                                    crossAxisSpacing: 12,
+                                    childAspectRatio: 0.85,
                                   ),
-                                );
-                              }),
-                            ),
+                                  itemCount: filteredSites.length,
+                                  itemBuilder: (context, i) => _SiteGridCard(
+                                    site: filteredSites[i],
+                                    onEdit: () => _showSiteFormSheet(context, filteredSites[i], siteRepo),
+                                    onDelete: () => _confirmDelete(context, filteredSites[i], siteRepo),
+                                  ),
+                                )
+                              : ListView.builder(
+                                  padding: const EdgeInsets.only(bottom: 100),
+                                  itemCount: filteredSites.length,
+                                  itemBuilder: (context, i) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 12),
+                                    child: _SiteCard(
+                                      site: filteredSites[i],
+                                      onEdit: () => _showSiteFormSheet(context, filteredSites[i], siteRepo),
+                                      onDelete: () => _confirmDelete(context, filteredSites[i], siteRepo),
+                                    ),
+                                  ),
+                                ),
                           ),
                   ),
                 ],
@@ -188,6 +230,89 @@ class _SiteManagementScreenState extends State<SiteManagementScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => _SiteFormSheet(site: site, repo: repo),
+    );
+  }
+}
+
+class _SiteGridCard extends StatelessWidget {
+  final SiteModel site;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  const _SiteGridCard({required this.site, required this.onEdit, required this.onDelete});
+
+  @override
+  Widget build(BuildContext context) {
+    return ProfessionalCard(
+      useGlass: true,
+      padding: const EdgeInsets.all(12),
+      child: Stack(
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const AppLogoBadge(size: 32, padding: 0, zoom: 1.15),
+              const Spacer(),
+              Text(
+                site.name,
+                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: bcNavy, letterSpacing: -0.2),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (site.address != null && site.address!.isNotEmpty)
+                Text(
+                  site.address!, 
+                  style: const TextStyle(color: Color(0xFF64748B), fontSize: 9, fontWeight: FontWeight.w600), 
+                  maxLines: 1, 
+                  overflow: TextOverflow.ellipsis,
+                ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                   if (site.hasBudget == true && site.budgetAmount != null)
+                    Expanded(
+                      child: _InfoChip(
+                        Icons.account_balance_rounded, 
+                        '₹${NumberFormat.compact().format(site.budgetAmount)}', 
+                        bcSuccess
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
+          Positioned(
+            top: 0, right: 0,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _SmallIconButton(icon: Icons.edit_rounded, color: Colors.blueAccent, onTap: onEdit),
+                const SizedBox(width: 4),
+                _SmallIconButton(icon: Icons.delete_rounded, color: bcDanger, onTap: onDelete),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SmallIconButton extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+  const _SmallIconButton({required this.icon, required this.color, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+        child: Icon(icon, color: color, size: 14),
+      ),
     );
   }
 }
@@ -252,9 +377,9 @@ class _SiteCard extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              if (site.hasBudget && site.budgetAmount != null)
+              if (site.hasBudget == true && site.budgetAmount != null)
                 _InfoChip(Icons.account_balance_rounded, '₹${NumberFormat.compact().format(site.budgetAmount)}', bcSuccess),
-              if (!site.hasBudget) 
+              if (site.hasBudget != true) 
                 _InfoChip(Icons.money_off_rounded, 'No Budget', Colors.grey),
               const Spacer(),
               Text(
@@ -424,7 +549,7 @@ class _SiteFormSheetState extends State<_SiteFormSheet> {
                 activeThumbColor: bcAmber,
                 contentPadding: EdgeInsets.zero,
               ),
-              if (_hasBudget) ...[
+              if (_hasBudget == true) ...[
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _budgetCtrl,
@@ -434,7 +559,7 @@ class _SiteFormSheetState extends State<_SiteFormSheet> {
                     prefixIcon: const Icon(Icons.currency_rupee_rounded),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  validator: (v) => _hasBudget && (v == null || v.isEmpty) ? 'Budget amount is required' : null,
+                  validator: (v) => (_hasBudget == true) && (v == null || v.isEmpty) ? 'Budget amount is required' : null,
                 ),
               ],
               const SizedBox(height: 24),

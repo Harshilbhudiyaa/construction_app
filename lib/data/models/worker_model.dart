@@ -1,3 +1,5 @@
+import 'package:construction_app/core/utils/date_parser.dart';
+
 enum WorkerOccupation {
   helper,
   mason,
@@ -86,7 +88,7 @@ class AttendanceRecord {
       AttendanceRecord(
         id: json['id'],
         workerId: json['workerId'],
-        date: DateTime.parse(json['date']),
+        date: DateParser.parse(json['date']),
         status: AttendanceStatus.values.firstWhere(
           (s) => s.name == json['status'],
           orElse: () => AttendanceStatus.present,
@@ -125,7 +127,7 @@ class WorkerAdvance {
     id: json['id'],
     workerId: json['workerId'],
     amount: (json['amount'] as num).toDouble(),
-    date: DateTime.parse(json['date']),
+    date: DateParser.parse(json['date']),
     remarks: json['remarks'],
     paidBy: json['paidBy'] ?? 'Admin',
   );
@@ -192,7 +194,7 @@ class WorkerModel {
       salaryAmount: (json['salaryAmount'] as num).toDouble(),
       customOccupation: json['customOccupation'],
       isActive: json['isActive'] ?? true,
-      createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
+      createdAt: DateParser.parse(json['createdAt']),
     );
   }
 

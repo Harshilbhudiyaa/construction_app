@@ -1,3 +1,5 @@
+import 'package:construction_app/core/utils/date_parser.dart';
+
 enum LabourWorkType {
   fixedContract,
   perSqFt,
@@ -80,7 +82,7 @@ class LabourAdvancePayment {
       LabourAdvancePayment(
         id: json['id'] as String,
         amount: (json['amount'] as num).toDouble(),
-        date: DateTime.parse(json['date'] as String),
+        date: DateParser.parse(json['date']),
         remarks: json['remarks'] as String?,
         paidBy: json['paidBy'] as String? ?? 'Unknown',
       );
@@ -224,24 +226,17 @@ class LabourEntryModel {
       workQuantity: (json['workQuantity'] as num?)?.toDouble(),
       ratePerUnit: (json['ratePerUnit'] as num).toDouble(),
       totalContractAmount: (json['totalContractAmount'] as num).toDouble(),
-      advancePayments: (json['advancePayments'] as List<dynamic>? ?? [])
-          .map((e) =>
+      advancePayments: (json['advancePayments'] as List? ?? [])
+          .map<LabourAdvancePayment>((e) =>
               LabourAdvancePayment.fromJson(Map<String, dynamic>.from(e as Map)))
           .toList(),
-      finalSettlementAmount:
-          (json['finalSettlementAmount'] as num?)?.toDouble(),
+      finalSettlementAmount: (json['finalSettlementAmount'] as num?)?.toDouble(),
       status: status,
-      startDate: DateTime.parse(json['startDate'] as String),
-      completionDate: json['completionDate'] != null
-          ? DateTime.parse(json['completionDate'] as String)
-          : null,
-      settledDate: json['settledDate'] != null
-          ? DateTime.parse(json['settledDate'] as String)
-          : null,
+      startDate: DateParser.parse(json['startDate']),
+      completionDate: DateParser.parseNullable(json['completionDate']),
+      settledDate: DateParser.parseNullable(json['settledDate']),
       createdBy: json['createdBy'] as String? ?? 'Unknown',
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'] as String)
-          : DateTime.now(),
+      createdAt: DateParser.parse(json['createdAt']),
       notes: json['notes'] as String?,
     );
   }

@@ -1463,7 +1463,7 @@ class _StockOutFormSheetState extends State<_StockOutFormSheet> {
     setState(() => _isLoading = true);
 
     try {
-      final quantity = double.parse(_qtyCtrl.text);
+      final quantity = double.tryParse(_qtyCtrl.text) ?? 0.0;
       final repo = context.read<InventoryRepository>();
       final auth = context.read<AuthRepository>();
 

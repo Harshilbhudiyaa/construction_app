@@ -1,4 +1,6 @@
 
+import 'package:construction_app/core/utils/date_parser.dart';
+
 enum RequestStatus {
   pending,
   approved,
@@ -107,8 +109,8 @@ class MaterialRequestModel {
       remarks: json['remarks'],
       status: RequestStatus.values.firstWhere((e) => e.name == json['status'], orElse: () => RequestStatus.pending),
       requestedBy: json['requestedBy'],
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
+      createdAt: DateParser.parse(json['createdAt']),
+      updatedAt: DateParser.parseNullable(json['updatedAt']),
       approvedBy: json['approvedBy'],
     );
   }

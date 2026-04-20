@@ -275,7 +275,7 @@ class _StockTransferScreenState extends State<StockTransferScreen> {
       await inventoryService.recordStockTransfer(
         materialId: _selectedMaterial!.id,
         materialName: _selectedMaterial!.name,
-        quantity: double.parse(_quantityController.text),
+        quantity: double.tryParse(_quantityController.text) ?? 0.0,
         unit: _selectedMaterial!.unitType,
         fromSiteId: _fromSite,
         toSiteId: _toSite,

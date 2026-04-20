@@ -56,64 +56,44 @@ class _LabourListScreenState extends State<LabourListScreen>
       body: CustomScrollView(
         slivers: [
           // ── AppBar ─────────────────────────────────────────────────────────
-          SliverAppBar(
-            expandedHeight: 180,
-            pinned: true,
-            backgroundColor: bcNavy,
-            elevation: 0,
-            iconTheme: const IconThemeData(color: Colors.white),
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFF0F1F3D), Color(0xFF1E3A5F)],
-                  ),
-                ),
-                child: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 44),
-                        const Text(
-                          'Contractor Work',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${allEntries.length} deal${allEntries.length != 1 ? 's' : ''} • ${siteRepo.selectedSite?.name ?? 'All Sites'}',
-                          style: const TextStyle(
-                              color: Colors.white54, fontSize: 13),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+          SmartConstructionSliverAppBar(
+            title: 'Labour Deals',
+            subtitle: '${allEntries.length} deal${allEntries.length != 1 ? 's' : ''} • ${siteRepo.selectedSite?.name ?? 'All Sites'}',
+            category: 'CONTRACTOR MANAGEMENT',
+            headerStats: [
+              HeroStatPill(
+                label: 'GROSS VALUE',
+                value: _fmt.format(totalContract),
+                icon: Icons.handshake_rounded,
+                color: bcInfo,
               ),
-            ),
+              HeroStatPill(
+                label: 'ADVANCE PAID',
+                value: _fmt.format(totalAdvance),
+                icon: Icons.payments_rounded,
+                color: bcAmber,
+              ),
+              HeroStatPill(
+                label: 'PENDING',
+                value: _fmt.format(totalPending),
+                icon: Icons.pending_actions_rounded,
+                color: totalPending > 0 ? bcDanger : bcSuccess,
+              ),
+            ],
             bottom: PreferredSize(
               preferredSize: const Size.fromHeight(48),
               child: Container(
-                color: bcNavy,
+                color: Colors.transparent,
                 child: TabBar(
                   controller: _tabController,
                   labelColor: bcAmber,
-                  unselectedLabelColor: Colors.white54,
+                  unselectedLabelColor: Colors.white70,
                   indicatorColor: bcAmber,
                   indicatorWeight: 3,
-                  labelStyle: const TextStyle(
-                      fontWeight: FontWeight.w800, fontSize: 12),
+                  labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 0.5),
                   tabs: [
                     Tab(text: 'ONGOING (${ongoing.length})'),
-                    Tab(text: 'READY TO SETTLE (${completed.length})'),
+                    Tab(text: 'READY (${completed.length})'),
                     Tab(text: 'SETTLED (${settled.length})'),
                   ],
                 ),
@@ -122,32 +102,16 @@ class _LabourListScreenState extends State<LabourListScreen>
           ),
 
           // ── Summary Cards ──────────────────────────────────────────────────
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-              child: Column(
-                children: [
-                  if (needSettlement > 0)
-                    _AlertBanner(
-                      text:
-                      '$needSettlement contractor${needSettlement > 1 ? 's' : ''} ready for final payment',
-                      onTap: () => _tabController.animateTo(1),
-                    ),
-                  const SizedBox(height: 12),
-                  _SummaryRow(
-                    items: [
-                      _SumItem('Gross Value', _fmt.format(totalContract),
-                          const Color(0xFF6366F1), Icons.handshake_rounded),
-                      _SumItem('Advance Given', _fmt.format(totalAdvance),
-                          bcAmber, Icons.payments_rounded),
-                      _SumItem('Final Pending', _fmt.format(totalPending),
-                          const Color(0xFFF04438), Icons.pending_actions_rounded),
-                    ],
-                  ),
-                ],
+          if (needSettlement > 0)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+                child: _AlertBanner(
+                  text: '$needSettlement contractor${needSettlement > 1 ? 's' : ''} ready for final payment',
+                  onTap: () => _tabController.animateTo(1),
+                ),
               ),
             ),
-          ),
 
           // ── Tab Content ────────────────────────────────────────────────────
           SliverFillRemaining(

@@ -1,4 +1,6 @@
 
+import 'package:construction_app/core/utils/date_parser.dart';
+
 /// Types of inventory transactions
 enum TransactionType {
   inward,     // Material coming in (purchase, return)
@@ -178,7 +180,7 @@ class InventoryTransaction {
       materialName: json['materialName'] as String,
       quantity: (json['quantity'] as num).toDouble(),
       unit: json['unit'] as String,
-      timestamp: DateTime.parse(json['timestamp'] as String),
+      timestamp: DateParser.parse(json['timestamp']),
       siteId: json['siteId'] as String?,
       siteName: json['siteName'] as String?,
       partyId: json['partyId'] as String?,
@@ -190,7 +192,7 @@ class InventoryTransaction {
       createdBy: json['createdBy'] as String,
       isApproved: json['isApproved'] as bool? ?? false,
       approvedBy: json['approvedBy'] as String?,
-      approvedAt: json['approvedAt'] != null ? DateTime.parse(json['approvedAt'] as String) : null,
+      approvedAt: DateParser.parseNullable(json['approvedAt']),
       referenceId: json['referenceId'] as String?,
     );
   }

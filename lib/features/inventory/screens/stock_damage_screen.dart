@@ -232,7 +232,7 @@ class _StockDamageScreenState extends State<StockDamageScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final quantity = double.parse(_quantityController.text);
+      final quantity = double.tryParse(_quantityController.text) ?? 0.0;
       final inventoryService = context.read<InventoryRepository>();
       
       await inventoryService.recordStockDamage(

@@ -1,3 +1,4 @@
+import 'package:construction_app/core/utils/date_parser.dart';
 import 'package:uuid/uuid.dart';
 
 class CalculationHistory {
@@ -30,7 +31,7 @@ class CalculationHistory {
         id: json['id'],
         title: json['title'],
         category: json['category'],
-        timestamp: DateTime.parse(json['timestamp']),
+        timestamp: DateParser.parse(json['timestamp']),
         data: Map<String, String>.from(json['data']),
         totalCost: (json['totalCost'] as num).toDouble(),
       );

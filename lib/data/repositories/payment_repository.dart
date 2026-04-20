@@ -21,12 +21,16 @@ class PaymentRepository extends ChangeNotifier {
   void _init() {
     _sub = _db
         .collection('payments')
-        .orderBy('date', descending: true)
+        .orderBy('timestamp', descending: true)
         .snapshots()
         .listen((snap) {
-      _payments = snap.docs
-          .map((d) => PaymentModel.fromJson({...d.data(), 'id': d.id}))
-          .toList();
+      try {
+        _payments = snap.docs
+            .map((d) => PaymentModel.fromJson({...d.data(), 'id': d.id}))
+            .toList();
+      } catch (e) {
+        debugPrint('PaymentRepository: Error parsing payments: $e');
+      }
       _isLoading = false;
       notifyListeners();
     }, onError: (e) {

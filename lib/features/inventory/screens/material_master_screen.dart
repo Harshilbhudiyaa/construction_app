@@ -38,6 +38,7 @@ class _MaterialMasterScreenState extends State<MaterialMasterScreen> {
     }).toList();
 
     final subTypes = siteMaterials.map((m) => m.subType).where((s) => s.isNotEmpty).toSet().toList()..sort();
+    final lowStockCount = siteMaterials.where((m) => m.isLowStock).length;
     final totalStockValue = siteMaterials.fold<double>(0, (sum, m) => sum + (m.currentStock * m.purchasePrice));
     final fmt = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
 
@@ -49,8 +50,26 @@ class _MaterialMasterScreenState extends State<MaterialMasterScreen> {
             title: 'Materials',
             subtitle: activeSite != null ? 'Catalog: ${activeSite.name}' : 'Catalog & Inventory',
             category: 'INVENTORY MANAGEMENT',
-            actions: [
-              _buildSummaryActionBox(totalStockValue, siteMaterials.length, fmt),
+            headerStats: [
+              HeroStatPill(
+                label: 'TOTAL ITEMS',
+                value: '${siteMaterials.length}',
+                icon: Icons.category_rounded,
+                color: bcInfo,
+              ),
+              HeroStatPill(
+                label: 'STOCK VALUE',
+                value: fmt.format(totalStockValue),
+                icon: Icons.account_balance_wallet_rounded,
+                color: bcAmber,
+              ),
+              if (lowStockCount > 0)
+                HeroStatPill(
+                  label: 'LOW STOCK',
+                  value: '$lowStockCount',
+                  icon: Icons.warning_amber_rounded,
+                  color: bcDanger,
+                ),
             ],
           ),
           SliverPersistentHeader(
@@ -109,38 +128,35 @@ class _MaterialMasterScreenState extends State<MaterialMasterScreen> {
     );
   }
 
-  Widget _buildSummaryActionBox(double value, int count, NumberFormat fmt) {
-    return Container(
-      margin: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-      decoration: BoxDecoration(
-        color: bcNavyMid.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: bcAmber.withValues(alpha: 0.2)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text(fmt.format(value), 
-            style: const TextStyle(color: bcAmber, fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: -0.5)),
-          Text('$count items', 
-            style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 10, fontWeight: FontWeight.bold)),
-        ],
-      ),
-    );
-  }
 
   Widget _buildEmptyState() {
+    final hasFilters = _searchQuery.isNotEmpty || _selectedSubType != null || _showLowStockOnly;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.inventory_2_outlined, size: 62, color: Color(0xFFCBD5E1)),
+          Icon(hasFilters ? Icons.filter_list_off_rounded : Icons.inventory_2_outlined, size: 62, color: const Color(0xFFCBD5E1)),
           const SizedBox(height: 14),
-          const Text('No items found', style: TextStyle(color: bcNavy, fontWeight: FontWeight.w800, fontSize: 16)),
+          Text(hasFilters ? 'No matches found' : 'No items found', style: const TextStyle(color: bcNavy, fontWeight: FontWeight.w800, fontSize: 16)),
           const SizedBox(height: 6),
-          const Text('Your catalog items will appear here', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
+          Text(hasFilters ? 'Try adjusting your search or filters' : 'Your catalog items will appear here', style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
+          if (hasFilters) ...[
+            const SizedBox(height: 24),
+            TextButton.icon(
+              onPressed: () => setState(() {
+                _searchQuery = '';
+                _selectedSubType = null;
+                _showLowStockOnly = false;
+              }),
+              icon: const Icon(Icons.refresh_rounded, color: bcAmber),
+              label: const Text('CLEAR FILTERS', style: TextStyle(color: bcAmber, fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 1)),
+              style: TextButton.styleFrom(
+                backgroundColor: bcNavy.withValues(alpha: 0.1),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ],
         ],
       ),
     );

@@ -141,9 +141,13 @@ class AppRoutes {
       return const StockOperationsScreen();
     },
     stockOut: (_) => const StockOutScreen(),
-    materialMaster: (_) => const MaterialMasterScreen(),
+    materialMaster: (_) => const MaterialCatalogScreen(),
     suppliers:      (_) => const PartyManagementScreen(), // legacy alias
-    reports:        (_) => const AdvancedReportsScreen(),
+    reports:        (_) => const _ComingSoonScreen(
+      title: 'Advanced Reports',
+      subtitle: 'Analyze your project performance with high-fidelity charts,\ndata visualization, and automated monthly health digests.',
+      icon: Icons.analytics_rounded,
+    ),
     inwardEntry: (_) => const _ComingSoonScreen(
       title: 'Inward Entry',
       subtitle: 'Record material arrivals with photo and GPS proofs.',

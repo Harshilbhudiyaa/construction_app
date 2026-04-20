@@ -1,3 +1,5 @@
+import 'package:construction_app/core/utils/date_parser.dart';
+
 enum LedgerEntryType { credit, debit }
 
 class LedgerEntryModel {
@@ -50,7 +52,7 @@ class LedgerEntryModel {
           orElse: () => LedgerEntryType.debit,
         ),
         description: json['description'] as String,
-        date: DateTime.parse(json['date'] as String),
+        date: DateParser.parse(json['date']),
       );
 
   LedgerEntryModel copyWith({

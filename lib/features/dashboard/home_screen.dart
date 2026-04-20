@@ -151,12 +151,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 // ── Active Sites Banner ───────────────────────────────────
                 BounceFadeIn(
                   delay: const Duration(milliseconds: 300),
-                  child: _SectionLabel('ACTIVE SITES', '${siteRepo.sites.where((s) => s.status == SiteStatus.active).length} sites running'),
+                  child: _SectionLabel('ACTIVE SITES', '${siteRepo.sites.where((s) => (s.status == SiteStatus.active) == true).length} sites running'),
                 ),
                 const SizedBox(height: 12),
                 BounceFadeIn(
                   delay: const Duration(milliseconds: 350),
-                  child: siteRepo.sites.isEmpty
+                  child: (siteRepo.sites.isEmpty == true)
                       ? _EmptyHint('No sites yet. Go to More → Sites to add one.', Icons.location_city_rounded)
                       : _SiteListPreview(sites: siteRepo.sites.take(3).toList(), siteRepo: siteRepo),
                 ),
@@ -207,7 +207,7 @@ class _SiteSelectorPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (siteRepo.sites.isEmpty) {
+    if (siteRepo.sites.isEmpty == true) {
       return GestureDetector(
         onTap: () => Navigator.pushNamed(context, AppRoutes.siteManagement),
         child: Container(
@@ -281,56 +281,66 @@ class _SiteSelectorPill extends StatelessWidget {
             const Text('SELECT SITE',
                 style: TextStyle(color: bcNavy, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1)),
             const SizedBox(height: 12),
-            ...siteRepo.sites.map((s) {
-              final isSelected = siteRepo.selectedSiteId == s.id;
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: GestureDetector(
-                  onTap: () {
-                    siteRepo.selectSite(s.id);
-                    Navigator.pop(context);
-                  },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    decoration: BoxDecoration(
-                      color: isSelected ? bcAmber.withValues(alpha: 0.1) : const Color(0xFFF8FAFC),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: isSelected ? bcAmber : const Color(0xFFE2E8F0),
-                        width: isSelected ? 2 : 1,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: isSelected ? bcAmber.withValues(alpha: 0.15) : const Color(0xFFE2E8F0),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(Icons.location_city_rounded,
-                              size: 18, color: isSelected ? bcAmber : const Color(0xFF94A3B8)),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            s.name,
-                            style: TextStyle(
-                              color: isSelected ? bcNavy : const Color(0xFF334155),
-                              fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
-                              fontSize: 14,
+            Flexible(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ...siteRepo.sites.map((s) {
+                      final isSelected = siteRepo.selectedSiteId == s.id;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: GestureDetector(
+                          onTap: () {
+                            siteRepo.selectSite(s.id);
+                            Navigator.pop(context);
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 150),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            decoration: BoxDecoration(
+                              color: (isSelected == true) ? bcAmber.withValues(alpha: 0.1) : const Color(0xFFF8FAFC),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: (isSelected == true) ? bcAmber : const Color(0xFFE2E8F0),
+                                width: (isSelected == true) ? 2 : 1,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: isSelected ? bcAmber.withValues(alpha: 0.15) : const Color(0xFFE2E8F0),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Icon(Icons.location_city_rounded,
+                                      size: 18, color: isSelected ? bcAmber : const Color(0xFF94A3B8)),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    s.name,
+                                    style: TextStyle(
+                                      color: isSelected ? bcNavy : const Color(0xFF334155),
+                                      fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                                if (isSelected == true)
+                                  const Icon(Icons.check_circle_rounded, color: bcAmber, size: 20),
+                              ],
                             ),
                           ),
                         ),
-                        if (isSelected)
-                          const Icon(Icons.check_circle_rounded, color: bcAmber, size: 20),
-                      ],
-                    ),
-                  ),
+                      );
+                    }),
+                  ],
                 ),
-              );
-            }),
+              ),
+            ),
           ],
         ),
       ),
@@ -495,7 +505,7 @@ class _SiteListPreview extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        ...sites.map((s) => _SiteTile(site: s, isSelected: siteRepo.selectedSiteId == s.id,
+        ...sites.map((s) => _SiteTile(site: s, isSelected: (siteRepo.selectedSiteId == s.id) == true,
             onTap: () => siteRepo.selectSite(s.id))),
         GestureDetector(
           onTap: () => Navigator.pushNamed(context, AppRoutes.siteManagement),
@@ -542,10 +552,10 @@ class _SiteTile extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? bcAmber.withValues(alpha: 0.06) : Colors.white,
+          color: (isSelected == true) ? bcAmber.withValues(alpha: 0.06) : Colors.white,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isSelected ? bcAmber.withValues(alpha: 0.4) : const Color(0xFFE2E8F0),
+            color: (isSelected == true) ? bcAmber.withValues(alpha: 0.4) : const Color(0xFFE2E8F0),
           ),
         ),
         child: Row(

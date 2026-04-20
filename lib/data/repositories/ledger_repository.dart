@@ -24,9 +24,13 @@ class LedgerRepository extends ChangeNotifier {
         .orderBy('date', descending: true)
         .snapshots()
         .listen((snap) {
-      _entries = snap.docs
-          .map((d) => LedgerEntryModel.fromJson({...d.data(), 'id': d.id}))
-          .toList();
+      try {
+        _entries = snap.docs
+            .map((d) => LedgerEntryModel.fromJson({...d.data(), 'id': d.id}))
+            .toList();
+      } catch (e) {
+        debugPrint('LedgerRepository: Error parsing ledger entries: $e');
+      }
       _isLoading = false;
       notifyListeners();
     }, onError: (e) {

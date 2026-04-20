@@ -1,3 +1,4 @@
+import 'package:construction_app/core/utils/date_parser.dart';
 import 'package:flutter/material.dart';
 
 enum AppMode {
@@ -76,7 +77,7 @@ class UserModel {
       name: json['name'],
       role: UserRole.fromString(json['role']),
       email: json['email'],
-      lastLogin: json['lastLogin'] != null ? DateTime.parse(json['lastLogin']) : null,
+      lastLogin: DateParser.parseNullable(json['lastLogin']),
     );
   }
 }

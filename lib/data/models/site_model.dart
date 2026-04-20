@@ -1,3 +1,5 @@
+import 'package:construction_app/core/utils/date_parser.dart';
+
 enum SiteStatus {
   active,
   onHold,
@@ -64,12 +66,12 @@ class SiteModel {
       name: json['name'],
       address: json['address'],
       clientName: json['clientName'],
-      startDate: json['startDate'] != null ? DateTime.tryParse(json['startDate']) : null,
-      expectedEndDate: json['expectedEndDate'] != null ? DateTime.tryParse(json['expectedEndDate']) : null,
+      startDate: DateParser.parseNullable(json['startDate']),
+      expectedEndDate: DateParser.parseNullable(json['expectedEndDate']),
       status: status,
       hasBudget: json['hasBudget'] ?? false,
       budgetAmount: (json['budgetAmount'] as num?)?.toDouble(),
-      createdAt: DateTime.parse(json['createdAt']),
+      createdAt: DateParser.parse(json['createdAt']),
     );
   }
 

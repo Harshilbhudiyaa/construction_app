@@ -547,14 +547,14 @@ class _InwardEntryFormScreenState extends State<InwardEntryFormScreen> {
         vehicleCapacity: _capacityCtrl.text, transporterName: _transporterCtrl.text,
         driverName: _driverNameCtrl.text, driverMobile: _driverMobileCtrl.text, driverLicense: '',
         materialId: _selectedMaterialId, materialName: _materialNameCtrl.text,
-        quantity: double.parse(_qtyCtrl.text), unit: _unitType,
+        quantity: double.tryParse(_qtyCtrl.text) ?? 0.0, unit: _unitType,
         photoProofs: [
           if (_photo1Path != null) InwardPhotoProof(photoUrl: _photo1Path!, stage: 'Departure', capturedAt: DateTime.now(), locationTag: _photo1Location ?? ''),
           if (_photo2Path != null) InwardPhotoProof(photoUrl: _photo2Path!, stage: 'Arrival', capturedAt: DateTime.now(), locationTag: _photo2Location ?? ''),
           if (_photo3Path != null) InwardPhotoProof(photoUrl: _photo3Path!, stage: 'Bill', capturedAt: DateTime.now(), locationTag: _photo3Location ?? ''),
         ],
-        ratePerUnit: double.parse(_rateCtrl.text), transportCharges: double.parse(_transportCtrl.text),
-        taxPercentage: double.parse(_taxCtrl.text), totalAmount: _total,
+        ratePerUnit: double.tryParse(_rateCtrl.text) ?? 0.0, transportCharges: double.tryParse(_transportCtrl.text) ?? 0.0,
+        taxPercentage: double.tryParse(_taxCtrl.text) ?? 0.0, totalAmount: _total,
         siteId: widget.siteId ?? widget.editingLog?.siteId ?? 'S-001',
         createdAt: widget.editingLog?.createdAt ?? DateTime.now(), availableSizes: [],
       );

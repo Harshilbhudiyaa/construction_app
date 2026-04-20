@@ -1,3 +1,4 @@
+import 'package:construction_app/core/utils/date_parser.dart';
 import 'package:construction_app/data/models/material_model.dart';
 
 enum InwardStatus { pendingApproval, approved, rejected }
@@ -147,9 +148,9 @@ class InwardMovementModel {
       taxPercentage: (json['taxPercentage'] as num? ?? 0).toDouble(),
       totalAmount: (json['totalAmount'] as num? ?? 0).toDouble(),
       status: InwardStatus.values.byName(json['status'] ?? 'pendingApproval'),
-      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : DateTime.now(),
+      createdAt: DateParser.parse(json['createdAt']),
       approvedBy: json['approvedBy'],
-      approvedAt: json['approvedAt'] != null ? DateTime.parse(json['approvedAt']) : null,
+      approvedAt: DateParser.parseNullable(json['approvedAt']),
       availableSizes: List<String>.from(json['availableSizes'] ?? []),
     );
   }
@@ -181,7 +182,7 @@ class InwardPhotoProof {
     return InwardPhotoProof(
       photoUrl: json['photoUrl'],
       stage: json['stage'],
-      capturedAt: DateTime.parse(json['capturedAt']),
+      capturedAt: DateParser.parse(json['capturedAt']),
       locationTag: json['locationTag'],
     );
   }

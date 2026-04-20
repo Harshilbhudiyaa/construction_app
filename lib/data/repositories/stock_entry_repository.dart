@@ -33,9 +33,13 @@ class StockEntryRepository extends ChangeNotifier {
         .orderBy('entryDate', descending: true)
         .snapshots()
         .listen((snap) {
-      _entries = snap.docs
-          .map((d) => StockEntryModel.fromJson({...d.data(), 'id': d.id}))
-          .toList();
+      try {
+        _entries = snap.docs
+            .map((d) => StockEntryModel.fromJson({...d.data(), 'id': d.id}))
+            .toList();
+      } catch (e) {
+        debugPrint('StockEntryRepository: Error parsing entries: $e');
+      }
       _isLoading = false;
       notifyListeners();
     }, onError: (e) {
@@ -49,9 +53,13 @@ class StockEntryRepository extends ChangeNotifier {
         .orderBy('billDate', descending: true)
         .snapshots()
         .listen((snap) {
-      _bills = snap.docs
-          .map((d) => SupplierBill.fromJson({...d.data(), 'id': d.id}))
-          .toList();
+      try {
+        _bills = snap.docs
+            .map((d) => SupplierBill.fromJson({...d.data(), 'id': d.id}))
+            .toList();
+      } catch (e) {
+        debugPrint('StockEntryRepository: Error parsing bills: $e');
+      }
       notifyListeners();
     }, onError: (e) => debugPrint('StockEntryRepository bills stream error: $e'));
   }

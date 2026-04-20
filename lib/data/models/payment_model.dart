@@ -1,3 +1,5 @@
+import 'package:construction_app/core/utils/date_parser.dart';
+
 enum PaymentStatus {
   success,
   pending,
@@ -64,7 +66,7 @@ class PaymentModel {
       type: PaymentType.values.firstWhere((e) => e.name == json['type'], orElse: () => PaymentType.given),
       billImageUrl: json['billImageUrl'],
       remarks: json['remarks'],
-      timestamp: DateTime.parse(json['timestamp']),
+      timestamp: DateParser.parse(json['timestamp']),
     );
   }
 }

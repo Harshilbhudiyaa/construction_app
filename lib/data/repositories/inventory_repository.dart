@@ -88,14 +88,19 @@ class InventoryRepository extends ChangeNotifier {
   }
 
   void _initStreams() {
-    // Materials
+    // Materials: Order by name to avoid issues with missing 'updatedAt' field
     _materialsSub = _materialsCol
-        .orderBy('updatedAt', descending: true)
+        .orderBy('name')
         .snapshots()
         .listen((snap) {
-      _materials = snap.docs
-          .map((d) => ConstructionMaterial.fromJson({...d.data(), 'id': d.id}))
-          .toList();
+      try {
+        _materials = snap.docs
+            .map((d) => ConstructionMaterial.fromJson({...d.data(), 'id': d.id}))
+            .toList();
+        debugPrint('InventoryRepository: Received ${_materials.length} materials');
+      } catch (e) {
+        debugPrint('InventoryRepository: Error parsing materials: $e');
+      }
       _isLoading = false;
       _materialsController.add(List.unmodifiable(_materials));
       notifyListeners();
@@ -110,9 +115,13 @@ class InventoryRepository extends ChangeNotifier {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .listen((snap) {
-      _logs = snap.docs
-          .map((d) => InwardMovementModel.fromJson({...d.data(), 'id': d.id}))
-          .toList();
+      try {
+        _logs = snap.docs
+            .map((d) => InwardMovementModel.fromJson({...d.data(), 'id': d.id}))
+            .toList();
+      } catch (e) {
+        debugPrint('InventoryRepository: Error parsing logs: $e');
+      }
       _logsController.add(List.unmodifiable(_logs));
       notifyListeners();
     }, onError: (e) => debugPrint('Logs stream error: $e'));
@@ -122,9 +131,13 @@ class InventoryRepository extends ChangeNotifier {
         .orderBy('timestamp', descending: true)
         .snapshots()
         .listen((snap) {
-      _transactions = snap.docs
-          .map((d) => InventoryTransaction.fromJson({...d.data(), 'id': d.id}))
-          .toList();
+      try {
+        _transactions = snap.docs
+            .map((d) => InventoryTransaction.fromJson({...d.data(), 'id': d.id}))
+            .toList();
+      } catch (e) {
+        debugPrint('InventoryRepository: Error parsing transactions: $e');
+      }
       _transactionsController.add(List.unmodifiable(_transactions));
       notifyListeners();
     }, onError: (e) => debugPrint('Transactions stream error: $e'));

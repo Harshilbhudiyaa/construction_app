@@ -1,3 +1,5 @@
+import 'package:construction_app/core/utils/date_parser.dart';
+
 enum PartyCategory {
   supplier,
   contractor,
@@ -70,7 +72,7 @@ class PartyModel {
       address: json['address'],
       paymentTerms: json['paymentTerms'],
       billingName: json['billingName'],
-      createdAt: DateTime.parse(json['createdAt']),
+      createdAt: DateParser.parse(json['createdAt']),
     );
   }
 
@@ -146,7 +148,7 @@ class SupplierTransaction {
         amount: (json['amount'] as num).toDouble(),
         paidAmount: (json['paidAmount'] as num? ?? 0).toDouble(),
         billId: json['billId'],
-        date: DateTime.parse(json['date']),
+        date: DateParser.parse(json['date']),
         remarks: json['remarks'],
       );
 

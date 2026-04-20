@@ -1,3 +1,5 @@
+import 'package:construction_app/core/utils/date_parser.dart';
+
 // Categories and Unit types are now dynamic Strings to allow for custom user entry.
 // Standard Unit presets are provided for the UI.
 /// Primary quick-entry units shown in purchase forms
@@ -39,7 +41,7 @@ class MaterialHistoryLog {
       id: json['id'] ?? '',
       action: json['action'] ?? '',
       description: json['description'] ?? '',
-      timestamp: json['timestamp'] != null ? DateTime.parse(json['timestamp']) : DateTime.now(),
+      timestamp: DateParser.parse(json['timestamp']),
       performedBy: json['performedBy'] ?? '',
       metadata: json['metadata'] != null ? Map<String, dynamic>.from(json['metadata']) : null,
     );
@@ -92,7 +94,7 @@ class PricePoint {
   };
 
   factory PricePoint.fromJson(Map<String, dynamic> json) => PricePoint(
-    timestamp: DateTime.parse(json['timestamp']),
+    timestamp: DateParser.parse(json['timestamp']),
     price: (json['price'] as num).toDouble(),
     referenceId: json['referenceId'],
   );
@@ -237,14 +239,14 @@ class ConstructionMaterial {
       pendingAmount: (json['pendingAmount'] as num? ?? 0).toDouble(),
       partyId: json['partyId'],
       paymentMode: json['paymentMode'],
-      purchaseDate: json['purchaseDate'] != null ? DateTime.tryParse(json['purchaseDate']) : null,
+      purchaseDate: DateParser.parseNullable(json['purchaseDate']),
       customDimensions: (json['customDimensions'] as List? ?? []).map((e) => CustomDimension.fromJson(Map<String, dynamic>.from(e))).toList(),
       minimumStockLimit: (json['minimumStockLimit'] as num? ?? 0).toDouble(),
       storageLocation: json['storageLocation'] ?? '',
       history: (json['history'] as List? ?? []).map((e) => MaterialHistoryLog.fromJson(Map<String, dynamic>.from(e))).toList(),
       rateHistory: (json['rateHistory'] as List? ?? []).map((e) => PricePoint.fromJson(Map<String, dynamic>.from(e))).toList(),
-      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : DateTime.now(),
-      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : DateTime.now(),
+      createdAt: DateParser.parse(json['createdAt']),
+      updatedAt: DateParser.parse(json['updatedAt']),
     );
   }
 

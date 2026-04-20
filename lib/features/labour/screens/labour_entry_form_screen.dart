@@ -113,7 +113,7 @@ class _LabourEntryFormScreenState extends State<LabourEntryFormScreen> {
           workQuantity: (_workType == LabourWorkType.fixedContract || _workType == LabourWorkType.perSqFt)
               ? null
               : double.tryParse(_quantityCtrl.text),
-          ratePerUnit: double.parse(_rateCtrl.text),
+          ratePerUnit: double.tryParse(_rateCtrl.text) ?? 0.0,
           totalContractAmount: total,
           startDate: _startDate,
           notes: _notesCtrl.text,
@@ -154,7 +154,7 @@ class _LabourEntryFormScreenState extends State<LabourEntryFormScreen> {
           workQuantity: (_workType == LabourWorkType.fixedContract || _workType == LabourWorkType.perSqFt)
               ? null
               : double.tryParse(_quantityCtrl.text),
-          ratePerUnit: double.parse(_rateCtrl.text),
+          ratePerUnit: double.tryParse(_rateCtrl.text) ?? 0.0,
           totalContractAmount: total,
           advancePayments: const [],
           startDate: _startDate,

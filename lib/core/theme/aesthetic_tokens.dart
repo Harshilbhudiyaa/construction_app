@@ -207,27 +207,55 @@ class SmartConstructionSliverAppBar extends StatelessWidget {
         stretchModes: const [StretchMode.zoomBackground],
         background: Stack(
           children: [
+            // Depth Gradient
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      bcNavy,
+                      bcNavy.withValues(alpha: 0.8),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // High-Visibility Blueprint Grid
             Positioned.fill(
               child: CustomPaint(
-                painter: BlueprintGridPainter(opacity: 0.1, gridColor: bcAmber.withValues(alpha: 0.2)),
+                painter: BlueprintGridPainter(
+                  opacity: 0.15, 
+                  gridColor: bcAmber.withValues(alpha: 0.35),
+                  gridSize: 32.0,
+                ),
               ),
             ),
             Padding(
-              padding: EdgeInsets.fromLTRB(16, isWide ? 70 : 80, 16, hasBottom ? (isWide ? 80 : 70) : 20),
+              padding: EdgeInsets.fromLTRB(20, isWide ? 70 : 80, 20, hasBottom ? (isWide ? 80 : 70) : 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                    Text(
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: bcAmber.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: bcAmber.withValues(alpha: 0.25), width: 1),
+                    ),
+                    child: Text(
                       category.toUpperCase(),
                       style: TextStyle(
-                        color: bcAmber.withValues(alpha: 0.7),
+                        color: bcAmber,
                         fontSize: isWide ? 10 : 9,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 2.2,
                       ),
                     ),
-                  const SizedBox(height: 6),
+                  ),
                   titleWidget ?? Text(
                     title,
                     style: TextStyle(
