@@ -1,10 +1,12 @@
 import 'dart:math' as math;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:construction_app/data/repositories/auth_repository.dart';
 import 'package:construction_app/core/routing/app_router.dart';
 import 'package:construction_app/core/theme/aesthetic_tokens.dart';
 import 'package:construction_app/shared/widgets/sparkle_effect.dart';
+import 'package:construction_app/features/auth/create_first_site_screen.dart';
 
 
 class SplashScreen extends StatefulWidget {
@@ -140,24 +142,52 @@ class _SplashScreenState extends State<SplashScreen>
     await Future.delayed(const Duration(milliseconds: 3200));
     if (!mounted) return;
 
-    final authService = Provider.of<AuthRepository>(context, listen: false);
-    await authService.initialization;
+    final authRepo = Provider.of<AuthRepository>(context, listen: false);
+    await authRepo.initialization;
     // Extra buffer to ensure animations finish
     await Future.delayed(const Duration(milliseconds: 500));
     if (!mounted) return;
 
-    if (authService.isLoggedIn) {
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        AppRoutes.dashboard,
-        (route) => false,
-      );
+    if (authRepo.isLoggedIn) {
+      // Check if this user has at least one site
+      final hasSites = await _checkUserHasSites();
+      if (!mounted) return;
+
+      if (hasSites) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          AppRoutes.dashboard,
+          (route) => false,
+        );
+      } else {
+        // New user with no site yet — send to onboarding
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const CreateFirstSiteScreen()),
+          (route) => false,
+        );
+      }
     } else {
       Navigator.pushNamedAndRemoveUntil(
         context,
         AppRoutes.login,
         (route) => false,
       );
+    }
+  }
+
+  /// Returns true if at least one site document exists in Firestore.
+  Future<bool> _checkUserHasSites() async {
+    try {
+      final snap = await FirebaseFirestore.instance
+          .collection('sites')
+          .limit(1)
+          .get()
+          .timeout(const Duration(seconds: 5));
+      return snap.docs.isNotEmpty;
+    } catch (e) {
+      // If check fails, default to dashboard (don't block existing users)
+      return true;
     }
   }
 

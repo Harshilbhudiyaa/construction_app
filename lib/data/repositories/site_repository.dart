@@ -1,11 +1,13 @@
+import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
 import 'package:construction_app/data/models/site_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SiteRepository extends ChangeNotifier {
-  static const String _sitesKey = 'app_sites_v1';
   static const String _selectedSiteKey = 'app_selected_site_v1';
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+
   List<SiteModel> _sites = [];
   String? _selectedSiteId;
   bool _isLoading = true;
@@ -16,69 +18,59 @@ class SiteRepository extends ChangeNotifier {
 
   SiteModel? get selectedSite {
     if (_selectedSiteId == null && _sites.isNotEmpty) return _sites.first;
-    return _sites.where((s) => s.id == _selectedSiteId).firstOrNull ?? (_sites.isNotEmpty ? _sites.first : null);
+    return _sites.where((s) => s.id == _selectedSiteId).firstOrNull ??
+        (_sites.isNotEmpty ? _sites.first : null);
   }
+
+  StreamSubscription? _sub;
 
   SiteRepository() {
-    _loadFromPrefs();
+    _init();
   }
 
-  Future<void> _loadFromPrefs() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final String? data = prefs.getString(_sitesKey);
-      if (data != null) {
-        final List<dynamic> decoded = jsonDecode(data);
-        _sites = decoded.map((item) => SiteModel.fromJson(Map<String, dynamic>.from(item))).toList();
-      } else {
-        _sites = [];
-        await _saveToPrefs();
-      }
-      
-      _selectedSiteId = prefs.getString(_selectedSiteKey);
+  Future<void> _init() async {
+    final prefs = await SharedPreferences.getInstance();
+    _selectedSiteId = prefs.getString(_selectedSiteKey);
+
+    _sub = _db
+        .collection('sites')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .listen((snap) {
+      _sites = snap.docs
+          .map((d) => SiteModel.fromJson({...d.data(), 'id': d.id}))
+          .toList();
+      _isLoading = false;
       if (_selectedSiteId == null && _sites.isNotEmpty) {
         _selectedSiteId = _sites.first.id;
       }
-    } catch (e) {
-      debugPrint('Error loading sites: $e');
-    } finally {
+      notifyListeners();
+    }, onError: (e) {
+      debugPrint('SiteRepository stream error: $e');
       _isLoading = false;
       notifyListeners();
-    }
-  }
-
-  Future<void> _saveToPrefs() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final String encoded = jsonEncode(_sites.map((s) => s.toJson()).toList());
-      await prefs.setString(_sitesKey, encoded);
-    } catch (e) {
-      debugPrint('Error saving sites: $e');
-    }
+    });
   }
 
   Future<void> addSite(SiteModel site) async {
-    _sites.insert(0, site);
-    notifyListeners();
-    await _saveToPrefs();
+    final data = site.toJson();
+    data['createdAt'] = FieldValue.serverTimestamp();
+    data['updatedAt'] = FieldValue.serverTimestamp();
+    await _db.collection('sites').doc(site.id).set(data);
   }
 
   Future<void> updateSite(SiteModel site) async {
-    final index = _sites.indexWhere((s) => s.id == site.id);
-    if (index != -1) {
-      _sites[index] = site;
-      notifyListeners();
-      await _saveToPrefs();
-    }
+    final data = site.toJson();
+    data['updatedAt'] = FieldValue.serverTimestamp();
+    await _db.collection('sites').doc(site.id).update(data);
   }
 
   Future<void> deleteSite(String siteId) async {
-    _sites.removeWhere((s) => s.id == siteId);
+    await _db.collection('sites').doc(siteId).delete();
     if (_selectedSiteId == siteId) {
       _selectedSiteId = _sites.isNotEmpty ? _sites.first.id : null;
+      notifyListeners();
     }
-    notifyListeners();
-    await _saveToPrefs();
   }
 
   Future<void> selectSite(String siteId) async {
@@ -88,12 +80,12 @@ class SiteRepository extends ChangeNotifier {
     await prefs.setString(_selectedSiteKey, siteId);
   }
 
-
-  List<SiteModel> _getDemoSites() {
-    return [];
-  }
   String getSiteName(String siteId) {
-    return _sites.firstWhere((s) => s.id == siteId, orElse: () => _sites.first).name;
+    try {
+      return _sites.firstWhere((s) => s.id == siteId).name;
+    } catch (_) {
+      return _sites.isNotEmpty ? _sites.first.name : 'Unknown Site';
+    }
   }
 
   SiteModel? getSiteById(String id) {
@@ -102,5 +94,11 @@ class SiteRepository extends ChangeNotifier {
     } catch (_) {
       return null;
     }
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
   }
 }

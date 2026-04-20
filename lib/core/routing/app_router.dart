@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:construction_app/features/auth/splash_screen.dart';
 import 'package:construction_app/features/auth/login_screen.dart';
 import 'package:construction_app/features/auth/register_screen.dart';
+import 'package:construction_app/features/auth/create_first_site_screen.dart';
 
 // Shell
 import 'package:construction_app/features/dashboard/contractor_shell.dart';
@@ -49,9 +50,10 @@ import 'package:construction_app/features/calculators/screens/smart_calculator_w
 
 class AppRoutes {
   // ── Auth ────────────────────────────────────────────────────────────────────
-  static const String splash   = '/';
-  static const String login    = '/login';
-  static const String register = '/register';
+  static const String splash          = '/';
+  static const String login           = '/login';
+  static const String register        = '/register';
+  static const String createFirstSite = '/create-first-site';
 
   // ── Shell ────────────────────────────────────────────────────────────────────
   static const String dashboard      = '/dashboard';
@@ -93,9 +95,10 @@ class AppRoutes {
   // ── Route map ─────────────────────────────────────────────────────────────────
   static Map<String, WidgetBuilder> get routes => {
     // Auth
-    splash:   (_) => const SplashScreen(),
-    login:    (_) => const LoginScreen(),
-    register: (_) => const RegisterScreen(),
+    splash:          (_) => const SplashScreen(),
+    login:           (_) => const LoginScreen(),
+    register:        (_) => const RegisterScreen(),
+    createFirstSite: (_) => const CreateFirstSiteScreen(),
 
     // Shell
     dashboard:      (_) => const ContractorShell(),

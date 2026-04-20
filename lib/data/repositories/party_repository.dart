@@ -1,12 +1,10 @@
+import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
 import 'package:construction_app/data/models/party_model.dart';
 
 class PartyRepository extends ChangeNotifier {
-  static const String _partiesKey = 'app_parties_v1';
-  // New key for supplier transactions (does not clash with old data)
-  static const String _transactionsKey = 'supplier_transactions_v1';
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   List<PartyModel> _parties = [];
   List<SupplierTransaction> _transactions = [];
@@ -16,104 +14,73 @@ class PartyRepository extends ChangeNotifier {
   List<SupplierTransaction> get allTransactions => _transactions;
   bool get isLoading => _isLoading;
 
-  // ── Supplier-filtered getters ────────────────────────────────────────────────
-
   List<PartyModel> get suppliers =>
       _parties.where((p) => p.category == PartyCategory.supplier).toList();
 
   List<PartyModel> get contractors =>
       _parties.where((p) => p.category == PartyCategory.contractor).toList();
 
+  StreamSubscription? _partiesSub;
+  StreamSubscription? _txnSub;
+
   PartyRepository() {
-    _loadFromPrefs();
+    _init();
   }
 
-  // ── Persistence ─────────────────────────────────────────────────────────────
-
-  Future<void> _loadFromPrefs() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-
-      // Load parties
-      final String? data = prefs.getString(_partiesKey);
-      if (data != null) {
-        final List<dynamic> decoded = jsonDecode(data);
-        _parties = decoded
-            .map((item) => PartyModel.fromJson(Map<String, dynamic>.from(item)))
-            .toList();
-      } else {
-        _parties = [];
-        await _savePartiesToPrefs();
-      }
-
-      // Load supplier transactions (new — may be empty on first run)
-      final String? txnData = prefs.getString(_transactionsKey);
-      if (txnData != null) {
-        final List<dynamic> decoded = jsonDecode(txnData);
-        _transactions = decoded
-            .map((item) =>
-                SupplierTransaction.fromJson(Map<String, dynamic>.from(item)))
-            .toList();
-      }
-    } catch (e) {
-      debugPrint('Error loading parties: $e');
-    } finally {
+  void _init() {
+    _partiesSub = _db
+        .collection('parties')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .listen((snap) {
+      _parties = snap.docs
+          .map((d) => PartyModel.fromJson({...d.data(), 'id': d.id}))
+          .toList();
       _isLoading = false;
       notifyListeners();
-    }
+    }, onError: (e) {
+      debugPrint('PartyRepository parties stream error: $e');
+      _isLoading = false;
+      notifyListeners();
+    });
+
+    _txnSub = _db
+        .collection('supplier_transactions')
+        .orderBy('date', descending: true)
+        .snapshots()
+        .listen((snap) {
+      _transactions = snap.docs
+          .map((d) =>
+              SupplierTransaction.fromJson({...d.data(), 'id': d.id}))
+          .toList();
+      notifyListeners();
+    }, onError: (e) => debugPrint('Supplier transactions stream error: $e'));
   }
 
-  Future<void> _savePartiesToPrefs() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final String encoded =
-          jsonEncode(_parties.map((p) => p.toJson()).toList());
-      await prefs.setString(_partiesKey, encoded);
-    } catch (e) {
-      debugPrint('Error saving parties: $e');
-    }
-  }
-
-  Future<void> _saveTransactionsToPrefs() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final String encoded =
-          jsonEncode(_transactions.map((t) => t.toJson()).toList());
-      await prefs.setString(_transactionsKey, encoded);
-    } catch (e) {
-      debugPrint('Error saving supplier transactions: $e');
-    }
-  }
-
-  // ── Party CRUD ───────────────────────────────────────────────────────────────
+  // ── Party CRUD ─────────────────────────────────────────────────────────────────
 
   Future<void> addParty(PartyModel party) async {
-    _parties.insert(0, party);
-    notifyListeners();
-    await _savePartiesToPrefs();
+    final data = party.toJson();
+    data['createdAt'] = FieldValue.serverTimestamp();
+    await _db.collection('parties').doc(party.id).set(data);
   }
 
   Future<void> updateParty(PartyModel party) async {
-    final index = _parties.indexWhere((p) => p.id == party.id);
-    if (index != -1) {
-      _parties[index] = party;
-      notifyListeners();
-      await _savePartiesToPrefs();
-    }
+    final data = party.toJson();
+    data['updatedAt'] = FieldValue.serverTimestamp();
+    await _db.collection('parties').doc(party.id).update(data);
   }
 
   Future<void> deleteParty(String partyId) async {
-    _parties.removeWhere((p) => p.id == partyId);
-    notifyListeners();
-    await _savePartiesToPrefs();
+    await _db.collection('parties').doc(partyId).delete();
   }
 
-  // ── Supplier Transaction Management ─────────────────────────────────────────
+  // ── Supplier Transactions ──────────────────────────────────────────────────────
 
   Future<void> addTransaction(SupplierTransaction txn) async {
-    _transactions.insert(0, txn);
-    notifyListeners();
-    await _saveTransactionsToPrefs();
+    final data = txn.toJson();
+    data['createdAt'] = FieldValue.serverTimestamp();
+    await _db.collection('supplier_transactions').doc(txn.id).set(data);
   }
 
   Future<void> recordPaymentToSupplier({
@@ -121,40 +88,45 @@ class PartyRepository extends ChangeNotifier {
     required String transactionId,
     required double paymentAmount,
   }) async {
-    final idx = _transactions.indexWhere(
-        (t) => t.id == transactionId && t.supplierId == supplierId);
-    if (idx != -1) {
-      final updated = _transactions[idx]
-          .copyWith(paidAmount: _transactions[idx].paidAmount + paymentAmount);
-      _transactions[idx] = updated;
-      notifyListeners();
-      await _saveTransactionsToPrefs();
-    }
+    final ref =
+        _db.collection('supplier_transactions').doc(transactionId);
+    await _db.runTransaction((txn) async {
+      final snap = await txn.get(ref);
+      if (!snap.exists) return;
+      final current =
+          (snap.data()!['paidAmount'] as num? ?? 0).toDouble();
+      txn.update(ref, {
+        'paidAmount': current + paymentAmount,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    });
   }
 
-  /// Pay down the oldest pending transactions for a supplier (FIFO).
   Future<void> paySupplierBalance({
     required String supplierId,
     required double paymentAmount,
     String? remarks,
   }) async {
+    final pendingTxns = _transactions
+        .where((t) =>
+            t.supplierId == supplierId && t.pendingAmount > 0)
+        .toList()
+      ..sort((a, b) => a.date.compareTo(b.date)); // FIFO
+
     double remaining = paymentAmount;
-    for (int i = 0; i < _transactions.length && remaining > 0; i++) {
-      final t = _transactions[i];
-      if (t.supplierId != supplierId) continue;
-      final canPay = t.pendingAmount;
-      if (canPay <= 0) continue;
-      final toPay = remaining < canPay ? remaining : canPay;
-      _transactions[i] = t.copyWith(
-          paidAmount: t.paidAmount + toPay,
-          remarks: remarks ?? t.remarks);
+    for (final t in pendingTxns) {
+      if (remaining <= 0) break;
+      final toPay = remaining < t.pendingAmount ? remaining : t.pendingAmount;
+      await recordPaymentToSupplier(
+        supplierId: supplierId,
+        transactionId: t.id,
+        paymentAmount: toPay,
+      );
       remaining -= toPay;
     }
-    notifyListeners();
-    await _saveTransactionsToPrefs();
   }
 
-  // ── Supplier Queries ─────────────────────────────────────────────────────────
+  // ── Queries ────────────────────────────────────────────────────────────────────
 
   List<SupplierTransaction> getTransactionsForSupplier(String supplierId) =>
       _transactions
@@ -168,25 +140,20 @@ class PartyRepository extends ChangeNotifier {
           .toList()
         ..sort((a, b) => b.date.compareTo(a.date));
 
-  double getTotalPurchaseForSupplier(String supplierId) =>
-      _transactions
-          .where((t) => t.supplierId == supplierId)
-          .fold(0.0, (s, t) => s + t.amount);
+  double getTotalPurchaseForSupplier(String supplierId) => _transactions
+      .where((t) => t.supplierId == supplierId)
+      .fold(0.0, (s, t) => s + t.amount);
 
-  double getTotalPaidForSupplier(String supplierId) =>
-      _transactions
-          .where((t) => t.supplierId == supplierId)
-          .fold(0.0, (s, t) => s + t.paidAmount);
+  double getTotalPaidForSupplier(String supplierId) => _transactions
+      .where((t) => t.supplierId == supplierId)
+      .fold(0.0, (s, t) => s + t.paidAmount);
 
   double getPendingBalanceForSupplier(String supplierId) =>
       getTotalPurchaseForSupplier(supplierId) -
       getTotalPaidForSupplier(supplierId);
 
-  /// Global pending balance across all suppliers (for dashboard KPI)
   double get totalPendingSupplierBalance =>
       _transactions.fold(0.0, (s, t) => s + t.pendingAmount);
-
-  // ── Helpers ──────────────────────────────────────────────────────────────────
 
   String getPartyName(String partyId) {
     try {
@@ -204,9 +171,10 @@ class PartyRepository extends ChangeNotifier {
     }
   }
 
-  // ── Demo Data ────────────────────────────────────────────────────────────────
-
-  List<PartyModel> _getDemoParties() {
-    return [];
+  @override
+  void dispose() {
+    _partiesSub?.cancel();
+    _txnSub?.cancel();
+    super.dispose();
   }
 }

@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeService()),
         ChangeNotifierProvider(create: (_) => AuthRepository()),
-        ChangeNotifierProvider(create: (_) => InventoryRepository()..initDemoData()),
+        ChangeNotifierProvider(create: (_) => InventoryRepository()),
         ChangeNotifierProvider(create: (_) => SiteRepository()),
         ChangeNotifierProvider(create: (_) => PaymentRepository()),
         ChangeNotifierProvider(create: (_) => LedgerRepository()),
